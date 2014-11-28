@@ -147,7 +147,41 @@ func Run(workdir string, name string, arg ...string) int {
 }
 
 func ListAllLibraries(c *gin.Context) {
-	c.String(200, "pong")
+	teams, _, err := gh.Organizations.ListTeams("arlibs", nil)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"result":   "error",
+			"message":  "could not fetch organization teams",
+			"gh_error": err,
+		})
+		return
+	}
+
+	team := teams[0] // The only team available should be "owners"
+	// fmt.Println("Teams : ", *team.Name)
+
+	repos, _, err := gh.Organizations.ListTeamRepos(*team.ID, nil)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"result":   "error",
+			"message":  "could not get organization repositories",
+			"gh_error": err,
+		})
+		return
+	}
+	libraries := make([]struct {
+		Name   string
+		GitURL string
+	}, len(repos))
+	for i, repo := range repos {
+		libraries[i].Name = *repo.Name
+		libraries[i].GitURL = *repo.GitURL
+	}
+
+	c.JSON(200, gin.H{
+		"result":    "ok",
+		"libraries": libraries,
+	})
 }
 
 func main() {
@@ -160,13 +194,7 @@ func main() {
 	// Listen and server on 0.0.0.0:8080
 	r.Run(":8080")
 
-	t := &oauth.Transport{
-		Token: &oauth.Token{AccessToken: "e282d0ab13c38a4303e65620aeab13c2beba3385"},
-	}
-
-	client := github.NewClient(t.Client())
-
-	org, _, err := client.Organizations.Get("arlibs")
+	org, _, err := gh.Organizations.Get("arlibs")
 	if err != nil {
 		fmt.Printf("error: %v\n\n", err)
 	} else {
@@ -176,16 +204,7 @@ func main() {
 	fmt.Println("Organization: ", *org.Login)
 	fmt.Println("Repositories: ", github.Stringify(org.PublicRepos))
 
-	teams, _, err := client.Organizations.ListTeams("arlibs", nil)
-	team := teams[0]
-	fmt.Println("Teams : ", *team.Name)
-
-	repos, _, err := client.Organizations.ListTeamRepos(*team.ID, nil)
-	for _, repo := range repos {
-		fmt.Println("Repos : ", *repo.Name, *repo.Description, "URL:", *repo.CloneURL)
-	}
-
-	rate, _, err := client.RateLimit()
+	rate, _, err := gh.RateLimit()
 	if err != nil {
 		fmt.Printf("Error fetching rate limit: %#v\n\n", err)
 	} else {
