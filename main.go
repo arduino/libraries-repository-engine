@@ -8,13 +8,16 @@ import (
 	//"os/exec"
 )
 
-var gh_auth = &oauth.Transport{
-	Token: &oauth.Token{AccessToken: "e282d0ab13c38a4303e65620aeab13c2beba3385"},
-}
-var gh = github.NewClient(gh_auth.Client())
+// Configuration part
+// TODO: Move into his own file
+var gh_auth_token = "e282d0ab13c38a4303e65620aeab13c2beba3385"
 var org = "arlibs"
 var gh_callbackUrl = "http://kungfu.bug.st:8088/github/event/"
 var localGitFolder = "git/"
+
+// Global github client
+var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: gh_auth_token}}
+var gh = github.NewClient(gh_auth.Client())
 
 // Github event web hook.
 func GithubEventHook(c *gin.Context) {
