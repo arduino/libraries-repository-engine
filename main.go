@@ -6,6 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
 	//"os/exec"
+	"bytes"
+	"encoding/base64"
+	"github.com/vaughan0/go-ini"
+	s "strings"
 )
 
 // Configuration part
@@ -46,17 +50,68 @@ func GithubEventHook(c *gin.Context) {
 
 func CheckRelease(c *gin.Context, pull *github.PullRequest) {
 	//commits := *pull.Commits
-	_, _, err := CommentOnPullRequest(pull, "Test")
-	if err != nil {
-		fmt.Println(github.Stringify(err))
-		c.JSON(500, gin.H{
-			"result":   "error",
-			"message":  "error creating repository",
-			"gh_error": err,
-		})
-		return
+	title := *pull.Title
+
+	// Is a release request?
+	if s.HasPrefix(title, "[RELEASE] ") {
+
+		// Check if the release number is the same inside library
+		version := title[10:]
+		fmt.Println("Doing release!")
+		fmt.Println("  release in PR: '" + version + "'")
+
+		fmt.Println(title)
+
+		head := *pull.Head
+		headRepo := *head.Repo
+		fmt.Println("  release sha  : " + *head.SHA)
+		fmt.Println("  repository   : " + *head.Repo.FullName)
+
+		// Get library.properties from pull request HEAD
+		getContentOpts := &github.RepositoryContentGetOptions{
+			Ref: *head.SHA,
+		}
+		libPropContent, _, _, err := gh.Repositories.GetContents(*headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
+		if err != nil || libPropContent == nil {
+			c.JSON(500, gin.H{
+				"result":   "error",
+				"message":  "cannot fetch library.properties",
+				"gh_error": err,
+			})
+			return
+		}
+
+		libPropertiesData, err := base64.StdEncoding.DecodeString(*libPropContent.Content)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		reader := bytes.NewReader(libPropertiesData)
+		properties, err := ini.Load(reader)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+		libName, _ := properties.Get("", "name")
+		fmt.Printf("  library.properties contains: %q\n", libName)
+
+		resultMsg := "Thanks!"
+		/*
+			_, _, err := CommentOnPullRequest(pull, resultMsg)
+			if err != nil {
+				fmt.Println(github.Stringify(err))
+				c.JSON(500, gin.H{
+					"result":   "error",
+					"message":  "error sending comment message",
+					"gh_error": err,
+				})
+				return
+			}
+		*/
+		fmt.Println(resultMsg)
+		c.String(200, "Received pull_request from github.")
 	}
-	c.String(200, "Received pull_request from github.")
 }
 
 func CommentOnPullRequest(pull *github.PullRequest, text string) (*github.IssueComment, *github.Response, error) {
