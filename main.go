@@ -192,13 +192,13 @@ func PushInitialEmptyRepository(c *gin.Context, repo *github.Repository) {
 }
 
 func Run(workdir string, name string, arg ...string) int {
-/*
-	cmd := exec.Command(name, arg)
-	cmd.Dir = workdir
-	cmd.Start()
-	return cmd.Wait()
-*/
-  return 0
+	/*
+		cmd := exec.Command(name, arg)
+		cmd.Dir = workdir
+		cmd.Start()
+		return cmd.Wait()
+	*/
+	return 0
 }
 
 func ListAllLibraries(c *gin.Context) {
