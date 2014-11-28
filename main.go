@@ -23,6 +23,57 @@ var localGitFolder = "git/"
 var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: gh_auth_token}}
 var gh = github.NewClient(gh_auth.Client())
 
+// Metadata for a library
+type Library struct {
+	Name          string
+	Version       string
+	Author        string
+	Maintainer    string
+	Sentence      string
+	Paragraph     string
+	URL           string
+	Architectures string
+}
+
+// Make a library by reading library.properties from a github.RepositoryContent
+func MakeLibraryFromRepositoryContent(content *github.RepositoryContent) (*Library, error) {
+	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
+	if err != nil {
+		return nil, err
+	}
+	return MakeLibraryFromBytes(libPropertiesData)
+}
+
+// Make a library by reading library.properties from a byte array
+func MakeLibraryFromBytes(propertiesData []byte) (*Library, error) {
+	// Create an io.Reader from []bytes
+	reader := bytes.NewReader(propertiesData)
+	// Use go-ini to decode contents
+	properties, err := ini.Load(reader)
+	if err != nil {
+		return nil, err
+	}
+	name, _ := properties.Get("", "name")
+	version, _ := properties.Get("", "version")
+	author, _ := properties.Get("", "author")
+	maintainer, _ := properties.Get("", "maintainer")
+	sentence, _ := properties.Get("", "sentence")
+	paragraph, _ := properties.Get("", "paragraph")
+	url, _ := properties.Get("", "url")
+	architectures, _ := properties.Get("", "architectures")
+	res := &Library{
+		Name:          name,
+		Version:       version,
+		Author:        author,
+		Maintainer:    maintainer,
+		Sentence:      sentence,
+		Paragraph:     paragraph,
+		URL:           url,
+		Architectures: architectures,
+	}
+	return res, nil
+}
+
 // Github event web hook.
 func GithubEventHook(c *gin.Context) {
 	eventType := c.Request.Header.Get("X-GitHub-Event")
@@ -81,20 +132,14 @@ func CheckRelease(c *gin.Context, pull *github.PullRequest) {
 			return
 		}
 
-		libPropertiesData, err := base64.StdEncoding.DecodeString(*libPropContent.Content)
+		// Decode library content
+		library, err := MakeLibraryFromRepositoryContent(libPropContent)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
 		}
 
-		reader := bytes.NewReader(libPropertiesData)
-		properties, err := ini.Load(reader)
-		if err != nil {
-			fmt.Println("error:", err)
-			return
-		}
-		libName, _ := properties.Get("", "name")
-		fmt.Printf("  library.properties contains: %q\n", libName)
+		fmt.Printf("  library.properties contains: %q\n", library.Name)
 
 		resultMsg := "Thanks!"
 		/*
