@@ -92,7 +92,7 @@ func GithubEventHook(c *gin.Context) {
 	case "pull_request":
 		var event github.PullRequestEvent
 		c.Bind(&event)
-		go CheckRelease(event.PullRequest)
+		go ProcessPullRequest(event.PullRequest)
 		c.String(200, "Successfully processed pull_request")
 		return
 	}
@@ -100,7 +100,7 @@ func GithubEventHook(c *gin.Context) {
 	c.String(200, "Received "+eventType+" from github. Ignoring...")
 }
 
-func CheckRelease(pull *github.PullRequest) {
+func ProcessPullRequest(pull *github.PullRequest) {
 	//commits := *pull.Commits
 	title := *pull.Title
 
