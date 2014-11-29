@@ -85,13 +85,16 @@ func GithubEventHook(c *gin.Context) {
 			HookID *int    `json:"hook_id"`
 		}
 		c.Bind(&ping)
-		c.String(200, "Received ping from github: "+*ping.Zen)
+		c.String(200, "Pong: "+*ping.Zen)
 		return
 
 	case "pull_request":
 		var event github.PullRequestEvent
 		c.Bind(&event)
-		CheckRelease(c, event.PullRequest)
+		// create copy to be used inside the goroutine
+		c_cp := c.Copy()
+		go CheckRelease(c_cp, event.PullRequest)
+		c.String(200, "Successfully processed pull_request")
 		return
 	}
 
