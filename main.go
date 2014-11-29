@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"github.com/vaughan0/go-ini"
+	"strconv"
 	s "strings"
 )
 
@@ -116,9 +117,11 @@ func CheckRelease(c *gin.Context, pull *github.PullRequest) {
 		fmt.Println(title)
 
 		head := *pull.Head
+		base := *pull.Base
 		headRepo := *head.Repo
+		baseRepo := *base.Repo
 		fmt.Println("  release sha  : " + *head.SHA)
-		fmt.Println("  repository   : " + *head.Repo.FullName)
+		fmt.Println("  repository   : " + *headRepo.FullName)
 
 		// Get library.properties from pull request HEAD
 		getContentOpts := &github.RepositoryContentGetOptions{
@@ -126,11 +129,7 @@ func CheckRelease(c *gin.Context, pull *github.PullRequest) {
 		}
 		libPropContent, _, _, err := gh.Repositories.GetContents(*headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
 		if err != nil || libPropContent == nil {
-			c.JSON(500, gin.H{
-				"result":   "error",
-				"message":  "cannot fetch library.properties",
-				"gh_error": err,
-			})
+			fmt.Println("cannot fetch library.properties:" + github.Stringify(err))
 			return
 		}
 
@@ -141,23 +140,59 @@ func CheckRelease(c *gin.Context, pull *github.PullRequest) {
 			return
 		}
 
-		fmt.Printf("  library.properties contains: %q\n", library.Name)
+		// Processing output
+		resultMsg := "Hi @" + *pull.User.Login + ",\n"
+		resultMsg += "thanks for your submission!\n"
+		resultMsg += "\n"
+		resultMsg += "Checking library.properties contents for " + *library.Name + "\n"
+		errors := 0
 
-		resultMsg := "Thanks!"
-		/*
-			_, _, err := CommentOnPullRequest(pull, resultMsg)
-			if err != nil {
-				fmt.Println(github.Stringify(err))
-				c.JSON(500, gin.H{
-					"result":   "error",
-					"message":  "error sending comment message",
-					"gh_error": err,
-				})
-				return
-			}
-		*/
+		// Check if library name is the same as repository name
+		if *library.Name != *baseRepo.Name {
+			resultMsg += "  * **ERROR** library 'name' must be " + *baseRepo.Name + " instead of " + *library.Name + "\n"
+			errors++
+		}
+		// Check if pull declared version match the version on manifest file
+		if *library.Version != version {
+			resultMsg += "  * **ERROR** library 'version' must be " + version + " instead of " + *library.Version + "\n"
+			errors++
+		}
+		// Check author and mainteiner existence
+		if library.Author == nil || library.Maintainer == nil {
+			resultMsg += "  * **ERROR** 'author' and 'maintainer' fields must be defined\n"
+			errors++
+		}
+		// Check sentence and paragraph and url existence
+		if library.Sentence == nil || library.Paragraph == nil || library.URL == nil {
+			resultMsg += "  * **ERROR** 'sentence', 'paragraph' and 'url' fields must be defined\n"
+			errors++
+		}
+		// Check architectures
+		architectures := s.Split(*library.Architectures, ",")
+		for _, arch := range architectures {
+			arch = s.TrimSpace(arch)
+			resultMsg += "  * Found valid architecture '" + arch + "'\n"
+		}
+
+		if errors == 0 {
+			resultMsg += "\n"
+			resultMsg += "No errors found.\n"
+			resultMsg += "\n"
+			resultMsg += "This pull request is ready to be merged.\n"
+		} else {
+			resultMsg += "\n"
+			resultMsg += strconv.Itoa(errors) + " errors found.\n"
+			resultMsg += "\n"
+			resultMsg += "Please fix it and resubmit or update the pullrequest.\n"
+		}
+
+		// Send result of analisys as a pull request message
+		_, _, err = CommentOnPullRequest(pull, resultMsg)
+		if err != nil {
+			fmt.Println(github.Stringify(err))
+			return
+		}
 		fmt.Println(resultMsg)
-		c.String(200, "Received pull_request from github.")
 	}
 }
 
