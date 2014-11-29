@@ -107,19 +107,15 @@ func CheckRelease(pull *github.PullRequest) {
 	// Is a release request?
 	if s.HasPrefix(title, "[RELEASE] ") {
 
-		// Check if the release number is the same inside library
-		version := title[10:]
-		fmt.Println("Doing release!")
-		fmt.Println("  release in PR: '" + version + "'")
-
-		fmt.Println(title)
-
 		head := *pull.Head
 		base := *pull.Base
 		headRepo := *head.Repo
 		baseRepo := *base.Repo
-		fmt.Println("  release sha  : " + *head.SHA)
-		fmt.Println("  repository   : " + *headRepo.FullName)
+
+		// Check if the release number is the same inside library
+		fmt.Println("Doing release!")
+		fmt.Println("  Pull request title: '" + title + "'")
+		fmt.Println("  release sha       : " + *head.SHA + " in " + *headRepo.FullName)
 
 		// Get library.properties from pull request HEAD
 		getContentOpts := &github.RepositoryContentGetOptions{
@@ -130,7 +126,6 @@ func CheckRelease(pull *github.PullRequest) {
 			fmt.Println("cannot fetch library.properties:" + github.Stringify(err))
 			return
 		}
-
 		// Decode library content
 		library, err := MakeLibraryFromRepositoryContent(libPropContent)
 		if err != nil {
@@ -151,6 +146,7 @@ func CheckRelease(pull *github.PullRequest) {
 			errors++
 		}
 		// Check if pull declared version match the version on manifest file
+		version := title[10:]
 		if *library.Version != version {
 			resultMsg += "  * **ERROR** library 'version' must be " + version + " instead of " + *library.Version + "\n"
 			errors++
