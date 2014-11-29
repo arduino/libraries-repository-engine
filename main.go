@@ -25,14 +25,14 @@ var gh = github.NewClient(gh_auth.Client())
 
 // Metadata for a library
 type Library struct {
-	Name          string
-	Version       string
-	Author        string
-	Maintainer    string
-	Sentence      string
-	Paragraph     string
-	URL           string
-	Architectures string
+	Name          *string
+	Version       *string
+	Author        *string
+	Maintainer    *string
+	Sentence      *string
+	Paragraph     *string
+	URL           *string
+	Architectures *string
 }
 
 // Make a library by reading library.properties from a github.RepositoryContent
@@ -53,25 +53,24 @@ func MakeLibraryFromBytes(propertiesData []byte) (*Library, error) {
 	if err != nil {
 		return nil, err
 	}
-	name, _ := properties.Get("", "name")
-	version, _ := properties.Get("", "version")
-	author, _ := properties.Get("", "author")
-	maintainer, _ := properties.Get("", "maintainer")
-	sentence, _ := properties.Get("", "sentence")
-	paragraph, _ := properties.Get("", "paragraph")
-	url, _ := properties.Get("", "url")
-	architectures, _ := properties.Get("", "architectures")
-	res := &Library{
-		Name:          name,
-		Version:       version,
-		Author:        author,
-		Maintainer:    maintainer,
-		Sentence:      sentence,
-		Paragraph:     paragraph,
-		URL:           url,
-		Architectures: architectures,
+	get := func(key string) *string {
+		value, ok := properties.Get("", key)
+		if ok {
+			return github.String(value)
+		} else {
+			return nil
+		}
 	}
-	return res, nil
+	return &Library{
+		Name:          get("name"),
+		Version:       get("version"),
+		Author:        get("author"),
+		Maintainer:    get("maintainer"),
+		Sentence:      get("sentence"),
+		Paragraph:     get("paragraph"),
+		URL:           get("url"),
+		Architectures: get("architectures"),
+	}, nil
 }
 
 // Github event web hook.
