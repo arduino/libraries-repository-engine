@@ -92,9 +92,7 @@ func GithubEventHook(c *gin.Context) {
 	case "pull_request":
 		var event github.PullRequestEvent
 		c.Bind(&event)
-		// create copy to be used inside the goroutine
-		c_cp := c.Copy()
-		go CheckRelease(c_cp, event.PullRequest)
+		go CheckRelease(event.PullRequest)
 		c.String(200, "Successfully processed pull_request")
 		return
 	}
@@ -102,7 +100,7 @@ func GithubEventHook(c *gin.Context) {
 	c.String(200, "Received "+eventType+" from github. Ignoring...")
 }
 
-func CheckRelease(c *gin.Context, pull *github.PullRequest) {
+func CheckRelease(pull *github.PullRequest) {
 	//commits := *pull.Commits
 	title := *pull.Title
 
