@@ -36,6 +36,23 @@ type Library struct {
 	Architectures *string
 }
 
+// Make a library by reading library.properties from a github.PullRequest
+func MakeLibraryFromPullRequest(pull *github.PullRequest) (*Library, error) {
+	head := *pull.Head
+	headRepo := *head.Repo
+
+	// Get library.properties from pull request HEAD
+	getContentOpts := &github.RepositoryContentGetOptions{
+		Ref: *head.SHA,
+	}
+	libPropContent, _, _, err := gh.Repositories.GetContents(*headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
+	if err != nil || libPropContent == nil {
+		fmt.Println("cannot fetch library.properties:" + github.Stringify(err))
+		return nil, err
+	}
+	return MakeLibraryFromRepositoryContent(libPropContent)
+}
+
 // Make a library by reading library.properties from a github.RepositoryContent
 func MakeLibraryFromRepositoryContent(content *github.RepositoryContent) (*Library, error) {
 	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
@@ -182,17 +199,8 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 		fmt.Println("  Pull request title: '" + title + "'")
 		fmt.Println("  release sha       : " + *head.SHA + " in " + *headRepo.FullName)
 
-		// Get library.properties from pull request HEAD
-		getContentOpts := &github.RepositoryContentGetOptions{
-			Ref: *head.SHA,
-		}
-		libPropContent, _, _, err := gh.Repositories.GetContents(*headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
-		if err != nil || libPropContent == nil {
-			fmt.Println("cannot fetch library.properties:" + github.Stringify(err))
-			return
-		}
-		// Decode library content
-		library, err := MakeLibraryFromRepositoryContent(libPropContent)
+		// Get library.properties from pull request HEAD and decode library content
+		library, err := MakeLibraryFromPullRequest(pull)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
