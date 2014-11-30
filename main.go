@@ -92,15 +92,80 @@ func GithubEventHook(c *gin.Context) {
 	case "pull_request":
 		var event github.PullRequestEvent
 		c.Bind(&event)
-		go ProcessPullRequest(event.PullRequest)
+		switch *event.Action {
+		case "opened", "synchronize":
+			go ProcessOpenPullRequest(event.PullRequest)
+		case "closed":
+			go ProcessClosePullRequest(event.PullRequest)
+		}
 		c.String(200, "Successfully processed pull_request")
+		return
+
+	case "issue_comment":
+		var event github.IssueCommentEvent
+		c.Bind(&event)
+		if event.Issue.PullRequestLinks == nil {
+			go ProcessIssueComment(&event)
+		} else {
+			go ProcessPullRequestComment(&event)
+		}
+		c.String(200, "Successfully processed issue_comment")
 		return
 	}
 
 	c.String(200, "Received "+eventType+" from github. Ignoring...")
 }
 
-func ProcessPullRequest(pull *github.PullRequest) {
+func ProcessIssueComment(event *github.IssueCommentEvent) {
+	fmt.Println("Issue comment received")
+}
+
+func ProcessPullRequestComment(event *github.IssueCommentEvent) {
+	repository := event.Repo
+	issue := event.Issue
+	pull, _, err := GetPullRequestFromIssue(repository, issue)
+	if err != nil {
+		fmt.Println("cannot fetch pull request data:" + github.Stringify(err))
+		return
+	}
+	comment := event.Comment
+	user := *comment.User.Login
+	body := *comment.Body
+
+	// Is an admin?
+	isAdmin := (user == "arlib0")
+
+	if isAdmin {
+		body = s.TrimSpace(body)
+		switch body {
+		case "ok to merge":
+			result, _, err := MergePullRequest(pull, user+" accepted "+*pull.Title)
+			if err != nil {
+				fmt.Println("Error during merge: " + github.Stringify(err))
+				return
+			}
+			fmt.Println(github.Stringify(result))
+			return
+		}
+
+	}
+
+	fmt.Println(user + " wrote " + body + " on " + *pull.Title)
+}
+
+// Get the pull request associated with the issue
+func GetPullRequestFromIssue(repository *github.Repository, issue *github.Issue) (*github.PullRequest, *github.Response, error) {
+	return gh.PullRequests.Get(*repository.Owner.Login, *repository.Name, *issue.Number)
+}
+
+// Merge the pull request
+func MergePullRequest(pull *github.PullRequest, commitMessage string) (*github.PullRequestMergeResult, *github.Response, error) {
+	repo := pull.Base.Repo
+	fmt.Println(*repo.Owner.Login + " / " + *repo.Name + ", " + strconv.Itoa(*pull.Number) + " - " + commitMessage)
+	return gh.PullRequests.Merge(*repo.Owner.Login, *repo.Name, *pull.Number, commitMessage)
+}
+
+func ProcessOpenPullRequest(pull *github.PullRequest) {
 	//commits := *pull.Commits
 	title := *pull.Title
 
@@ -188,6 +253,10 @@ func ProcessPullRequest(pull *github.PullRequest) {
 		}
 		fmt.Println(resultMsg)
 	}
+}
+
+func ProcessClosePullRequest(pull *github.PullRequest) {
+	fmt.Println("PR has been merged")
 }
 
 func CommentOnPullRequest(pull *github.PullRequest, text string) (*github.IssueComment, *github.Response, error) {
