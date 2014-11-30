@@ -150,6 +150,7 @@ func ProcessPullRequestComment(event *github.IssueCommentEvent) {
 	body := *comment.Body
 
 	// Is an admin?
+	// TODO: Check if user is on 'owners' team
 	isAdmin := (user == "arlib0")
 
 	if isAdmin {
@@ -205,6 +206,9 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 			fmt.Println("error:", err)
 			return
 		}
+
+		// TODO: Check if the pull request is against master
+		// TODO: Check if the pull request is made of only one commit
 
 		// Processing output
 		resultMsg := "Hi @" + *pull.User.Login + ",\n"
