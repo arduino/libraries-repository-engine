@@ -268,7 +268,33 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 }
 
 func ProcessClosePullRequest(pull *github.PullRequest) {
-	fmt.Println("PR has been merged")
+	// If pull request has been merged..
+	if *pull.Merged {
+		owner := *pull.Base.Repo.Owner.Login
+		repo := *pull.Base.Repo.Name
+
+		// Get library.properties from pull request HEAD and decode library content
+		library, err := MakeLibraryFromPullRequest(pull)
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		// Create a release for the merged pull request
+		release := &github.RepositoryRelease{
+			TagName: github.String("v" + *library.Version),
+			// master is the default
+			// TargetCommittish : "master"
+			Name: github.String("Version " + *library.Version),
+			Body: pull.Body,
+		}
+		newRelease, _, err := gh.Repositories.CreateRelease(owner, repo, release)
+		if err != nil {
+			fmt.Println("Error creating release: " + github.Stringify(err))
+			return
+		}
+		fmt.Println(github.Stringify(newRelease))
+	}
 }
 
 func CommentOnPullRequest(pull *github.PullRequest, text string) (*github.IssueComment, *github.Response, error) {
