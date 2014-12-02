@@ -1,16 +1,15 @@
 package main
 
 import (
+	"arduino.cc/repository/libraries/db"
 	"code.google.com/p/goauth2/oauth"
+	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
-	//"os/exec"
-	"bytes"
-	"encoding/base64"
-	"github.com/vaughan0/go-ini"
 	"strconv"
 	s "strings"
+	//"os/exec"
 )
 
 // Configuration part
@@ -24,20 +23,8 @@ var localGitFolder = "git/"
 var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: gh_auth_token}}
 var gh = github.NewClient(gh_auth.Client())
 
-// Metadata for a library
-type Library struct {
-	Name          *string
-	Version       *string
-	Author        *string
-	Maintainer    *string
-	Sentence      *string
-	Paragraph     *string
-	URL           *string
-	Architectures *string
-}
-
 // Make a library by reading library.properties from a github.PullRequest
-func MakeLibraryFromPullRequest(pull *github.PullRequest) (*Library, error) {
+func MakeLibraryFromPullRequest(pull *github.PullRequest) (*db.LibraryMetadata, error) {
 	head := *pull.Head
 	headRepo := *head.Repo
 
@@ -54,41 +41,12 @@ func MakeLibraryFromPullRequest(pull *github.PullRequest) (*Library, error) {
 }
 
 // Make a library by reading library.properties from a github.RepositoryContent
-func MakeLibraryFromRepositoryContent(content *github.RepositoryContent) (*Library, error) {
+func MakeLibraryFromRepositoryContent(content *github.RepositoryContent) (*db.LibraryMetadata, error) {
 	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
 	if err != nil {
 		return nil, err
 	}
-	return MakeLibraryFromBytes(libPropertiesData)
-}
-
-// Make a library by reading library.properties from a byte array
-func MakeLibraryFromBytes(propertiesData []byte) (*Library, error) {
-	// Create an io.Reader from []bytes
-	reader := bytes.NewReader(propertiesData)
-	// Use go-ini to decode contents
-	properties, err := ini.Load(reader)
-	if err != nil {
-		return nil, err
-	}
-	get := func(key string) *string {
-		value, ok := properties.Get("", key)
-		if ok {
-			return github.String(value)
-		} else {
-			return nil
-		}
-	}
-	return &Library{
-		Name:          get("name"),
-		Version:       get("version"),
-		Author:        get("author"),
-		Maintainer:    get("maintainer"),
-		Sentence:      get("sentence"),
-		Paragraph:     get("paragraph"),
-		URL:           get("url"),
-		Architectures: get("architectures"),
-	}, nil
+	return db.ParseLibraryProperties(libPropertiesData)
 }
 
 // Github event web hook.
