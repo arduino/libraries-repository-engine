@@ -1,7 +1,52 @@
 package db
 
 import "bytes"
+import "encoding/json"
 import "github.com/vaughan0/go-ini"
+import "io"
+import "os"
+
+// The libraries DB
+type DB struct {
+	Libraries []Library "libraries"
+}
+
+// A library
+type Library struct {
+	Name          string   "name"
+	Version       string   "version"
+	Author        string   "author"
+	Maintainer    string   "maintainer"
+	License       string   "license"
+	URL           string   "url"
+	Size          uint64   "size"
+	Sentenct      string   "sentence"
+	Paragraph     string   "paragraph"
+	Website       string   "website"
+	Architectures []string "architectures"
+	Checksum      string   "checksum"
+	Category      string   "category"
+}
+
+func LoadFromFile(filename string) (*DB, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	res, err := Load(file)
+	file.Close()
+	return res, err
+}
+
+func Load(r io.Reader) (*DB, error) {
+	decoder := json.NewDecoder(r)
+	var db DB
+	err := decoder.Decode(&db)
+	if err != nil {
+		return nil, err
+	}
+	return &db, nil
+}
 
 // Metadata for a library.properties file
 type LibraryMetadata struct {

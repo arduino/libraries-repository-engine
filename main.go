@@ -10,6 +10,7 @@ import (
 	"strconv"
 	s "strings"
 	//"os/exec"
+	"os"
 )
 
 // Configuration part
@@ -18,6 +19,7 @@ var gh_auth_token = "e282d0ab13c38a4303e65620aeab13c2beba3385"
 var org = "arlibs"
 var gh_callbackUrl = "http://kungfu.bug.st:8088/github/event/"
 var localGitFolder = "git/"
+var librariesIndexFile = os.Getenv("HOME") + "/.arduino15/library_index.json"
 
 // Global github client
 var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: gh_auth_token}}
@@ -381,6 +383,13 @@ func ListAllLibraries(c *gin.Context) {
 }
 
 func main() {
+	libs, err := db.LoadFromFile(librariesIndexFile)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Loaded %v libraries.\n", len(libs.Libraries))
+
 	r := gin.Default()
 
 	r.GET("/libraries/list/", ListAllLibraries)
