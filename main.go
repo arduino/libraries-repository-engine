@@ -26,7 +26,14 @@ var librariesIndexFile = os.Getenv("HOME") + "/.arduino15/library_index.json"
 var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: gh_auth_token}}
 var gh = github.NewClient(gh_auth.Client())
 
-// Make a library by reading library.properties from a github.PullRequest
+// Global db client
+var libs *db.DB
+
+func CommitDB() error {
+	return libs.SaveToFile("db.json")
+}
+
+// Make a LibraryMetadata by reading library.properties from a github.PullRequest
 func MakeLibraryFromPullRequest(pull *github.PullRequest) (*db.LibraryMetadata, error) {
 	head := *pull.Head
 	headRepo := *head.Repo
