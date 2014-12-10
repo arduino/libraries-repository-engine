@@ -322,6 +322,13 @@ func CreateLibrary(c *gin.Context) {
 	// Push initial state on the repository
 	//PushInitialEmptyRepository(c, newRepository)
 
+	// Add the library to the DB
+	libs.AddLibrary(db.Library{
+		Name:       github.String(name),
+		Repository: nil, // do not grab from remote repositories
+	})
+	CommitDB()
+
 	c.JSON(200, gin.H{
 		"result":     "ok",
 		"message":    "created repository " + name,
