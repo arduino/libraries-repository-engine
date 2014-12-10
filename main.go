@@ -50,7 +50,7 @@ func MakeLibraryFromPullRequest(pull *github.PullRequest) (*db.LibraryMetadata, 
 	return MakeLibraryFromRepositoryContent(libPropContent)
 }
 
-// Make a library by reading library.properties from a github.RepositoryContent
+// Make a LibraryMetadata by reading library.properties from a github.RepositoryContent
 func MakeLibraryFromRepositoryContent(content *github.RepositoryContent) (*db.LibraryMetadata, error) {
 	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
 	if err != nil {
@@ -262,7 +262,38 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			return
 		}
 		fmt.Println(github.Stringify(newRelease))
+
+		err = libs.AddRelease(db.Release{
+			LibraryName: String(library.Name),
+			Version:     String(library.Version),
+			Author:      String(library.Author),
+			Maintainer:  String(library.Maintainer),
+			License:     String(library.License),
+			Sentence:    String(library.Sentence),
+			Paragraph:   String(library.Paragraph),
+			Website:     String(library.URL), // TODO: Rename "url" field to "website" in library.properties
+			Category:    String(library.Category),
+			URL:         String(newRelease.TarballURL),
+			// Architectures: []string
+			// Size:      uint64
+			// Checksum:  string
+		})
+		if err != nil {
+			fmt.Println("Error saving release: " + github.Stringify(err))
+			return
+		}
+		CommitDB()
 	}
+}
+
+// Create a copy of the string (or keep nil if the original string is nil)
+func String(in *string) (*string) {
+	if in == nil {
+		return nil
+	}
+	var res string
+	res = *in
+	return &res
 }
 
 func CommentOnPullRequest(pull *github.PullRequest, text string) (*github.IssueComment, *github.Response, error) {
