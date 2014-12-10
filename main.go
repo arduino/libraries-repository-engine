@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
+	"log"
 	"strconv"
 	s "strings"
 	//"os/exec"
@@ -383,12 +384,12 @@ func ListAllLibraries(c *gin.Context) {
 }
 
 func main() {
-	libs, err := db.LoadFromFile(librariesIndexFile)
+	l, err := db.LoadFromFile("db.json") //librariesIndexFile)
+	libs = l
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
-	fmt.Printf("Loaded %v libraries.\n", len(libs.Libraries))
+	log.Printf("Loaded %v libraries from DB.\n", len(libs.Libraries))
 
 	r := gin.Default()
 

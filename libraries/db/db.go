@@ -90,19 +90,36 @@ func LoadFromFile(filename string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := Load(file)
-	file.Close()
-	return res, err
+	defer file.Close()
+	return Load(file)
 }
 
 func Load(r io.Reader) (*DB, error) {
 	decoder := json.NewDecoder(r)
-	var db DB
-	err := decoder.Decode(&db)
+	db := new(DB)
+	err := decoder.Decode(db)
 	if err != nil {
 		return nil, err
 	}
-	return &db, nil
+	return db, nil
+}
+
+func (db *DB) SaveToFile(filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return db.Save(file)
+}
+
+func (db *DB) Save(r io.Writer) error {
+	buff, err := json.MarshalIndent(*db, "", "  ")
+	if err != nil {
+		return err
+	}
+	_, err = r.Write(buff)
+	return err
 }
 
 // Metadata for a library.properties file
