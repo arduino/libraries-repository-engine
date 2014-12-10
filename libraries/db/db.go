@@ -2,30 +2,87 @@ package db
 
 import "bytes"
 import "encoding/json"
+import "errors"
 import "github.com/vaughan0/go-ini"
 import "io"
 import "os"
 
 // The libraries DB
 type DB struct {
-	Libraries []Library "libraries"
+	Libraries []Library
+	Releases []Release
 }
 
 // A library
 type Library struct {
-	Name          string   "name"
-	Version       string   "version"
-	Author        string   "author"
-	Maintainer    string   "maintainer"
-	License       string   "license"
-	URL           string   "url"
-	Size          uint64   "size"
-	Sentenct      string   "sentence"
-	Paragraph     string   "paragraph"
-	Website       string   "website"
-	Architectures []string "architectures"
-	Checksum      string   "checksum"
-	Category      string   "category"
+	Name          *string
+	Repository		*string
+}
+
+// A release
+type Release struct {
+	LibraryName   *string // The library name
+	Version       *string
+	Author        *string
+	Maintainer    *string
+	License       *string
+	Sentence      *string
+	Paragraph     *string
+	Website       *string
+	Category      *string
+	Architectures []string
+
+	URL           *string
+	Size          uint64
+	Checksum      *string
+}
+
+func (db *DB) AddLibrary(library Library) error {
+	found, _ := db.FindLibrary(*library.Name)
+	if found != nil {
+		return errors.New("library alredy existent")
+	}
+	db.Libraries = append(db.Libraries, library)
+	return nil
+}
+
+func (db *DB) HasLibrary(libraryName string) bool {
+	found, _ := db.FindLibrary(libraryName)
+	return found != nil
+}
+
+func (db *DB) FindLibrary(libraryName string) (*Library, error) {
+	for _, lib := range db.Libraries {
+		if *lib.Name == libraryName {
+			return &lib, nil
+		}
+	}
+	return nil, errors.New("library not found")
+}
+
+func (db *DB) AddRelease(release Release) error {
+	if !db.HasLibrary(*release.LibraryName) {
+		return errors.New("released library not found")
+	}
+	if db.HasRelease(release) {
+		return errors.New("release already existent")
+	}
+	db.Releases = append(db.Releases, release)
+	return nil
+}
+
+func (db *DB) HasRelease(release Release) bool {
+	found, _ := db.FindRelease(release)
+	return found != nil
+}
+
+func (db *DB) FindRelease(release Release) (*Release, error) {
+	for _, r := range db.Releases {
+		if *r.LibraryName == *release.LibraryName && *r.Version == *release.Version {
+			return &r, nil
+		}
+	}
+	return nil, errors.New("library not found")
 }
 
 func LoadFromFile(filename string) (*DB, error) {
@@ -54,10 +111,12 @@ type LibraryMetadata struct {
 	Version       *string
 	Author        *string
 	Maintainer    *string
+	License       *string
 	Sentence      *string
 	Paragraph     *string
 	URL           *string
 	Architectures *string
+	Category      *string
 }
 
 // Create a Library by reading library.properties from a byte array
@@ -84,8 +143,10 @@ func ParseLibraryProperties(propertiesData []byte) (*LibraryMetadata, error) {
 		Maintainer:    get("maintainer"),
 		Sentence:      get("sentence"),
 		Paragraph:     get("paragraph"),
+		License:       get("license"),
 		URL:           get("url"),
 		Architectures: get("architectures"),
+		Category:      get("category"),
 	}
 	return library, nil
 }
