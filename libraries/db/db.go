@@ -10,13 +10,13 @@ import "os"
 // The libraries DB
 type DB struct {
 	Libraries []Library
-	Releases []Release
+	Releases  []Release
 }
 
 // A library
 type Library struct {
-	Name          *string
-	Repository		*string
+	Name       *string
+	Repository *string
 }
 
 // A release
@@ -32,9 +32,9 @@ type Release struct {
 	Category      *string
 	Architectures []string
 
-	URL           *string
-	Size          uint64
-	Checksum      *string
+	URL      *string
+	Size     uint64
+	Checksum *string
 }
 
 func (db *DB) AddLibrary(library Library) error {

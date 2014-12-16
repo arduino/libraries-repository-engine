@@ -287,7 +287,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 }
 
 // Create a copy of the string (or keep nil if the original string is nil)
-func String(in *string) (*string) {
+func String(in *string) *string {
 	if in == nil {
 		return nil
 	}
