@@ -4,6 +4,7 @@ import (
 	"arduino.cc/repository/libraries/db"
 	"code.google.com/p/goauth2/oauth"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
@@ -390,42 +391,29 @@ func Run(workdir string, name string, arg ...string) int {
 	return 0
 }
 
-func ListAllLibraries(c *gin.Context) {
+func ListAdmins() ([]string, error) {
 	teams, _, err := gh.Organizations.ListTeams("arlibs", nil)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"result":   "error",
-			"message":  "could not fetch organization teams",
-			"gh_error": err,
-		})
-		return
+		return nil, err
 	}
 
 	team := teams[0] // The only team available should be "owners"
-	// fmt.Println("Teams : ", *team.Name)
+	fmt.Println("Teams : ", *team.Name)
 
-	repos, _, err := gh.Organizations.ListTeamRepos(*team.ID, nil)
+	// TODO
+	return nil, nil
+}
+
+func ListAllLibraries(c *gin.Context) {
+	index, err := libs.OutputLibraryIndex()
 	if err != nil {
-		c.JSON(500, gin.H{
-			"result":   "error",
-			"message":  "could not get organization repositories",
-			"gh_error": err,
-		})
-		return
+		log.Fatal(err)
 	}
-	libraries := make([]struct {
-		Name   string
-		GitURL string
-	}, len(repos))
-	for i, repo := range repos {
-		libraries[i].Name = *repo.Name
-		libraries[i].GitURL = *repo.GitURL
+	if output, err := json.MarshalIndent(index, "", "  "); err != nil {
+		log.Fatal(err)
+	} else {
+		c.String(200, string(output))
 	}
-
-	c.JSON(200, gin.H{
-		"result":    "ok",
-		"libraries": libraries,
-	})
 }
 
 func main() {
