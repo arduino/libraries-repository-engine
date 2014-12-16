@@ -265,7 +265,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 
 		err = libs.AddRelease(db.Release{
 			LibraryName: String(library.Name),
-			Version:     String(library.Version),
+			Version:     db.VersionFromString(library.Version),
 			Author:      String(library.Author),
 			Maintainer:  String(library.Maintainer),
 			License:     String(library.License),

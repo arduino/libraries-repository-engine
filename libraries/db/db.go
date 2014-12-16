@@ -22,7 +22,7 @@ type Library struct {
 // A release
 type Release struct {
 	LibraryName   *string // The library name
-	Version       *string
+	Version       *Version
 	Author        *string
 	Maintainer    *string
 	License       *string
@@ -120,6 +120,25 @@ func (db *DB) Save(r io.Writer) error {
 	}
 	_, err = r.Write(buff)
 	return err
+}
+
+func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
+	var found *Release = nil
+	for _, rel := range db.Releases {
+		if *rel.LibraryName != *lib.Name {
+			continue
+		}
+		if found == nil {
+			found = &rel
+		} else {
+			if less, err := found.Version.Less(rel.Version); err != nil {
+				return nil, err
+			} else if less {
+				found = &rel
+			}
+		}
+	}
+	return found, nil
 }
 
 // Metadata for a library.properties file
