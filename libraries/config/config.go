@@ -6,6 +6,7 @@ var gh_auth_token = "e282d0ab13c38a4303e65620aeab13c2beba3385"
 var gh_user = "arlibs"
 var gh_callbackUrl = "http://kungfu.bug.st:8088/github/event/"
 var localGitFolder = "git/"
+var localFileFolder = "files/"
 var librariesIndexFile = "db.json"
 
 func GithubAuthToken() string {
@@ -22,6 +23,10 @@ func GithubCallbackURL() string {
 
 func LocalGitFolder() string {
 	return localGitFolder
+}
+
+func LocalFileFolder() string {
+	return localFileFolder
 }
 
 func LibraryDBFile() string {
