@@ -262,6 +262,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			architectures[i] = strings.TrimSpace(v)
 		}
 
+		archiveFileName := *library.Name + "-" + *library.Version + ".tar.gz"
 		dbRelease := &db.Release{
 			LibraryName:   String(library.Name),
 			Version:       db.VersionFromString(library.Version),
@@ -272,8 +273,10 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			Paragraph:     String(library.Paragraph),
 			Website:       String(library.URL), // TODO: Rename "url" field to "website" in library.properties
 			Category:      String(library.Category),
-			URL:           String(newRelease.TarballURL),
 			Architectures: architectures,
+
+			URL:             String(newRelease.TarballURL),
+			ArchiveFileName: &archiveFileName,
 		}
 		err = libs.AddRelease(dbRelease)
 		if err != nil {
@@ -284,8 +287,8 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 
 		go func() {
 			// Save file directly into local folder
-			filename := config.LocalFileFolder() + "/" + *library.Name + "." + *library.Version + ".tar.gz"
-			size, hash, err := cron.FillMissingChecksumsForDownloadArchives(*library.URL, filename)
+			filename := config.LocalFileFolder() + "/" + archiveFileName
+			size, hash, err := cron.FillMissingChecksumsForDownloadArchives(*newRelease.TarballURL, filename)
 			if err != nil {
 				log.Print(err)
 				return

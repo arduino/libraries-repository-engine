@@ -32,9 +32,10 @@ type Release struct {
 	Category      *string
 	Architectures []string
 
-	URL      *string
-	Size     int64
-	Checksum *string
+	URL             *string
+	ArchiveFileName *string
+	Size            int64
+	Checksum        *string
 }
 
 func New() *DB {
