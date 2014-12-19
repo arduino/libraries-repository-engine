@@ -1,8 +1,9 @@
 package daemon
 
 import (
-	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/config"
+	"arduino.cc/repository/libraries/cron"
+	"arduino.cc/repository/libraries/db"
 	"code.google.com/p/goauth2/oauth"
 	"encoding/base64"
 	"encoding/json"
@@ -277,6 +278,20 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			return
 		}
 		CommitDB()
+
+		go func() {
+			// Save file directly into local folder
+			filename := config.LocalFileFolder() + "/" + *library.Name + "." + *library.Version + ".tar.gz"
+			size, hash, err := cron.FillMissingChecksumsForDownloadArchives(*library.URL, filename)
+			if err != nil {
+				log.Print(err)
+				return
+			}
+			dbRelease.Size = size
+			dbRelease.Checksum = String(&hash)
+			// XXX: Fix concurrency in DB access
+			CommitDB()
+		}()
 	}
 }
 

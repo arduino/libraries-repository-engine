@@ -33,7 +33,7 @@ type Release struct {
 	Architectures []string
 
 	URL      *string
-	Size     uint64
+	Size     int64
 	Checksum *string
 }
 

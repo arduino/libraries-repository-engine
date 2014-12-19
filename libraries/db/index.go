@@ -18,7 +18,7 @@ type indexLibrary struct {
 	Architectures []string `json:"architectures,omitempty"`
 
 	URL      *string `json:"url"`
-	Size     uint64  `json:"size"`
+	Size     int64   `json:"size"`
 	Checksum *string `json:"checksum"`
 }
 
