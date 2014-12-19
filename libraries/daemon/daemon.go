@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-github/github"
 	"log"
 	"strconv"
-	s "strings"
+	"strings"
 	//"os/exec"
 )
 
@@ -115,7 +115,7 @@ func ProcessPullRequestComment(event *github.IssueCommentEvent) {
 	isAdmin := (user == "arlib0")
 
 	if isAdmin {
-		body = s.TrimSpace(body)
+		body = strings.TrimSpace(body)
 		switch body {
 		case "ok to merge":
 			result, _, err := MergePullRequest(pull, user+" accepted "+*pull.Title)
@@ -149,7 +149,7 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 	title := *pull.Title
 
 	// Is a release request?
-	if s.HasPrefix(title, "[RELEASE] ") {
+	if strings.HasPrefix(title, "[RELEASE] ") {
 
 		head := *pull.Head
 		base := *pull.Base
@@ -200,9 +200,9 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 			errors++
 		}
 		// Check architectures
-		architectures := s.Split(*library.Architectures, ",")
+		architectures := strings.Split(*library.Architectures, ",")
 		for _, arch := range architectures {
-			arch = s.TrimSpace(arch)
+			arch = strings.TrimSpace(arch)
 			resultMsg += "  * Found valid architecture '" + arch + "'\n"
 		}
 
