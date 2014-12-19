@@ -1,6 +1,7 @@
 package db
 
 import "errors"
+import "encoding/json"
 
 type Version struct {
 	version string
@@ -15,14 +16,12 @@ func (x *Version) Less(y *Version) (bool, error) {
 }
 
 func (x *Version) UnmarshalJSON(data []byte) error {
-	x.version = string(data)
-	return nil
+	return json.Unmarshal(data, &x.version)
 }
 
 func (x *Version) MarshalJSON() ([]byte, error) {
-	r := make([]byte, len(x.version))
-	copy(r[:], x.version)
-	return r, nil
+	// Encode version as a string
+	return json.Marshal(x.version)
 }
 
 func VersionFromString(x *string) *Version {
