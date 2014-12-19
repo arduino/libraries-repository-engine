@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/config"
 	"code.google.com/p/goauth2/oauth"
 	"encoding/base64"
 	"encoding/json"
@@ -12,19 +13,10 @@ import (
 	"strconv"
 	s "strings"
 	//"os/exec"
-	"os"
 )
 
-// Configuration part
-// TODO: Move into his own file
-var gh_auth_token = "e282d0ab13c38a4303e65620aeab13c2beba3385"
-var org = "arlibs"
-var gh_callbackUrl = "http://kungfu.bug.st:8088/github/event/"
-var localGitFolder = "git/"
-var librariesIndexFile = os.Getenv("HOME") + "/.arduino15/library_index.json"
-
 // Global github client
-var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: gh_auth_token}}
+var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: config.GithubAuthToken()}}
 var gh = github.NewClient(gh_auth.Client())
 
 // Global db client
@@ -319,7 +311,7 @@ func CreateLibrary(c *gin.Context) {
 		HasIssues: github.Bool(true),
 		AutoInit:  github.Bool(true), // To be removed in favor of our custom PushInitialEmptyRepository
 	}
-	newRepository, _, err := gh.Repositories.Create(org, repository)
+	newRepository, _, err := gh.Repositories.Create(config.GithubUser(), repository)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"result":   "error",
@@ -336,11 +328,11 @@ func CreateLibrary(c *gin.Context) {
 		Events: []string{"*"},
 		Active: github.Bool(true),
 		Config: map[string]interface{}{
-			"url":          gh_callbackUrl + name,
+			"url":          config.GithubCallbackURL() + name,
 			"content_type": "json",
 		},
 	}
-	newHook, _, err := gh.Repositories.CreateHook(org, name, hook)
+	newHook, _, err := gh.Repositories.CreateHook(config.GithubUser(), name, hook)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"result":     "error",
@@ -371,8 +363,8 @@ func CreateLibrary(c *gin.Context) {
 
 // Push the inital empty repository with readme for developers
 func PushInitialEmptyRepository(c *gin.Context, repo *github.Repository) {
-	Run(localGitFolder, "mkdir", *repo.Name)
-	gitFolder := localGitFolder + *repo.Name
+	Run(config.LocalGitFolder(), "mkdir", *repo.Name)
+	gitFolder := config.LocalGitFolder() + *repo.Name
 	Run(gitFolder, "git", "init")
 	Run(gitFolder, "touch", "README.md")
 	Run(gitFolder, "git", "add", "README.md")
@@ -417,7 +409,7 @@ func ListAllLibraries(c *gin.Context) {
 }
 
 func Start() {
-	l, err := db.LoadFromFile("db.json") //librariesIndexFile)
+	l, err := db.LoadFromFile(config.LibraryDBFile())
 	libs = l
 	if err != nil {
 		log.Fatal(err)
