@@ -1,9 +1,7 @@
 package db
 
-import "bytes"
 import "encoding/json"
 import "errors"
-import "github.com/vaughan0/go-ini"
 import "io"
 import "os"
 
@@ -144,52 +142,6 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 		}
 	}
 	return found, nil
-}
-
-// Metadata for a library.properties file
-type LibraryMetadata struct {
-	Name          *string
-	Version       *string
-	Author        *string
-	Maintainer    *string
-	License       *string
-	Sentence      *string
-	Paragraph     *string
-	URL           *string
-	Architectures *string
-	Category      *string
-}
-
-// Create a Library by reading library.properties from a byte array
-func ParseLibraryProperties(propertiesData []byte) (*LibraryMetadata, error) {
-	// Create an io.Reader from []bytes
-	reader := bytes.NewReader(propertiesData)
-	// Use go-ini to decode contents
-	properties, err := ini.Load(reader)
-	if err != nil {
-		return nil, err
-	}
-	get := func(key string) *string {
-		value, ok := properties.Get("", key)
-		if ok {
-			return &value
-		} else {
-			return nil
-		}
-	}
-	library := &LibraryMetadata{
-		Name:          get("name"),
-		Version:       get("version"),
-		Author:        get("author"),
-		Maintainer:    get("maintainer"),
-		Sentence:      get("sentence"),
-		Paragraph:     get("paragraph"),
-		License:       get("license"),
-		URL:           get("url"),
-		Architectures: get("architectures"),
-		Category:      get("category"),
-	}
-	return library, nil
 }
 
 // vi:ts=2

@@ -4,8 +4,8 @@ import (
 	"arduino.cc/repository/libraries/config"
 	"arduino.cc/repository/libraries/cron"
 	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/metadata"
 	"code.google.com/p/goauth2/oauth"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -25,32 +25,6 @@ var libs *db.DB
 
 func CommitDB() error {
 	return libs.SaveToFile("db.json")
-}
-
-// Make a LibraryMetadata by reading library.properties from a github.PullRequest
-func MakeLibraryFromPullRequest(pull *github.PullRequest) (*db.LibraryMetadata, error) {
-	head := *pull.Head
-	headRepo := *head.Repo
-
-	// Get library.properties from pull request HEAD
-	getContentOpts := &github.RepositoryContentGetOptions{
-		Ref: *head.SHA,
-	}
-	libPropContent, _, _, err := gh.Repositories.GetContents(*headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
-	if err != nil || libPropContent == nil {
-		fmt.Println("cannot fetch library.properties:" + github.Stringify(err))
-		return nil, err
-	}
-	return MakeLibraryFromRepositoryContent(libPropContent)
-}
-
-// Make a LibraryMetadata by reading library.properties from a github.RepositoryContent
-func MakeLibraryFromRepositoryContent(content *github.RepositoryContent) (*db.LibraryMetadata, error) {
-	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
-	if err != nil {
-		return nil, err
-	}
-	return db.ParseLibraryProperties(libPropertiesData)
 }
 
 // Github event web hook.
@@ -163,7 +137,7 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 		fmt.Println("  release sha       : " + *head.SHA + " in " + *headRepo.FullName)
 
 		// Get library.properties from pull request HEAD and decode library content
-		library, err := MakeLibraryFromPullRequest(pull)
+		library, err := metadata.ParsePullRequest(gh, pull)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
@@ -236,7 +210,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 		repo := *pull.Base.Repo.Name
 
 		// Get library.properties from pull request HEAD and decode library content
-		library, err := MakeLibraryFromPullRequest(pull)
+		library, err := metadata.ParsePullRequest(gh, pull)
 		if err != nil {
 			fmt.Println("error:", err)
 			return
