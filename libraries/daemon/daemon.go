@@ -425,12 +425,14 @@ func ListAllLibraries(c *gin.Context) {
 }
 
 func Start() {
-	l, err := db.LoadFromFile(config.LibraryDBFile())
-	libs = l
-	if err != nil {
-		log.Fatal(err)
+	if l, err := db.LoadFromFile(config.LibraryDBFile()); err != nil {
+		libs = db.New()
+		log.Print(err)
+		log.Print("starting with an empty DB")
+	} else {
+		libs = l
+		log.Printf("Loaded %v libraries from DB", len(libs.Libraries))
 	}
-	log.Printf("Loaded %v libraries from DB.\n", len(libs.Libraries))
 
 	r := gin.Default()
 

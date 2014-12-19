@@ -37,6 +37,10 @@ type Release struct {
 	Checksum *string
 }
 
+func New() *DB {
+	return &DB{}
+}
+
 func (db *DB) AddLibrary(library *Library) error {
 	found, _ := db.FindLibrary(*library.Name)
 	if found != nil {
