@@ -256,7 +256,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 		}
 		fmt.Println(github.Stringify(newRelease))
 
-		err = libs.AddRelease(db.Release{
+		dbRelease := &db.Release{
 			LibraryName: String(library.Name),
 			Version:     db.VersionFromString(library.Version),
 			Author:      String(library.Author),
@@ -270,7 +270,8 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			// Architectures: []string
 			// Size:      uint64
 			// Checksum:  string
-		})
+		}
+		err = libs.AddRelease(dbRelease)
 		if err != nil {
 			fmt.Println("Error saving release: " + github.Stringify(err))
 			return
@@ -347,7 +348,7 @@ func CreateLibrary(c *gin.Context) {
 	//PushInitialEmptyRepository(c, newRepository)
 
 	// Add the library to the DB
-	libs.AddLibrary(db.Library{
+	libs.AddLibrary(&db.Library{
 		Name:       github.String(name),
 		Repository: nil, // do not grab from remote repositories
 	})

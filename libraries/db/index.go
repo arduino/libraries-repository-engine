@@ -26,7 +26,7 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
 	for _, lib := range db.Libraries {
-		latest, err := db.FindLatestReleaseOfLibrary(&lib)
+		latest, err := db.FindLatestReleaseOfLibrary(lib)
 		if err != nil {
 			return nil, err
 		}

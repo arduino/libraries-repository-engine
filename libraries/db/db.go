@@ -9,8 +9,8 @@ import "os"
 
 // The libraries DB
 type DB struct {
-	Libraries []Library
-	Releases  []Release
+	Libraries []*Library
+	Releases  []*Release
 }
 
 // A library
@@ -37,7 +37,7 @@ type Release struct {
 	Checksum *string
 }
 
-func (db *DB) AddLibrary(library Library) error {
+func (db *DB) AddLibrary(library *Library) error {
 	found, _ := db.FindLibrary(*library.Name)
 	if found != nil {
 		return errors.New("library alredy existent")
@@ -54,17 +54,17 @@ func (db *DB) HasLibrary(libraryName string) bool {
 func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 	for _, lib := range db.Libraries {
 		if *lib.Name == libraryName {
-			return &lib, nil
+			return lib, nil
 		}
 	}
 	return nil, errors.New("library not found")
 }
 
-func (db *DB) AddRelease(release Release) error {
+func (db *DB) AddRelease(release *Release) error {
 	if !db.HasLibrary(*release.LibraryName) {
 		return errors.New("released library not found")
 	}
-	if db.HasRelease(release) {
+	if db.HasRelease(*release) {
 		return errors.New("release already existent")
 	}
 	db.Releases = append(db.Releases, release)
@@ -79,7 +79,7 @@ func (db *DB) HasRelease(release Release) bool {
 func (db *DB) FindRelease(release Release) (*Release, error) {
 	for _, r := range db.Releases {
 		if *r.LibraryName == *release.LibraryName && *r.Version == *release.Version {
-			return &r, nil
+			return r, nil
 		}
 	}
 	return nil, errors.New("library not found")
@@ -129,12 +129,12 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 			continue
 		}
 		if found == nil {
-			found = &rel
+			found = rel
 		} else {
 			if less, err := found.Version.Less(rel.Version); err != nil {
 				return nil, err
 			} else if less {
-				found = &rel
+				found = rel
 			}
 		}
 	}
