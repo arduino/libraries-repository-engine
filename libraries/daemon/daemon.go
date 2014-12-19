@@ -257,20 +257,23 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 		}
 		fmt.Println(github.Stringify(newRelease))
 
+		architectures := strings.Split(*library.Architectures, ",")
+		for i, v := range architectures {
+			architectures[i] = strings.TrimSpace(v)
+		}
+
 		dbRelease := &db.Release{
-			LibraryName: String(library.Name),
-			Version:     db.VersionFromString(library.Version),
-			Author:      String(library.Author),
-			Maintainer:  String(library.Maintainer),
-			License:     String(library.License),
-			Sentence:    String(library.Sentence),
-			Paragraph:   String(library.Paragraph),
-			Website:     String(library.URL), // TODO: Rename "url" field to "website" in library.properties
-			Category:    String(library.Category),
-			URL:         String(newRelease.TarballURL),
-			// Architectures: []string
-			// Size:      uint64
-			// Checksum:  string
+			LibraryName:   String(library.Name),
+			Version:       db.VersionFromString(library.Version),
+			Author:        String(library.Author),
+			Maintainer:    String(library.Maintainer),
+			License:       String(library.License),
+			Sentence:      String(library.Sentence),
+			Paragraph:     String(library.Paragraph),
+			Website:       String(library.URL), // TODO: Rename "url" field to "website" in library.properties
+			Category:      String(library.Category),
+			URL:           String(newRelease.TarballURL),
+			Architectures: architectures,
 		}
 		err = libs.AddRelease(dbRelease)
 		if err != nil {
