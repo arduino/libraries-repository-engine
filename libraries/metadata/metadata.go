@@ -4,7 +4,7 @@ import "bytes"
 import "encoding/base64"
 import "errors"
 import "github.com/vaughan0/go-ini"
-import "github.com/google/go-github/github"
+import "github.com/cmaglie/go-github/github"
 
 // Metadata for a library.properties file
 type LibraryMetadata struct {

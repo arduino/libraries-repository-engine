@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/github"
+	"github.com/cmaglie/go-github/github"
 	"log"
 	"strconv"
 	"strings"
