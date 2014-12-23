@@ -416,8 +416,10 @@ func Start() {
 
 	r := gin.Default()
 
-	r.GET("/libraries/list/", ListAllLibraries)
-	r.GET("/libraries/create/:name", CreateLibrary)
+	r.GET("/libraries", ListAllLibraries)
+	// TODO:
+	// r.GET("/libraries/:name", ListLibrary)
+	r.POST("/libraries/:name", CreateLibrary)
 	r.POST("/github/event/:name", GithubEventHook)
 
 	// Listen and server on 0.0.0.0:8080
