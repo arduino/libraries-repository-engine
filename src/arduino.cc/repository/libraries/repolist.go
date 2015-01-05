@@ -43,7 +43,7 @@ type repoMatcher interface {
 type repoMatcherIfDotGit struct {}
 
 func (_ repoMatcherIfDotGit) Match(r Repo) bool {
-	return strings.LastIndex(r.GitURL, ".git") == len(r.GitURL)-len(".git")
+	return strings.Index(r.GitURL, "https://") == 0 && strings.LastIndex(r.GitURL, ".git") == len(r.GitURL)-len(".git")
 }
 
 type repoMatcherIfNotDotGit struct {}
@@ -77,7 +77,7 @@ func reposFromGithubOrgs(orgs []*github.Organization) ([]Repo, error) {
 			return nil, err
 		}
 		for _, repository := range repositories {
-			repos = append(repos, Repo{GitURL: *repository.SSHURL})
+			repos = append(repos, Repo{GitURL: *repository.CloneURL})
 		}
 	}
 
@@ -87,11 +87,11 @@ func reposFromGithubOrgs(orgs []*github.Organization) ([]Repo, error) {
 func findGithubOrgs(repos []Repo) (orgs []*github.Organization, err error) {
 	client := github.NewClient(nil)
 	for _, repo := range repos {
-		url, err := url.Parse(repo.GitURL)
+		parsedURL, err := url.Parse(repo.GitURL)
 		if err != nil {
 			return nil, err
 		}
-		orgName := strings.Split(url.Path, "/")[1]
+		orgName := strings.Split(parsedURL.Path, "/")[1]
 		org, _, err := client.Organizations.Get(orgName)
 		if err == nil {
 			orgs = append(orgs, org)

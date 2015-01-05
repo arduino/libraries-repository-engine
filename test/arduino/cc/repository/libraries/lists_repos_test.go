@@ -11,5 +11,4 @@ func TestListRepos(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, len(repos), 3)
-
 }
