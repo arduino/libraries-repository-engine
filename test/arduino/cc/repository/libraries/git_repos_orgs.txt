@@ -1,0 +1,9 @@
+#organizations
+
+https://github.com/arlibs
+
+#single repositories
+
+git@github.com:arlibs/Servo.git
+git@github.com:PaulStoffregen/OctoWS2811.git
+git@github.com:PaulStoffregen/AltSoftSerial.git
