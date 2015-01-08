@@ -4,7 +4,6 @@ https://github.com/arlibs
 
 #single repositories
 
-git@github.com:arlibs/Servo.git
-https://github.com/arlibs/Servo.git
+git@github.com:PaulStoffregen/Audio.git
 https://github.com/PaulStoffregen/OctoWS2811.git
 https://github.com/PaulStoffregen/AltSoftSerial.git
