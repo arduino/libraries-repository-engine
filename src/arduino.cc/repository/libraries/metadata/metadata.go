@@ -8,16 +8,16 @@ import "github.com/cmaglie/go-github/github"
 
 // Metadata for a library.properties file
 type LibraryMetadata struct {
-	Name          *string
-	Version       *string
-	Author        *string
-	Maintainer    *string
-	License       *string
-	Sentence      *string
-	Paragraph     *string
-	URL           *string
-	Architectures *string
-	Category      *string
+	Name          string
+	Version       string
+	Author        string
+	Maintainer    string
+	License       string
+	Sentence      string
+	Paragraph     string
+	URL           string
+	Architectures string
+	Category      string
 }
 
 // Make a LibraryMetadata by reading library.properties from a github.PullRequest
@@ -57,12 +57,12 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	get := func(key string) *string {
+	get := func(key string) string {
 		value, ok := properties.Get("", key)
 		if ok {
-			return &value
+			return value
 		} else {
-			return nil
+			return ""
 		}
 	}
 	library := &LibraryMetadata{

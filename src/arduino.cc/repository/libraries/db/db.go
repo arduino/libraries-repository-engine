@@ -13,27 +13,27 @@ type DB struct {
 
 // A library
 type Library struct {
-	Name       *string
-	Repository *string
+	Name       string
+	Repository string
 }
 
 // A release
 type Release struct {
-	LibraryName   *string // The library name
-	Version       *Version
-	Author        *string
-	Maintainer    *string
-	License       *string
-	Sentence      *string
-	Paragraph     *string
-	Website       *string
-	Category      *string
+	LibraryName   string // The library name
+	Version       Version
+	Author        string
+	Maintainer    string
+	License       string
+	Sentence      string
+	Paragraph     string
+	Website       string
+	Category      string
 	Architectures []string
 
-	URL             *string
-	ArchiveFileName *string
+	URL             string
+	ArchiveFileName string
 	Size            int64
-	Checksum        *string
+	Checksum        string
 }
 
 func New() *DB {
@@ -41,7 +41,7 @@ func New() *DB {
 }
 
 func (db *DB) AddLibrary(library *Library) error {
-	found, _ := db.FindLibrary(*library.Name)
+	found, _ := db.FindLibrary(library.Name)
 	if found != nil {
 		return errors.New("library alredy existent")
 	}
@@ -56,7 +56,7 @@ func (db *DB) HasLibrary(libraryName string) bool {
 
 func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 	for _, lib := range db.Libraries {
-		if *lib.Name == libraryName {
+		if lib.Name == libraryName {
 			return lib, nil
 		}
 	}
@@ -64,7 +64,7 @@ func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 }
 
 func (db *DB) AddRelease(release *Release) error {
-	if !db.HasLibrary(*release.LibraryName) {
+	if !db.HasLibrary(release.LibraryName) {
 		return errors.New("released library not found")
 	}
 	if db.HasRelease(*release) {
@@ -81,7 +81,7 @@ func (db *DB) HasRelease(release Release) bool {
 
 func (db *DB) FindRelease(release Release) (*Release, error) {
 	for _, r := range db.Releases {
-		if *r.LibraryName == *release.LibraryName && *r.Version == *release.Version {
+		if r.LibraryName == release.LibraryName && r.Version == release.Version {
 			return r, nil
 		}
 	}
@@ -128,7 +128,7 @@ func (db *DB) Save(r io.Writer) error {
 func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	var found *Release = nil
 	for _, rel := range db.Releases {
-		if *rel.LibraryName != *lib.Name {
+		if rel.LibraryName != lib.Name {
 			continue
 		}
 		if found == nil {

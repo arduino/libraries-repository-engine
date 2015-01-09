@@ -8,8 +8,8 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/cmaglie/go-github/github"
+	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
 	"strings"
@@ -150,32 +150,32 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 		resultMsg := "Hi @" + *pull.User.Login + ",\n"
 		resultMsg += "thanks for your submission!\n"
 		resultMsg += "\n"
-		resultMsg += "Checking library.properties contents for " + *library.Name + "\n"
+		resultMsg += "Checking library.properties contents for " + library.Name + "\n"
 		errors := 0
 
 		// Check if library name is the same as repository name
-		if *library.Name != *baseRepo.Name {
-			resultMsg += "  * **ERROR** library 'name' must be " + *baseRepo.Name + " instead of " + *library.Name + "\n"
+		if library.Name != *baseRepo.Name {
+			resultMsg += "  * **ERROR** library 'name' must be " + *baseRepo.Name + " instead of " + library.Name + "\n"
 			errors++
 		}
 		// Check if pull declared version match the version on manifest file
 		version := title[10:]
-		if *library.Version != version {
-			resultMsg += "  * **ERROR** library 'version' must be " + version + " instead of " + *library.Version + "\n"
+		if library.Version != version {
+			resultMsg += "  * **ERROR** library 'version' must be " + version + " instead of " + library.Version + "\n"
 			errors++
 		}
 		// Check author and mainteiner existence
-		if library.Author == nil || library.Maintainer == nil {
+		if library.Author == "" || library.Maintainer == "" {
 			resultMsg += "  * **ERROR** 'author' and 'maintainer' fields must be defined\n"
 			errors++
 		}
 		// Check sentence and paragraph and url existence
-		if library.Sentence == nil || library.Paragraph == nil || library.URL == nil {
+		if library.Sentence == "" || library.Paragraph == "" || library.URL == "" {
 			resultMsg += "  * **ERROR** 'sentence', 'paragraph' and 'url' fields must be defined\n"
 			errors++
 		}
 		// Check architectures
-		architectures := strings.Split(*library.Architectures, ",")
+		architectures := strings.Split(library.Architectures, ",")
 		for _, arch := range architectures {
 			arch = strings.TrimSpace(arch)
 			resultMsg += "  * Found valid architecture '" + arch + "'\n"
@@ -218,10 +218,10 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 
 		// Create a release for the merged pull request
 		release := &github.RepositoryRelease{
-			TagName: github.String("v" + *library.Version),
+			TagName: github.String("v" + library.Version),
 			// master is the default
 			// TargetCommittish : "master"
-			Name: github.String("Version " + *library.Version),
+			Name: github.String("Version " + library.Version),
 			Body: pull.Body,
 		}
 		newRelease, _, err := gh.Repositories.CreateRelease(owner, repo, release)
@@ -231,26 +231,26 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 		}
 		fmt.Println(github.Stringify(newRelease))
 
-		architectures := strings.Split(*library.Architectures, ",")
+		architectures := strings.Split(library.Architectures, ",")
 		for i, v := range architectures {
 			architectures[i] = strings.TrimSpace(v)
 		}
 
-		archiveFileName := *library.Name + "-" + *library.Version + ".tar.gz"
+		archiveFileName := library.Name + "-" + library.Version + ".tar.gz"
 		dbRelease := &db.Release{
-			LibraryName:   String(library.Name),
+			LibraryName:   library.Name,
 			Version:       db.VersionFromString(library.Version),
-			Author:        String(library.Author),
-			Maintainer:    String(library.Maintainer),
-			License:       String(library.License),
-			Sentence:      String(library.Sentence),
-			Paragraph:     String(library.Paragraph),
-			Website:       String(library.URL), // TODO: Rename "url" field to "website" in library.properties
-			Category:      String(library.Category),
+			Author:        library.Author,
+			Maintainer:    library.Maintainer,
+			License:       library.License,
+			Sentence:      library.Sentence,
+			Paragraph:     library.Paragraph,
+			Website:       library.URL, // TODO: Rename "url" field to "website" in library.properties
+			Category:      library.Category,
 			Architectures: architectures,
 
-			URL:             String(newRelease.TarballURL),
-			ArchiveFileName: &archiveFileName,
+			URL:             *newRelease.TarballURL,
+			ArchiveFileName: archiveFileName,
 		}
 		err = libs.AddRelease(dbRelease)
 		if err != nil {
@@ -268,21 +268,11 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 				return
 			}
 			dbRelease.Size = size
-			dbRelease.Checksum = String(&hash)
+			dbRelease.Checksum = hash
 			// XXX: Fix concurrency in DB access
 			CommitDB()
 		}()
 	}
-}
-
-// Create a copy of the string (or keep nil if the original string is nil)
-func String(in *string) *string {
-	if in == nil {
-		return nil
-	}
-	var res string
-	res = *in
-	return &res
 }
 
 func CommentOnPullRequest(pull *github.PullRequest, text string) (*github.IssueComment, *github.Response, error) {
@@ -344,8 +334,8 @@ func CreateLibrary(c *gin.Context) {
 
 	// Add the library to the DB
 	libs.AddLibrary(&db.Library{
-		Name:       github.String(name),
-		Repository: nil, // do not grab from remote repositories
+		Name:       name,
+		Repository: "", // do not grab from remote repositories
 	})
 	CommitDB()
 
