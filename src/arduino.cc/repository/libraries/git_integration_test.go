@@ -3,9 +3,7 @@ package libraries
 import (
 	"testing"
 	"github.com/stretchr/testify/require"
-	"io/ioutil"
-	"arduino.cc/repository/libraries/metadata"
-	"fmt"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
@@ -23,16 +21,8 @@ func TestUpdateLibraryJson(t *testing.T) {
 		err = CheckoutLastTag(repo)
 		require.NoError(t, err)
 
-		bytes, err := ioutil.ReadFile(repo.Workdir() + "library.properties")
-		require.NoError(t, err)
-
-		library, err := metadata.Parse(bytes)
-		require.NoError(t, err)
-
-		errs := library.Validate()
-		require.Empty(t, errs)
-
-		fmt.Println(library)
+		err = UpdateLibrary(repo)
+		assert.NoError(t, err)
 	}
 
 }

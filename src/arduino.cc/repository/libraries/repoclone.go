@@ -5,6 +5,10 @@ import (
 	"net/url"
 	"strings"
 	"os"
+	"io/ioutil"
+	"arduino.cc/repository/libraries/metadata"
+	"arduino.cc/repository/libraries/db"
+	"errors"
 )
 
 func CloneOrFetch(repoURL, baseFolder string) (*git2go.Repository, error) {
@@ -59,6 +63,46 @@ func CheckoutLastTag(repo *git2go.Repository) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func UpdateLibrary(repo *git2go.Repository) error {
+	bytes, err := ioutil.ReadFile(repo.Workdir() + "library.properties")
+	if err != nil {
+		return err
+	}
+
+	library, err := metadata.Parse(bytes)
+	if err != nil {
+		return err
+	}
+
+	libraryErrors := library.Validate()
+	if len(libraryErrors) > 0 {
+		var errorsString []string
+		for _, error := range libraryErrors {
+			errorsString = append(errorsString, error.Error())
+		}
+		combinedErrors := strings.Join(errorsString, ",")
+		return errors.New(combinedErrors)
+	}
+
+	libraryDb := db.Init()
+
+	if !libraryDb.HasLibrary(library.Name) {
+		libraryDb.AddLibrary(&db.Library{Name:library.Name})
+		libraryDb.Commit()
+	}
+
+	release := db.FromLibraryToRelease(library, "") //TODO provide real tarball url
+
+	if libraryDb.HasRelease(release) {
+		return nil
+	}
+
+	libraryDb.AddRelease(release)
+	libraryDb.Commit()
 
 	return nil
 }
