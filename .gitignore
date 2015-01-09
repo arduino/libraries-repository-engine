@@ -2,6 +2,7 @@ bin
 libraries-repository-engine
 src/code.google.com
 src/github.com
+src/arduino.cc/repository/libraries/db.json
 
 # Created by .gitignore support plugin (hsz.mobi)
 ### Go template
@@ -78,5 +79,3 @@ atlassian-ide-plugin.xml
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
-
-
