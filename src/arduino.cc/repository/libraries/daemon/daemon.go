@@ -151,24 +151,24 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 		resultMsg += "thanks for your submission!\n"
 		resultMsg += "\n"
 		resultMsg += "Checking library.properties contents for " + library.Name + "\n"
-		errors := 0
+		errorsCount := 0
 
 		// Check if library name is the same as repository name
 		if library.Name != *baseRepo.Name {
 			resultMsg += "  * **ERROR** library 'name' must be " + *baseRepo.Name + " instead of " + library.Name + "\n"
-			errors++
+			errorsCount++
 		}
 		// Check if pull declared version match the version on manifest file
 		version := title[10:]
 		if library.Version != version {
 			resultMsg += "  * **ERROR** library 'version' must be " + version + " instead of " + library.Version + "\n"
-			errors++
+			errorsCount++
 		}
 
 		errors := library.Validate()
 		for _, err = range errors {
-			resultMsg += "  * **ERROR** "+err+"\n"
-			errors++
+			resultMsg += "  * **ERROR** "+err.Error()+"\n"
+			errorsCount++
 		}
 
 		// Check architectures
@@ -178,14 +178,14 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 			resultMsg += "  * Found valid architecture '" + arch + "'\n"
 		}
 
-		if errors == 0 {
+		if errorsCount == 0 {
 			resultMsg += "\n"
 			resultMsg += "No errors found.\n"
 			resultMsg += "\n"
 			resultMsg += "This pull request is ready to be merged.\n"
 		} else {
 			resultMsg += "\n"
-			resultMsg += strconv.Itoa(errors) + " errors found.\n"
+			resultMsg += strconv.Itoa(errorsCount) + " errors found.\n"
 			resultMsg += "\n"
 			resultMsg += "Please fix it and resubmit or update the pullrequest.\n"
 		}
@@ -228,27 +228,8 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 		}
 		fmt.Println(github.Stringify(newRelease))
 
-		architectures := strings.Split(library.Architectures, ",")
-		for i, v := range architectures {
-			architectures[i] = strings.TrimSpace(v)
-		}
+		dbRelease := db.FromLibraryToRelease(library, *newRelease.TarballURL)
 
-		archiveFileName := library.Name + "-" + library.Version + ".tar.gz"
-		dbRelease := &db.Release{
-			LibraryName:   library.Name,
-			Version:       db.VersionFromString(library.Version),
-			Author:        library.Author,
-			Maintainer:    library.Maintainer,
-			License:       library.License,
-			Sentence:      library.Sentence,
-			Paragraph:     library.Paragraph,
-			Website:       library.URL, // TODO: Rename "url" field to "website" in library.properties
-			Category:      library.Category,
-			Architectures: architectures,
-
-			URL:             *newRelease.TarballURL,
-			ArchiveFileName: archiveFileName,
-		}
 		err = libs.AddRelease(dbRelease)
 		if err != nil {
 			fmt.Println("Error saving release: " + github.Stringify(err))
@@ -258,7 +239,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 
 		go func() {
 			// Save file directly into local folder
-			filename := config.LocalFileFolder() + "/" + archiveFileName
+			filename := config.LocalFileFolder() + "/" + dbRelease.ArchiveFileName
 			size, hash, err := cron.FillMissingChecksumsForDownloadArchives(*newRelease.TarballURL, filename)
 			if err != nil {
 				log.Print(err)

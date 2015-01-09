@@ -24,12 +24,12 @@ func (library *LibraryMetadata) Validate() []error {
 	var errorsAccumulator []error
 
 	// Check author and mainteiner existence
-	if library.Author == nil || library.Maintainer == nil {
+	if library.Author == "" || library.Maintainer == "" {
 		errorsAccumulator = append(errorsAccumulator, errors.New("'author' and 'maintainer' fields must be defined"))
 	}
 
 	// Check sentence and paragraph and url existence
-	if library.Sentence == nil || library.Paragraph == nil || library.URL == nil {
+	if library.Sentence == "" || library.Paragraph == "" || library.URL == "" {
 		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence', 'paragraph' and 'url' fields must be defined"))
 	}
 
