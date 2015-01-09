@@ -1,4 +1,3 @@
-
 Requirement: Install git2go.
 ----------------------------
 
@@ -13,4 +12,12 @@ Quick recap:
     make install
     cd -
 
+TDD
+----------------------------
+
+In order to run the test, run
+
+```
+go test -v ./src/arduino.cc/...
+```
 

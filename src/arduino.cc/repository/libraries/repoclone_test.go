@@ -2,13 +2,12 @@ package libraries
 
 import (
 	"testing"
-	"arduino.cc/repository/libraries"
 	"github.com/stretchr/testify/assert"
 	"os"
 )
 
 func TestCloneRepos(t *testing.T) {
-	repo, err := libraries.CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
+	repo, err := CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, repo)
@@ -18,12 +17,12 @@ func TestCloneRepos(t *testing.T) {
 }
 
 func TestLastTag(t *testing.T) {
-	repo, err := libraries.CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
+	repo, err := CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, repo)
 
-	err = libraries.CheckoutLastTag(repo)
+	err = CheckoutLastTag(repo)
 
 	assert.NoError(t, err)
 }
