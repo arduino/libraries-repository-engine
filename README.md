@@ -18,6 +18,6 @@ TDD
 In order to run the test, run
 
 ```
-go test -v ./src/arduino.cc/...
+go test -v arduino.cc/repository/libraries
 ```
 
