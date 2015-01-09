@@ -6,6 +6,8 @@ import (
 	"strings"
 	"github.com/cmaglie/go-github/github"
 	"net/url"
+	"code.google.com/p/goauth2/oauth"
+	"arduino.cc/repository/libraries/config"
 )
 
 type Repo struct {
@@ -68,8 +70,13 @@ func filterReposBy(repos []Repo, matcher repoMatcher) []Repo {
 	return filtered
 }
 
+func newGithubClient() *github.Client {
+	gh_auth := &oauth.Transport{Token: &oauth.Token{AccessToken: config.GithubAuthToken()}}
+	return github.NewClient(gh_auth.Client())
+}
+
 func reposFromGithubOrgs(orgs []*github.Organization) ([]Repo, error) {
-	client := github.NewClient(nil)
+	client := newGithubClient()
 	var repos []Repo
 	for _, org := range orgs {
 		repositories, _, err := client.Repositories.ListByOrg(*org.Login, &github.RepositoryListByOrgOptions{})
@@ -85,7 +92,7 @@ func reposFromGithubOrgs(orgs []*github.Organization) ([]Repo, error) {
 }
 
 func findGithubOrgs(repos []Repo) (orgs []*github.Organization, err error) {
-	client := github.NewClient(nil)
+	client := newGithubClient()
 	for _, repo := range repos {
 		parsedURL, err := url.Parse(repo.GitURL)
 		if err != nil {
