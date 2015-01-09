@@ -164,16 +164,13 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 			resultMsg += "  * **ERROR** library 'version' must be " + version + " instead of " + library.Version + "\n"
 			errors++
 		}
-		// Check author and mainteiner existence
-		if library.Author == "" || library.Maintainer == "" {
-			resultMsg += "  * **ERROR** 'author' and 'maintainer' fields must be defined\n"
+
+		errors := library.Validate()
+		for _, err = range errors {
+			resultMsg += "  * **ERROR** "+err+"\n"
 			errors++
 		}
-		// Check sentence and paragraph and url existence
-		if library.Sentence == "" || library.Paragraph == "" || library.URL == "" {
-			resultMsg += "  * **ERROR** 'sentence', 'paragraph' and 'url' fields must be defined\n"
-			errors++
-		}
+
 		// Check architectures
 		architectures := strings.Split(library.Architectures, ",")
 		for _, arch := range architectures {

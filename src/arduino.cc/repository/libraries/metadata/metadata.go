@@ -20,6 +20,22 @@ type LibraryMetadata struct {
 	Category      string
 }
 
+func (library *LibraryMetadata) Validate() []error {
+	var errorsAccumulator []error
+
+	// Check author and mainteiner existence
+	if library.Author == nil || library.Maintainer == nil {
+		errorsAccumulator = append(errorsAccumulator, errors.New("'author' and 'maintainer' fields must be defined"))
+	}
+
+	// Check sentence and paragraph and url existence
+	if library.Sentence == nil || library.Paragraph == nil || library.URL == nil {
+		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence', 'paragraph' and 'url' fields must be defined"))
+	}
+
+	return errorsAccumulator
+}
+
 // Make a LibraryMetadata by reading library.properties from a github.PullRequest
 func ParsePullRequest(gh *github.Client, pull *github.PullRequest) (*LibraryMetadata, error) {
 	head := *pull.Head
