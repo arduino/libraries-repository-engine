@@ -23,10 +23,6 @@ var gh = github.NewClient(gh_auth.Client())
 // Global db client
 var libs *db.DB
 
-func CommitDB() error {
-	return libs.SaveToFile("db.json")
-}
-
 // Github event web hook.
 func GithubEventHook(c *gin.Context) {
 	eventType := c.Request.Header.Get("X-GitHub-Event")
@@ -235,7 +231,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			fmt.Println("Error saving release: " + github.Stringify(err))
 			return
 		}
-		CommitDB()
+		libs.Commit()
 
 		go func() {
 			// Save file directly into local folder
@@ -248,7 +244,7 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 			dbRelease.Size = size
 			dbRelease.Checksum = hash
 			// XXX: Fix concurrency in DB access
-			CommitDB()
+			libs.Commit()
 		}()
 	}
 }
@@ -315,7 +311,7 @@ func CreateLibrary(c *gin.Context) {
 		Name:       name,
 		Repository: "", // do not grab from remote repositories
 	})
-	CommitDB()
+	libs.Commit()
 
 	c.JSON(200, gin.H{
 		"result":     "ok",
@@ -373,14 +369,7 @@ func ListAllLibraries(c *gin.Context) {
 }
 
 func Start() {
-	if l, err := db.LoadFromFile(config.LibraryDBFile()); err != nil {
-		libs = db.New()
-		log.Print(err)
-		log.Print("starting with an empty DB")
-	} else {
-		libs = l
-		log.Printf("Loaded %v libraries from DB", len(libs.Libraries))
-	}
+	libs = db.Init()
 
 	r := gin.Default()
 

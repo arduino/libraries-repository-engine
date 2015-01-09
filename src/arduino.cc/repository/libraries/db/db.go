@@ -1,9 +1,13 @@
 package db
 
-import "encoding/json"
-import "errors"
-import "io"
-import "os"
+import (
+	"encoding/json"
+	"errors"
+	"io"
+	"os"
+	"log"
+	"arduino.cc/repository/libraries/config"
+)
 
 // The libraries DB
 type DB struct {
@@ -67,19 +71,19 @@ func (db *DB) AddRelease(release *Release) error {
 	if !db.HasLibrary(release.LibraryName) {
 		return errors.New("released library not found")
 	}
-	if db.HasRelease(*release) {
+	if db.HasRelease(release) {
 		return errors.New("release already existent")
 	}
 	db.Releases = append(db.Releases, release)
 	return nil
 }
 
-func (db *DB) HasRelease(release Release) bool {
+func (db *DB) HasRelease(release *Release) bool {
 	found, _ := db.FindRelease(release)
 	return found != nil
 }
 
-func (db *DB) FindRelease(release Release) (*Release, error) {
+func (db *DB) FindRelease(release *Release) (*Release, error) {
 	for _, r := range db.Releases {
 		if r.LibraryName == release.LibraryName && r.Version == release.Version {
 			return r, nil
@@ -142,6 +146,21 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 		}
 	}
 	return found, nil
+}
+
+func (db *DB) Commit() error {
+	return db.SaveToFile("db.json")
+}
+
+func Init() (*DB) {
+	if libs, err := LoadFromFile(config.LibraryDBFile()); err != nil {
+		log.Print(err)
+		log.Print("starting with an empty DB")
+		return New()
+	} else {
+		log.Printf("Loaded %v libraries from DB", len(libs.Libraries))
+		return libs
+	}
 }
 
 // vi:ts=2
