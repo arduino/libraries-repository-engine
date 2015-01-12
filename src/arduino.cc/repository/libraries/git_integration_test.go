@@ -18,8 +18,8 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 	libraryDb := db.Init("./testdata/test_db.json")
 
-	for _, repo := range repos {
-		repo, err := CloneOrFetch(repo, "/tmp")
+	for _, repoURL := range repos {
+		repo, err := CloneOrFetch(repoURL, "/tmp")
 
 		require.NoError(t, err)
 		require.NotNil(t, repo)

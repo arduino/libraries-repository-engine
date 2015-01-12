@@ -1,0 +1,5 @@
+{
+  "LibrariesFolder": "/tmp/libraries",
+  "LibrariesDB": "/tmp/libraries/db.json",
+  "GitClonesFolder": "/tmp/gitclones"
+}

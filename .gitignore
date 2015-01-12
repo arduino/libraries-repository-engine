@@ -3,6 +3,8 @@ libraries-repository-engine
 src/code.google.com
 src/github.com
 src/arduino.cc/repository/libraries/testdata/test_db.json
+config.json
+repos.txt
 
 # Created by .gitignore support plugin (hsz.mobi)
 ### Go template
