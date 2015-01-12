@@ -369,7 +369,7 @@ func ListAllLibraries(c *gin.Context) {
 }
 
 func Start() {
-	libs = db.Init()
+	libs = db.Init(config.LibraryDBFile())
 
 	r := gin.Default()
 

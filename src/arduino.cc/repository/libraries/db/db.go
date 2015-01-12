@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"os"
 	"log"
-	"arduino.cc/repository/libraries/config"
+	"os"
 )
 
 // The libraries DB
 type DB struct {
-	Libraries []*Library
-	Releases  []*Release
+	libraryFile string
+	Libraries   []*Library
+	Releases    []*Release
 }
 
 // A library
@@ -23,25 +23,24 @@ type Library struct {
 
 // A release
 type Release struct {
-	LibraryName   string // The library name
-	Version       Version
-	Author        string
-	Maintainer    string
-	License       string
-	Sentence      string
-	Paragraph     string
-	Website       string
-	Category      string
-	Architectures []string
-
+	LibraryName     string // The library name
+	Version         Version
+	Author          string
+	Maintainer      string
+	License         string
+	Sentence        string
+	Paragraph       string
+	Website         string
+	Category        string
+	Architectures   []string
 	URL             string
 	ArchiveFileName string
 	Size            int64
 	Checksum        string
 }
 
-func New() *DB {
-	return &DB{}
+func New(libraryFile string) *DB {
+	return &DB{libraryFile: libraryFile}
 }
 
 func (db *DB) AddLibrary(library *Library) error {
@@ -111,8 +110,8 @@ func Load(r io.Reader) (*DB, error) {
 	return db, nil
 }
 
-func (db *DB) SaveToFile(filename string) error {
-	file, err := os.Create(filename)
+func (db *DB) SaveToFile() error {
+	file, err := os.Create(db.libraryFile)
 	if err != nil {
 		return err
 	}
@@ -149,14 +148,14 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 }
 
 func (db *DB) Commit() error {
-	return db.SaveToFile("db.json")
+	return db.SaveToFile()
 }
 
-func Init() (*DB) {
-	if libs, err := LoadFromFile(config.LibraryDBFile()); err != nil {
+func Init(libraryFile string) *DB {
+	if libs, err := LoadFromFile(libraryFile); err != nil {
 		log.Print(err)
 		log.Print("starting with an empty DB")
-		return New()
+		return New(libraryFile)
 	} else {
 		log.Printf("Loaded %v libraries from DB", len(libs.Libraries))
 		return libs

@@ -1,14 +1,14 @@
 package libraries
 
 import (
-	git2go "github.com/libgit2/git2go"
-	"net/url"
-	"strings"
-	"os"
-	"io/ioutil"
-	"arduino.cc/repository/libraries/metadata"
 	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/metadata"
 	"errors"
+	git2go "github.com/libgit2/git2go"
+	"io/ioutil"
+	"net/url"
+	"os"
+	"strings"
 )
 
 func CloneOrFetch(repoURL, baseFolder string) (*git2go.Repository, error) {
@@ -16,7 +16,7 @@ func CloneOrFetch(repoURL, baseFolder string) (*git2go.Repository, error) {
 	folderName := strings.NewReplacer(".git", "").Replace(parsedURL.Path)
 	folderNameParts := strings.Split(folderName, "/")
 	folderName = folderNameParts[len(folderNameParts)-1]
-	folderName = baseFolder+"/"+folderName
+	folderName = baseFolder + "/" + folderName
 
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
 		_, err = git2go.Clone(repoURL, folderName, &git2go.CloneOptions{})
@@ -67,15 +67,15 @@ func CheckoutLastTag(repo *git2go.Repository) error {
 	return nil
 }
 
-func UpdateLibrary(repo *git2go.Repository) error {
+func GenerateLibraryFromRepo(repo *git2go.Repository) (*metadata.LibraryMetadata, error) {
 	bytes, err := ioutil.ReadFile(repo.Workdir() + "library.properties")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	library, err := metadata.Parse(bytes)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	libraryErrors := library.Validate()
@@ -85,14 +85,25 @@ func UpdateLibrary(repo *git2go.Repository) error {
 			errorsString = append(errorsString, error.Error())
 		}
 		combinedErrors := strings.Join(errorsString, ",")
-		return errors.New(combinedErrors)
+		return nil, errors.New(combinedErrors)
 	}
 
-	libraryDb := db.Init()
+	return library, nil
+}
+
+func UpdateLibrary(library *metadata.LibraryMetadata, libraryDb *db.DB) error {
+	var err error
 
 	if !libraryDb.HasLibrary(library.Name) {
-		libraryDb.AddLibrary(&db.Library{Name:library.Name})
-		libraryDb.Commit()
+		err = libraryDb.AddLibrary(&db.Library{Name: library.Name})
+		if err != nil {
+			return err
+		}
+
+		err = libraryDb.Commit()
+		if err != nil {
+			return err
+		}
 	}
 
 	release := db.FromLibraryToRelease(library, "") //TODO provide real tarball url
@@ -101,8 +112,14 @@ func UpdateLibrary(repo *git2go.Repository) error {
 		return nil
 	}
 
-	libraryDb.AddRelease(release)
-	libraryDb.Commit()
+	err = libraryDb.AddRelease(release)
+	if err != nil {
+		return err
+	}
+	err = libraryDb.Commit()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

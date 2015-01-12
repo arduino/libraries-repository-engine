@@ -1,13 +1,13 @@
 package libraries
 
 import (
-	"os"
+	"arduino.cc/repository/libraries/config"
 	"bufio"
-	"strings"
+	"code.google.com/p/goauth2/oauth"
 	"github.com/cmaglie/go-github/github"
 	"net/url"
-	"code.google.com/p/goauth2/oauth"
-	"arduino.cc/repository/libraries/config"
+	"os"
+	"strings"
 )
 
 type Repo struct {
@@ -42,19 +42,19 @@ type repoMatcher interface {
 	Match(Repo) bool
 }
 
-type repoMatcherIfDotGit struct {}
+type repoMatcherIfDotGit struct{}
 
 func (_ repoMatcherIfDotGit) Match(r Repo) bool {
 	return strings.Index(r.GitURL, "https://") == 0 && strings.LastIndex(r.GitURL, ".git") == len(r.GitURL)-len(".git")
 }
 
-type repoMatcherIfNotDotGit struct {}
+type repoMatcherIfNotDotGit struct{}
 
 func (_ repoMatcherIfNotDotGit) Match(r Repo) bool {
 	return !repoMatcherIfDotGit{}.Match(r)
 }
 
-type repoMatcherIfGithub struct {}
+type repoMatcherIfGithub struct{}
 
 func (_ repoMatcherIfGithub) Match(r Repo) bool {
 	return strings.Index(r.GitURL, "//github.com") != -1 || strings.Index(r.GitURL, "@github.com") != -1
@@ -137,4 +137,3 @@ func ListRepos(reposFilename string) ([]string, error) {
 
 	return finalRepos, err
 }
-

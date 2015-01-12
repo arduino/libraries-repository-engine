@@ -1,8 +1,8 @@
 package db
 
 import (
-	"testing"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestLess(t *testing.T) {

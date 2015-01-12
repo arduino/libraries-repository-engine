@@ -1,9 +1,9 @@
 package libraries
 
 import (
-	"testing"
 	"github.com/stretchr/testify/require"
 	"os"
+	"testing"
 )
 
 func TestCloneRepos(t *testing.T) {

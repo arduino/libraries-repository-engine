@@ -3,7 +3,7 @@ package libraries
 import (
 	"testing"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/assert"
+	"arduino.cc/repository/libraries/db"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
@@ -11,6 +11,8 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, repos)
+
+	libraryDb := db.Init("./testdata/test_db.json")
 
 	for _, repo := range repos {
 		repo, err := CloneOrFetch(repo, "/tmp")
@@ -21,8 +23,12 @@ func TestUpdateLibraryJson(t *testing.T) {
 		err = CheckoutLastTag(repo)
 		require.NoError(t, err)
 
-		err = UpdateLibrary(repo)
-		assert.NoError(t, err)
+		library, err := GenerateLibraryFromRepo(repo)
+		require.NoError(t, err)
+		require.NotNil(t, library)
+
+		err = UpdateLibrary(library, libraryDb)
+		require.NoError(t, err)
 	}
 
 }
