@@ -67,8 +67,8 @@ func CheckoutLastTag(repo *git2go.Repository) error {
 	return nil
 }
 
-func GenerateLibraryFromRepo(repo *git2go.Repository) (*metadata.LibraryMetadata, error) {
-	bytes, err := ioutil.ReadFile(repo.Workdir() + "library.properties")
+func GenerateLibraryFromRepo(repoFolder string) (*metadata.LibraryMetadata, error) {
+	bytes, err := ioutil.ReadFile(repoFolder + "library.properties")
 	if err != nil {
 		return nil, err
 	}
