@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"os"
-	"fmt"
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
+	"github.com/robfig/cron"
+	"log"
+	"time"
 )
 
 type Config struct {
@@ -13,21 +15,51 @@ type Config struct {
 	LibrariesFolder string
 	LibrariesDB     string
 	GitClonesFolder string
+	CronTabEntry    string
 }
 
 func logError(err error) bool {
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return true
 	}
 	return false
 }
 
+var config *Config
+
 func main() {
-	config := readConf()
+	config = readConf()
 
 	setup(config)
 
+	syncLibraries()
+
+	if config.CronTabEntry == "" {
+		return
+	}
+
+	crontab := cron.New()
+	crontab.AddFunc(config.CronTabEntry, func() { syncLibraries() })
+	crontab.Start()
+
+	for {
+		time.Sleep(time.Hour)
+	}
+}
+
+var running bool = false
+
+func syncLibraries() {
+	if running {
+		log.Println("...still synchronizing...")
+		return
+	}
+
+	running = true
+	defer func() { running = false }()
+
+	log.Println("Synchronizing libraries...")
 	repos, err := libraries.ListRepos("./repos.txt")
 	if logError(err) {
 		os.Exit(1)
@@ -36,9 +68,10 @@ func main() {
 	libraryDb := db.Init(config.LibrariesDB)
 
 	for _, repo := range repos {
+		log.Println("... " + repo)
 		handleRepo(repo, libraryDb, config)
 	}
-
+	log.Println("...DONE")
 }
 
 func readConf() *Config {

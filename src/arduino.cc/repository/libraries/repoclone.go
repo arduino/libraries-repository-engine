@@ -20,6 +20,9 @@ func CloneOrFetch(repoURL, baseFolder string) (*git2go.Repository, error) {
 
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
 		_, err = git2go.Clone(repoURL, folderName, &git2go.CloneOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	repo, err := git2go.OpenRepository(folderName)
@@ -52,6 +55,10 @@ func CheckoutLastTag(repo *git2go.Repository) error {
 	lastTagName, err := lastTagName(repo)
 	if err != nil {
 		return err
+	}
+
+	if lastTagName == "" {
+		return errors.New("Repository " + repo.Workdir() + " has not tags")
 	}
 
 	ref, err := repo.LookupReference(lastTagName)
