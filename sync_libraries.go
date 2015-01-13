@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	BaseDownloadUrl string
 	LibrariesFolder string
 	LibrariesDB     string
 	GitClonesFolder string
@@ -83,7 +84,7 @@ func handleRepo(repoURL string, libraryDb *db.DB, config *Config) {
 		return
 	}
 
-	err = libraries.UpdateLibrary(library, libraryDb)
+	err = libraries.UpdateLibrary(library, libraryDb, config.BaseDownloadUrl)
 	if logError(err) {
 		return
 	}

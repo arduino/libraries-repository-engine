@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"testing"
+	"os"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
@@ -16,14 +17,18 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 	librariesRepo, err := ioutil.TempDir("", "libraries")
 	require.NoError(t, err)
+	defer os.RemoveAll(librariesRepo)
 
 	libraryDb := db.Init("./testdata/test_db.json")
+	defer os.RemoveAll("./testdata/test_db.json")
 
 	for _, repoURL := range repos {
 		repo, err := libraries.CloneOrFetch(repoURL, "/tmp")
 
 		require.NoError(t, err)
 		require.NotNil(t, repo)
+
+		defer os.RemoveAll("/tmp/Servo")
 
 		err = libraries.CheckoutLastTag(repo)
 		require.NoError(t, err)
@@ -32,7 +37,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, library)
 
-		err = libraries.UpdateLibrary(library, libraryDb)
+		err = libraries.UpdateLibrary(library, libraryDb, "http://www.example.com/")
 		require.NoError(t, err)
 
 		err = libraries.ZipRepo(repo.Workdir(), library, librariesRepo)

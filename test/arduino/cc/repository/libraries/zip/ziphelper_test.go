@@ -6,11 +6,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"testing"
+	"os"
 )
 
 func TestZip(t *testing.T) {
 	zipFile, err := ioutil.TempFile("", "ziphelper")
 	require.NoError(t, err)
+	defer os.RemoveAll(zipFile.Name())
 
 	err = arduinozip.ZipDirectory("./testzip", zipFile)
 	require.NoError(t, err)
