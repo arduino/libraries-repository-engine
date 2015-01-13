@@ -8,14 +8,16 @@ import (
 	"github.com/robfig/cron"
 	"log"
 	"time"
+	"arduino.cc/repository/libraries/hash"
 )
 
 type Config struct {
-	BaseDownloadUrl string
-	LibrariesFolder string
-	LibrariesDB     string
-	GitClonesFolder string
-	CronTabEntry    string
+	BaseDownloadUrl    string
+	LibrariesFolder    string
+	LibrariesDB        string
+	LibrariesIndex     string
+	GitClonesFolder    string
+	CronTabEntry       string
 }
 
 func logError(err error) bool {
@@ -90,7 +92,29 @@ func syncLibraries(reposFile string) {
 		log.Println("... " + repo)
 		handleRepo(repo, libraryDb, config)
 	}
+
+	libraryIndex, err := libraryDb.OutputLibraryIndex()
+	if logError(err) {
+		os.Exit(1)
+	}
+
+	serializeLibraryIndex(libraryIndex, config.LibrariesIndex)
+
 	log.Println("...DONE")
+}
+
+func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
+	file, err := os.Create(libraryIndexFile)
+	if logError(err) {
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(libraryIndex)
+	if logError(err) {
+		os.Exit(1)
+	}
 }
 
 func readConf(configFile string) *Config {
@@ -99,10 +123,13 @@ func readConf(configFile string) *Config {
 		os.Exit(1)
 	}
 
-	file, _ := os.Open(configFile)
+	file, err := os.Open(configFile)
+	if logError(err) {
+		os.Exit(1)
+	}
 	decoder := json.NewDecoder(file)
 	config := Config{}
-	err := decoder.Decode(&config)
+	err = decoder.Decode(&config)
 	if logError(err) {
 		os.Exit(1)
 	}
@@ -136,14 +163,38 @@ func handleRepo(repoURL string, libraryDb *db.DB, config *Config) {
 		return
 	}
 
-	err = libraries.UpdateLibrary(library, libraryDb, config.BaseDownloadUrl)
-	if logError(err) {
-		return
-	}
-
 	err = libraries.ZipRepo(repo.Workdir(), library, config.LibrariesFolder)
 	if logError(err) {
 		return
 	}
 
+	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl)
+
+	err = setSizeAndChecksum(release, config.LibrariesFolder)
+	if logError(err) {
+		return
+	}
+
+
+	err = libraries.UpdateLibrary(release, libraryDb)
+	if logError(err) {
+		return
+	}
+
+}
+
+func setSizeAndChecksum(release *db.Release, librariesFolder string) error {
+	info, err := os.Stat(librariesFolder + release.ArchiveFileName)
+	if err != nil {
+		return err
+	}
+
+	release.Size = info.Size()
+	checksum, err := hash.Checksum(librariesFolder + release.ArchiveFileName)
+	if err != nil {
+		return err
+	}
+	release.Checksum = checksum
+
+	return nil
 }

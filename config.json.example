@@ -1,7 +1,8 @@
 {
   "BaseDownloadUrl": "http://www.example.com/",
-  "LibrariesFolder": "/tmp/libraries",
-  "LibrariesDB": "/tmp/libraries/db.json",
+  "LibrariesFolder": "/tmp/libraries/",
+  "LibrariesIndex": "/tmp/libraries/library_index.json",
+  "LibrariesDB": "/tmp/libraries_db.json",
   "GitClonesFolder": "/tmp/gitclones",
   "CronTabEntry": "0 0 0 * * *"
 }

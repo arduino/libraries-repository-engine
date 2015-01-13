@@ -62,10 +62,10 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 		})
 	}
 
-	index := &indexOutput{
+	index := indexOutput{
 		Libraries: libraries,
 	}
-	return index, nil
+	return &index, nil
 }
 
 // vi:ts=2

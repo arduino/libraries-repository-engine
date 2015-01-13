@@ -16,7 +16,7 @@ func CloneOrFetch(repoURL, baseFolder string) (*git2go.Repository, error) {
 	folderName := strings.NewReplacer(".git", "").Replace(parsedURL.Path)
 	folderNameParts := strings.Split(folderName, "/")
 	folderName = folderNameParts[len(folderNameParts)-1]
-	folderName = baseFolder+"/"+folderName
+	folderName = baseFolder + "/" + folderName
 
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
 		_, err = git2go.Clone(repoURL, folderName, &git2go.CloneOptions{})
@@ -98,11 +98,11 @@ func GenerateLibraryFromRepo(repoFolder string) (*metadata.LibraryMetadata, erro
 	return library, nil
 }
 
-func UpdateLibrary(library *metadata.LibraryMetadata, libraryDb *db.DB, baseDownloadURL string) error {
+func UpdateLibrary(release *db.Release, libraryDb *db.DB) error {
 	var err error
 
-	if !libraryDb.HasLibrary(library.Name) {
-		err = libraryDb.AddLibrary(&db.Library{Name: library.Name})
+	if !libraryDb.HasLibrary(release.LibraryName) {
+		err = libraryDb.AddLibrary(&db.Library{Name: release.LibraryName})
 		if err != nil {
 			return err
 		}
@@ -112,8 +112,6 @@ func UpdateLibrary(library *metadata.LibraryMetadata, libraryDb *db.DB, baseDown
 			return err
 		}
 	}
-
-	release := db.FromLibraryToRelease(library, baseDownloadURL)
 
 	if libraryDb.HasRelease(release) {
 		return nil

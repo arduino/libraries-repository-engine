@@ -1,10 +1,11 @@
 package cron
 
-import "crypto/sha256"
-import "encoding/hex"
-import "io"
-import "net/http"
-import "os"
+import (
+	"arduino.cc/repository/libraries/hash"
+	"io"
+	"net/http"
+	"os"
+)
 
 /*
    Check for missing size and checksum field and fills them
@@ -16,27 +17,13 @@ func FillMissingChecksumsForDownloadArchives(URL string, filename string) (int64
 		return 0, "", err
 	}
 
-	hash, err := checksum(filename)
+	hash, err := hash.Checksum(filename)
 	if err != nil {
 		os.Remove(filename)
 		return 0, "", err
 	}
 
 	return size, hash, nil
-}
-
-// Calculate hash for the file
-func checksum(filename string) (string, error) {
-	hasher := sha256.New()
-	file, err := os.Open(filename)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-	if _, err := io.Copy(hasher, file); err != nil {
-		return "", err
-	}
-	return "SHA-256:" + hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func download(URL string, filename string) (int64, error) {
