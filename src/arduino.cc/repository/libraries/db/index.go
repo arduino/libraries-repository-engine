@@ -6,21 +6,21 @@ type indexOutput struct {
 }
 
 type indexLibrary struct {
-	LibraryName   *string  `json:"name"`
-	Version       *Version `json:"version"`
-	Author        *string  `json:"author"`
-	Maintainer    *string  `json:"maintainer"`
-	License       *string  `json:"license,omitempty"`
-	Sentence      *string  `json:"sentence"`
-	Paragraph     *string  `json:"paragraph,omitempty"`
-	Website       *string  `json:"website,omitempty"`
-	Category      *string  `json:"category,omitempty"`
+	LibraryName   string   `json:"name"`
+	Version       Version  `json:"version"`
+	Author        string   `json:"author"`
+	Maintainer    string   `json:"maintainer"`
+	License       string   `json:"license,omitempty"`
+	Sentence      string   `json:"sentence"`
+	Paragraph     string   `json:"paragraph,omitempty"`
+	Website       string   `json:"website,omitempty"`
+	Category      string   `json:"category,omitempty"`
 	Architectures []string `json:"architectures,omitempty"`
 
-	URL             *string `json:"url"`
-	ArchiveFileName *string `json:"archiveFileName"`
-	Size            int64   `json:"size"`
-	Checksum        *string `json:"checksum"`
+	URL             string `json:"url"`
+	ArchiveFileName string `json:"archiveFileName"`
+	Size            int64  `json:"size"`
+	Checksum        string `json:"checksum"`
 }
 
 func (db *DB) OutputLibraryIndex() (interface{}, error) {
@@ -38,7 +38,7 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 		}
 
 		// Skip malformed release
-		if latest.Size == 0 || latest.Checksum == nil {
+		if latest.Size == 0 || latest.Checksum == "" {
 			continue
 		}
 
