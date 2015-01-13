@@ -1,11 +1,11 @@
 package zip
 
 import (
-	"path/filepath"
-	"os"
 	"archive/zip"
-	"io"
 	"arduino.cc/repository/libraries/file"
+	"io"
+	"os"
+	"path/filepath"
 )
 
 func ZipDirectory(rootFolder string, zipFile *os.File) error {

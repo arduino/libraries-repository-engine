@@ -2,9 +2,9 @@ package libraries
 
 import (
 	"arduino.cc/repository/libraries/metadata"
-	"path"
-	"os"
 	"arduino.cc/repository/libraries/zip"
+	"os"
+	"path"
 )
 
 func ZipRepo(repoFolder string, library *metadata.LibraryMetadata, librariesBaseFolder string) error {

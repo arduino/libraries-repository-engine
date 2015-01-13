@@ -2,10 +2,10 @@ package libraries
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"strings"
-	"bytes"
 )
 
 func loadRepoListFromFile(filename string) ([]string, error) {

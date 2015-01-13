@@ -1,23 +1,23 @@
 package main
 
 import (
-	"encoding/json"
-	"os"
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/hash"
+	"encoding/json"
 	"github.com/robfig/cron"
 	"log"
+	"os"
 	"time"
-	"arduino.cc/repository/libraries/hash"
 )
 
 type Config struct {
-	BaseDownloadUrl    string
-	LibrariesFolder    string
-	LibrariesDB        string
-	LibrariesIndex     string
-	GitClonesFolder    string
-	CronTabEntry       string
+	BaseDownloadUrl string
+	LibrariesFolder string
+	LibrariesDB     string
+	LibrariesIndex  string
+	GitClonesFolder string
+	CronTabEntry    string
 }
 
 func logError(err error) bool {
@@ -174,7 +174,6 @@ func handleRepo(repoURL string, libraryDb *db.DB, config *Config) {
 	if logError(err) {
 		return
 	}
-
 
 	err = libraries.UpdateLibrary(release, libraryDb)
 	if logError(err) {

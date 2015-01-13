@@ -5,8 +5,8 @@ import (
 	"arduino.cc/repository/libraries/db"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
-	"testing"
 	"os"
+	"testing"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {

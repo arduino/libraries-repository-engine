@@ -8,8 +8,8 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-github/github"
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-github/github"
 	"log"
 	"strconv"
 	"strings"
@@ -163,7 +163,7 @@ func ProcessOpenPullRequest(pull *github.PullRequest) {
 
 		errors := library.Validate()
 		for _, err = range errors {
-			resultMsg += "  * **ERROR** "+err.Error()+"\n"
+			resultMsg += "  * **ERROR** " + err.Error() + "\n"
 			errorsCount++
 		}
 

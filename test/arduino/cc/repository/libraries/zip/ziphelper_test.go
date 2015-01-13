@@ -5,8 +5,8 @@ import (
 	arduinozip "arduino.cc/repository/libraries/zip"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
-	"testing"
 	"os"
+	"testing"
 )
 
 func TestZip(t *testing.T) {
