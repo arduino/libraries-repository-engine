@@ -1,14 +1,15 @@
 package libraries
 
 import (
-	"testing"
-	"github.com/stretchr/testify/require"
+	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
+	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	"testing"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
-	repos, err := ListRepos("./testdata/git_only_servo.txt")
+	repos, err := libraries.ListRepos("./testdata/git_only_servo.txt")
 
 	require.NoError(t, err)
 	require.NotNil(t, repos)
@@ -19,22 +20,22 @@ func TestUpdateLibraryJson(t *testing.T) {
 	libraryDb := db.Init("./testdata/test_db.json")
 
 	for _, repoURL := range repos {
-		repo, err := CloneOrFetch(repoURL, "/tmp")
+		repo, err := libraries.CloneOrFetch(repoURL, "/tmp")
 
 		require.NoError(t, err)
 		require.NotNil(t, repo)
 
-		err = CheckoutLastTag(repo)
+		err = libraries.CheckoutLastTag(repo)
 		require.NoError(t, err)
 
-		library, err := GenerateLibraryFromRepo(repo.Workdir())
+		library, err := libraries.GenerateLibraryFromRepo(repo.Workdir())
 		require.NoError(t, err)
 		require.NotNil(t, library)
 
-		err = UpdateLibrary(library, libraryDb)
+		err = libraries.UpdateLibrary(library, libraryDb)
 		require.NoError(t, err)
 
-		err = ZipRepo(repo.Workdir(), library, librariesRepo)
+		err = libraries.ZipRepo(repo.Workdir(), library, librariesRepo)
 		require.NoError(t, err)
 	}
 }

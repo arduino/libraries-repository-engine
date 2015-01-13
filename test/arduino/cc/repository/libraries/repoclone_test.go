@@ -1,13 +1,14 @@
 package libraries
 
 import (
+	"arduino.cc/repository/libraries"
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
 
 func TestCloneRepos(t *testing.T) {
-	repo, err := CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
+	repo, err := libraries.CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
 
 	require.NoError(t, err)
 	require.NotNil(t, repo)
@@ -17,12 +18,12 @@ func TestCloneRepos(t *testing.T) {
 }
 
 func TestLastTag(t *testing.T) {
-	repo, err := CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
+	repo, err := libraries.CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
 
 	require.NoError(t, err)
 	require.NotNil(t, repo)
 
-	err = CheckoutLastTag(repo)
+	err = libraries.CheckoutLastTag(repo)
 
 	require.NoError(t, err)
 }

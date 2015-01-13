@@ -6,22 +6,26 @@ type Version struct {
 	version string
 }
 
-func (x *Version) Less(y Version) (bool, error) {
+func (version *Version) Less(other Version) (bool, error) {
 	// TODO: apply semantic versioning
-	return x.version < y.version, nil
+	return version.version < other.version, nil
 }
 
-func (x *Version) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &x.version)
+func (version *Version) String() string {
+	return version.version
 }
 
-func (x *Version) MarshalJSON() ([]byte, error) {
+func (version *Version) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &version.version)
+}
+
+func (version *Version) MarshalJSON() ([]byte, error) {
 	// Encode version as a string
-	return json.Marshal(x.version)
+	return json.Marshal(version.version)
 }
 
-func VersionFromString(x string) Version {
-	return Version{version: x}
+func VersionFromString(str string) Version {
+	return Version{version: str}
 }
 
 // vi:ts=2

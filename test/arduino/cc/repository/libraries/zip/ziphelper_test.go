@@ -1,17 +1,18 @@
 package zip
 
 import (
-	"testing"
-	"io/ioutil"
-	"github.com/stretchr/testify/require"
 	"archive/zip"
+	arduinozip "arduino.cc/repository/libraries/zip"
+	"github.com/stretchr/testify/require"
+	"io/ioutil"
+	"testing"
 )
 
 func TestZip(t *testing.T) {
 	zipFile, err := ioutil.TempFile("", "ziphelper")
 	require.NoError(t, err)
 
-	err = ZipDirectory("./testzip", zipFile)
+	err = arduinozip.ZipDirectory("./testzip", zipFile)
 	require.NoError(t, err)
 
 	zipFileReader, err := zip.OpenReader(zipFile.Name())

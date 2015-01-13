@@ -1,13 +1,14 @@
 package libraries
 
 import (
+	"arduino.cc/repository/libraries"
 	"github.com/stretchr/testify/require"
-	"testing"
 	"sort"
+	"testing"
 )
 
 func TestListRepos(t *testing.T) {
-	repos, err := ListRepos("./testdata/git_test_repos.txt")
+	repos, err := libraries.ListRepos("./testdata/git_test_repos.txt")
 
 	require.Equal(t, len(repos), 2)
 	sort.Strings(repos)
@@ -17,7 +18,7 @@ func TestListRepos(t *testing.T) {
 
 	require.Error(t, err)
 
-	error := err.(GitURLsError)
+	error := err.(libraries.GitURLsError)
 	require.Equal(t, error.GitURLs[0], "https://github.com/arlibs")
 	require.Equal(t, error.GitURLs[1], "git@github.com:PaulStoffregen/Audio.git")
 

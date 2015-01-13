@@ -18,7 +18,7 @@ TDD
 In order to run the test, run
 
 ```
-go test -v arduino.cc/repository/libraries/...
+go test -v ./test/...
 ```
 
 RUN
