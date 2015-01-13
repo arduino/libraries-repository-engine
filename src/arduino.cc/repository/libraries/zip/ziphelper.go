@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 )
 
-func ZipDirectory(rootFolder string, zipFile *os.File) error {
+// Create a new zip archive that contains a copy of "rootFolder" into "zipFile".
+// Inside the archive "rootFolder" will be renamed to "zipRootFolder".
+func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile *os.File) error {
 	rootFolder, err := filepath.Abs(rootFolder)
 	if err != nil {
 		return err
@@ -30,6 +32,7 @@ func ZipDirectory(rootFolder string, zipFile *os.File) error {
 			return nil
 		}
 
+		rel = filepath.Join(zipRootFolderName, rel)
 		writer, err := zipFileWriter.Create(rel)
 		if err != nil {
 			return err

@@ -8,7 +8,8 @@ import (
 )
 
 func ZipRepo(repoFolder string, library *metadata.LibraryMetadata, librariesBaseFolder string) error {
-	absoluteFileName := path.Join(librariesBaseFolder, library.Name+"-"+library.Version+".zip")
+	libraryName := library.Name + "-" + library.Version
+	absoluteFileName := path.Join(librariesBaseFolder, libraryName+".zip")
 	zipFile, err := os.Create(absoluteFileName)
 	if err != nil {
 		return err
@@ -16,5 +17,5 @@ func ZipRepo(repoFolder string, library *metadata.LibraryMetadata, librariesBase
 
 	defer zipFile.Close()
 
-	return zip.ZipDirectory(repoFolder, zipFile)
+	return zip.ZipDirectory(repoFolder, libraryName, zipFile)
 }
