@@ -29,18 +29,32 @@ func logError(err error) bool {
 var config *Config
 
 func main() {
-	config = readConf()
+	var configFile string
+	if len(os.Args) > 1 {
+		configFile = os.Args[1]
+	} else {
+		configFile = "./config.json"
+	}
+
+	config = readConf(configFile)
 
 	setup(config)
 
-	syncLibraries()
+	var reposFile string
+	if len(os.Args) > 2 {
+		reposFile = os.Args[2]
+	} else {
+		reposFile = "./repos.txt"
+	}
+
+	syncLibraries(reposFile)
 
 	if config.CronTabEntry == "" {
 		return
 	}
 
 	crontab := cron.New()
-	crontab.AddFunc(config.CronTabEntry, func() { syncLibraries() })
+	crontab.AddFunc(config.CronTabEntry, func() { syncLibraries(reposFile) })
 	crontab.Start()
 
 	for {
@@ -50,7 +64,12 @@ func main() {
 
 var running bool = false
 
-func syncLibraries() {
+func syncLibraries(reposFile string) {
+	if _, err := os.Stat(reposFile); os.IsNotExist(err) {
+		logError(err)
+		os.Exit(1)
+	}
+
 	if running {
 		log.Println("...still synchronizing...")
 		return
@@ -60,7 +79,7 @@ func syncLibraries() {
 	defer func() { running = false }()
 
 	log.Println("Synchronizing libraries...")
-	repos, err := libraries.ListRepos("./repos.txt")
+	repos, err := libraries.ListRepos(reposFile)
 	if logError(err) {
 		os.Exit(1)
 	}
@@ -74,13 +93,13 @@ func syncLibraries() {
 	log.Println("...DONE")
 }
 
-func readConf() *Config {
-	if _, err := os.Stat("./config.json"); os.IsNotExist(err) {
+func readConf(configFile string) *Config {
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		logError(err)
 		os.Exit(1)
 	}
 
-	file, _ := os.Open("./config.json")
+	file, _ := os.Open(configFile)
 	decoder := json.NewDecoder(file)
 	config := Config{}
 	err := decoder.Decode(&config)
