@@ -8,7 +8,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"encoding/json"
 	"fmt"
-	"github.com/cmaglie/go-github/github"
+	"github.com/google/go-github/github"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strconv"
