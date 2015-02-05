@@ -17,8 +17,9 @@ type DB struct {
 
 // A library
 type Library struct {
-	Name       string
-	Repository string
+	Name         string
+	Repository   string
+	SupportLevel string
 }
 
 // A release

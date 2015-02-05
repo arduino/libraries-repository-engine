@@ -22,6 +22,8 @@ type indexLibrary struct {
 	ArchiveFileName string `json:"archiveFileName"`
 	Size            int64  `json:"size"`
 	Checksum        string `json:"checksum"`
+
+	SupportLevel string `json:"supportLevel,omitempty"`
 }
 
 // Generate an object that once JSON-marshaled produces a json
@@ -63,6 +65,8 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 			URL:             latest.URL,
 			Size:            latest.Size,
 			Checksum:        latest.Checksum,
+
+			SupportLevel: lib.SupportLevel,
 		})
 	}
 
