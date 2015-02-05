@@ -1,3 +1,15 @@
+/*
+A package to handle library.properties metadata.
+
+The functions in this package helps on parsing/validation of
+library.properties metadata. All metadata are parsed into a
+LibraryMetadata structure.
+
+The source of may be any of the following:
+- a github.PullRequest
+- a github.RepositoryContent
+- a byte[]
+*/
 package metadata
 
 import "bytes"

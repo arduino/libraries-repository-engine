@@ -161,5 +161,3 @@ func Init(libraryFile string) *DB {
 		return libs
 	}
 }
-
-// vi:ts=2

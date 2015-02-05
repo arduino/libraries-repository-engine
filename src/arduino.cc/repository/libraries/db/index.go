@@ -5,6 +5,7 @@ type indexOutput struct {
 	Libraries []indexLibrary `json:"libraries"`
 }
 
+// Output structure used to generate library_index.json file
 type indexLibrary struct {
 	LibraryName   string   `json:"name"`
 	Version       Version  `json:"version"`
@@ -23,6 +24,9 @@ type indexLibrary struct {
 	Checksum        string `json:"checksum"`
 }
 
+// Generate an object that once JSON-marshaled produces a json
+// file suitable for the library installer (i.e. produce a valid
+// library_index.json file)
 func (db *DB) OutputLibraryIndex() (interface{}, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
@@ -67,5 +71,3 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 	}
 	return &index, nil
 }
-
-// vi:ts=2

@@ -27,5 +27,3 @@ func (version *Version) MarshalJSON() ([]byte, error) {
 func VersionFromString(str string) Version {
 	return Version{version: str}
 }
-
-// vi:ts=2
