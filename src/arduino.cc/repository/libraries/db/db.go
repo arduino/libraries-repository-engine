@@ -136,12 +136,12 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 		}
 		if found == nil {
 			found = rel
-		} else {
-			if less, err := found.Version.Less(rel.Version); err != nil {
-				return nil, err
-			} else if less {
-				found = rel
-			}
+			continue
+		}
+		if less, err := found.Version.Less(rel.Version); err != nil {
+			return nil, err
+		} else if less {
+			found = rel
 		}
 	}
 	return found, nil
