@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// TODO(cm): Merge this struct with config/config.go
 type Config struct {
 	BaseDownloadUrl string
 	LibrariesFolder string
@@ -121,6 +122,7 @@ func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
 	}
 }
 
+// TODO(cm): Merge this struct with config/config.go
 func readConf(configFile string) *Config {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		logError(err)
