@@ -110,8 +110,12 @@ func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
 	}
 	defer file.Close()
 
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(libraryIndex)
+	b, err := json.MarshalIndent(libraryIndex, "", "  ")
+	if logError(err) {
+		os.Exit(1)
+	}
+
+	_, err = file.Write(b)
 	if logError(err) {
 		os.Exit(1)
 	}
