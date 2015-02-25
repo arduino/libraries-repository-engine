@@ -4,78 +4,55 @@ import (
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/metadata"
 	"errors"
-	"github.com/libgit2/git2go"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"strings"
+	"arduino.cc/repository/libraries/git"
+	"path"
 )
 
-func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {
+func CloneOrFetch(repoURL, baseFolder string) (string, error) {
 	parsedURL, err := url.Parse(repoURL)
 	folderName := strings.NewReplacer(".git", "").Replace(parsedURL.Path)
 	folderNameParts := strings.Split(folderName, "/")
 	folderName = folderNameParts[len(folderNameParts)-1]
-	folderName = baseFolder + "/" + folderName
+	folderName = path.Join(baseFolder, folderName)
 
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
-		_, err = git.Clone(repoURL, folderName, &git.CloneOptions{})
+		err = git.Clone(repoURL, folderName)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 	}
 
-	repo, err := git.OpenRepository(folderName)
-	if err != nil {
-		return nil, err
-	}
-
-	origin, err := repo.LookupRemote("origin")
-	err = origin.Fetch([]string{}, nil, "")
-
-	return repo, err
-}
-
-func lastTagName(repo *git.Repository) (string, error) {
-	referenceIterator, err := repo.NewReferenceIteratorGlob("*tags*")
+	err = git.Fetch(folderName)
 	if err != nil {
 		return "", err
 	}
 
-	namesIterator := referenceIterator.Names()
-	var lastTagName string
-	for name, err := namesIterator.Next(); err == nil; name, err = namesIterator.Next() {
-		lastTagName = name
-	}
-
-	return lastTagName, nil
+	return folderName, err
 }
 
-func CheckoutLastTag(repo *git.Repository) error {
-	lastTagName, err := lastTagName(repo)
+func lastTagName(folderName string) (string, error) {
+	return git.LastTag(folderName)
+}
+
+func CheckoutLastTag(folderName string) error {
+	lastTagName, err := lastTagName(folderName)
 	if err != nil {
 		return err
 	}
 
 	if lastTagName == "" {
-		return errors.New("Repository " + repo.Workdir() + " has not tags")
+		return errors.New("Repository " + folderName + " has not tags")
 	}
 
-	ref, err := repo.LookupReference(lastTagName)
-	if err != nil {
-		return err
-	}
-
-	err = repo.SetHeadDetached(ref.Target(), nil, "Checking out tag "+ref.Shorthand())
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return git.CheckoutTag(folderName, lastTagName)
 }
 
 func GenerateLibraryFromRepo(repoFolder string) (*metadata.LibraryMetadata, error) {
-	bytes, err := ioutil.ReadFile(repoFolder + "library.properties")
+	bytes, err := ioutil.ReadFile(path.Join(repoFolder, "library.properties"))
 	if err != nil {
 		return nil, err
 	}

@@ -160,24 +160,24 @@ func setup(config *Config) {
 }
 
 func handleRepo(repoURL string, libraryDb *db.DB, config *Config) error {
-	repo, err := libraries.CloneOrFetch(repoURL, config.GitClonesFolder)
+	repoFolder, err := libraries.CloneOrFetch(repoURL, config.GitClonesFolder)
 	if logError(err) {
 		return err
 	}
 
-	err = libraries.CheckoutLastTag(repo)
+	err = libraries.CheckoutLastTag(repoFolder)
 	if logError(err) {
 		return err
 	}
 
-	library, err := libraries.GenerateLibraryFromRepo(repo.Workdir())
+	library, err := libraries.GenerateLibraryFromRepo(repoFolder)
 	if logError(err) {
 		return err
 	}
 
 	zipFolderName := libraries.ZipFolderName(library)
 
-	err = libraries.ZipRepo(repo.Workdir(), config.LibrariesFolder, zipFolderName)
+	err = libraries.ZipRepo(repoFolder, config.LibrariesFolder, zipFolderName)
 	if logError(err) {
 		return err
 	}

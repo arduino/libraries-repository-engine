@@ -23,23 +23,23 @@ func TestUpdateLibraryJson(t *testing.T) {
 	defer os.RemoveAll("./testdata/test_db.json")
 
 	for _, repoURL := range repos {
-		repo, err := libraries.CloneOrFetch(repoURL, "/tmp")
+		repoFolder, err := libraries.CloneOrFetch(repoURL, "/tmp")
 
 		require.NoError(t, err)
-		require.NotNil(t, repo)
+		require.NotNil(t, repoFolder)
 
-		defer os.RemoveAll("/tmp/Servo")
+		defer os.RemoveAll(repoFolder)
 
-		err = libraries.CheckoutLastTag(repo)
+		err = libraries.CheckoutLastTag(repoFolder)
 		require.NoError(t, err)
 
-		library, err := libraries.GenerateLibraryFromRepo(repo.Workdir())
+		library, err := libraries.GenerateLibraryFromRepo(repoFolder)
 		require.NoError(t, err)
 		require.NotNil(t, library)
 
 		zipFolderName := libraries.ZipFolderName(library)
 
-		err = libraries.ZipRepo(repo.Workdir(), librariesRepo, zipFolderName)
+		err = libraries.ZipRepo(repoFolder, librariesRepo, zipFolderName)
 		require.NoError(t, err)
 
 		release := db.FromLibraryToRelease(library, "http://www.example.com/", zipFolderName + ".zip")

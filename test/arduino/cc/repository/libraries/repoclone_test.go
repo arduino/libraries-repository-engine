@@ -13,9 +13,9 @@ func TestCloneRepos(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, repo)
 
-	defer os.RemoveAll("/tmp/Servo")
+	defer os.RemoveAll(repo)
 
-	_, err = os.Stat("/tmp/Servo")
+	_, err = os.Stat(repo)
 	require.NoError(t, err)
 }
 
@@ -25,7 +25,7 @@ func TestLastTag(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, repo)
 
-	defer os.RemoveAll("/tmp/Servo")
+	defer os.RemoveAll(repo)
 
 	err = libraries.CheckoutLastTag(repo)
 

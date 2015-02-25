@@ -98,7 +98,12 @@ func LoadFromFile(filename string) (*DB, error) {
 		return nil, err
 	}
 	defer file.Close()
-	return Load(file)
+	db, err := Load(file)
+	if err != nil {
+		return nil, err
+	}
+	db.libraryFile = filename
+	return db, nil
 }
 
 func Load(r io.Reader) (*DB, error) {
