@@ -41,8 +41,8 @@ func (library *LibraryMetadata) Validate() []error {
 	}
 
 	// Check sentence and paragraph and url existence
-	if library.Sentence == "" || library.Paragraph == "" || library.URL == "" {
-		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence', 'paragraph' and 'url' fields must be defined"))
+	if library.Sentence == "" || library.URL == "" {
+		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence' and 'url' fields must be defined"))
 	}
 
 	return errorsAccumulator
