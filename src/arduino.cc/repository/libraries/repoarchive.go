@@ -5,11 +5,11 @@ import (
 	"arduino.cc/repository/libraries/zip"
 	"os"
 	"path"
+	"regexp"
 )
 
-func ZipRepo(repoFolder string, library *metadata.LibraryMetadata, librariesBaseFolder string) error {
-	libraryName := library.Name + "-" + library.Version
-	absoluteFileName := path.Join(librariesBaseFolder, libraryName+".zip")
+func ZipRepo(repoFolder string, librariesBaseFolder string, zipFolderName string) error {
+	absoluteFileName := path.Join(librariesBaseFolder, zipFolderName+".zip")
 	zipFile, err := os.Create(absoluteFileName)
 	if err != nil {
 		return err
@@ -17,5 +17,10 @@ func ZipRepo(repoFolder string, library *metadata.LibraryMetadata, librariesBase
 
 	defer zipFile.Close()
 
-	return zip.ZipDirectory(repoFolder, libraryName, zipFile)
+	return zip.ZipDirectory(repoFolder, zipFolderName, zipFile)
+}
+
+func ZipFolderName(library *metadata.LibraryMetadata) string {
+	pattern := regexp.MustCompile("[^a-zA-Z0-9]")
+	return pattern.ReplaceAllString(library.Name, "_") + "-" + library.Version
 }

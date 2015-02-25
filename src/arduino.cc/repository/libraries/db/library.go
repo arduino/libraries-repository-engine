@@ -5,13 +5,12 @@ import (
 	"strings"
 )
 
-func FromLibraryToRelease(library *metadata.LibraryMetadata, baseDownloadURL string) *Release {
+func FromLibraryToRelease(library *metadata.LibraryMetadata, baseDownloadURL string, archiveFileName string) *Release {
 	architectures := strings.Split(library.Architectures, ",")
 	for i, v := range architectures {
 		architectures[i] = strings.TrimSpace(v)
 	}
 
-	archiveFileName := library.Name + "-" + library.Version + ".zip"
 	dbRelease := Release{
 		LibraryName:     library.Name,
 		Version:         VersionFromString(library.Version),

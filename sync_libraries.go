@@ -89,9 +89,11 @@ func syncLibraries(reposFile string) {
 
 	libraryDb := db.Init(config.LibrariesDB)
 
+	var errorWithARepo bool
 	for _, repo := range repos {
 		log.Println("... " + repo)
-		handleRepo(repo, libraryDb, config)
+		err := handleRepo(repo, libraryDb, config)
+		errorWithARepo = errorWithARepo || err != nil
 	}
 
 	libraryIndex, err := libraryDb.OutputLibraryIndex()
@@ -102,6 +104,10 @@ func syncLibraries(reposFile string) {
 	serializeLibraryIndex(libraryIndex, config.LibrariesIndex)
 
 	log.Println("...DONE")
+
+	if errorWithARepo {
+		os.Exit(1)
+	}
 }
 
 func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
@@ -153,39 +159,42 @@ func setup(config *Config) {
 	}
 }
 
-func handleRepo(repoURL string, libraryDb *db.DB, config *Config) {
+func handleRepo(repoURL string, libraryDb *db.DB, config *Config) error {
 	repo, err := libraries.CloneOrFetch(repoURL, config.GitClonesFolder)
 	if logError(err) {
-		return
+		return err
 	}
 
 	err = libraries.CheckoutLastTag(repo)
 	if logError(err) {
-		return
+		return err
 	}
 
 	library, err := libraries.GenerateLibraryFromRepo(repo.Workdir())
 	if logError(err) {
-		return
+		return err
 	}
 
-	err = libraries.ZipRepo(repo.Workdir(), library, config.LibrariesFolder)
+	zipFolderName := libraries.ZipFolderName(library)
+
+	err = libraries.ZipRepo(repo.Workdir(), config.LibrariesFolder, zipFolderName)
 	if logError(err) {
-		return
+		return err
 	}
 
-	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl)
+	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
 
 	err = setSizeAndChecksum(release, config.LibrariesFolder)
 	if logError(err) {
-		return
+		return err
 	}
 
 	err = libraries.UpdateLibrary(release, libraryDb)
 	if logError(err) {
-		return
+		return err
 	}
 
+	return nil
 }
 
 func setSizeAndChecksum(release *db.Release, librariesFolder string) error {
