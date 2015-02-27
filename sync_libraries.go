@@ -104,10 +104,6 @@ func syncLibraries(reposFile string) {
 	serializeLibraryIndex(libraryIndex, config.LibrariesIndex)
 
 	log.Println("...DONE")
-
-	if errorWithARepo {
-		os.Exit(1)
-	}
 }
 
 func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
