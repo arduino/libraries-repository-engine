@@ -92,8 +92,8 @@ func syncLibraries(reposFile string) {
 	var errorWithARepo bool
 	for _, repo := range repos {
 		log.Println("... " + repo)
-		err := handleRepo(repo, libraryDb, config)
-		errorWithARepo = errorWithARepo || err != nil
+		errors := handleRepo(repo, libraryDb, config)
+		errorWithARepo = errorWithARepo || (errors != nil && len(errors) > 0)
 	}
 
 	libraryIndex, err := libraryDb.OutputLibraryIndex()
@@ -159,13 +159,32 @@ func setup(config *Config) {
 	}
 }
 
-func handleRepo(repoURL string, libraryDb *db.DB, config *Config) error {
+func handleRepo(repoURL string, libraryDb *db.DB, config *Config) []error {
 	repoFolder, err := libraries.CloneOrFetch(repoURL, config.GitClonesFolder)
 	if logError(err) {
-		return err
+		return []error{err}
 	}
 
-	err = libraries.CheckoutLastTag(repoFolder)
+	tags, err := libraries.ListTags(repoFolder)
+	if logError(err) {
+		return []error{err}
+	}
+
+	var errors []error
+	for _, tag := range tags {
+		err = handleTag(repoFolder, tag, libraryDb, config)
+		if err != nil {
+			errors = append(errors, err)
+		}
+	}
+
+	return errors
+}
+
+func handleTag(repoFolder string, tag string, libraryDb *db.DB, config *Config) error {
+	log.Println("... ... tag " + tag)
+
+	err := libraries.CheckoutTag(repoFolder, tag)
 	if logError(err) {
 		return err
 	}

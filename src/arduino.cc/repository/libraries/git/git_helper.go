@@ -19,17 +19,27 @@ func Fetch(folderName string) error {
 	return err
 }
 
-func LastTag(folderName string) (string, error) {
+func ListTags(folderName string) ([]string, error) {
 	cmd := exec.Command("git", "tag")
 	cmd.Dir = folderName
 	bytes, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	output := string(bytes)
 	rows := filterEmpty(strings.Split(output, "\n"))
+
 	if len(rows) == 0 {
-		return "", errors.New("No tags")
+		return nil, errors.New("No tags")
+	}
+
+	return rows, nil
+}
+
+func LastTag(folderName string) (string, error) {
+	rows, err := ListTags(folderName)
+	if err != nil {
+		return "", err
 	}
 	return rows[len(rows)-1], nil
 }

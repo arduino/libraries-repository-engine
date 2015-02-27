@@ -34,8 +34,16 @@ func CloneOrFetch(repoURL, baseFolder string) (string, error) {
 	return folderName, err
 }
 
+func ListTags(folderName string) ([]string, error) {
+	return git.ListTags(folderName)
+}
+
 func lastTagName(folderName string) (string, error) {
 	return git.LastTag(folderName)
+}
+
+func CheckoutTag(folderName string, tagName string) error {
+	return git.CheckoutTag(folderName, tagName)
 }
 
 func CheckoutLastTag(folderName string) error {

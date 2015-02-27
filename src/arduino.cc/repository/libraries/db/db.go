@@ -136,10 +136,7 @@ func (db *DB) Save(r io.Writer) error {
 
 func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	var found *Release = nil
-	for _, rel := range db.Releases {
-		if rel.LibraryName != lib.Name {
-			continue
-		}
+	for _, rel := range db.FindReleasesOfLibrary(lib) {
 		if found == nil {
 			found = rel
 			continue
@@ -152,6 +149,18 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	}
 	return found, nil
 }
+
+func (db *DB) FindReleasesOfLibrary(lib *Library) []*Release {
+	var releases []*Release
+	for _, rel := range db.Releases {
+		if rel.LibraryName != lib.Name {
+			continue
+		}
+		releases = append(releases, rel)
+	}
+	return releases
+}
+
 
 func (db *DB) Commit() error {
 	return db.SaveToFile()

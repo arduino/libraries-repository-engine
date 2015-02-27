@@ -33,41 +33,34 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
 	for _, lib := range db.Libraries {
-		latest, err := db.FindLatestReleaseOfLibrary(lib)
-		if err != nil {
-			return nil, err
+		libraryReleases := db.FindReleasesOfLibrary(lib)
+
+		for _, libraryRelease := range libraryReleases {
+			// Skip malformed release
+			if libraryRelease.Size == 0 || libraryRelease.Checksum == "" {
+				continue
+			}
+
+			// Copy db.Library into db.indexLibrary
+			libraries = append(libraries, indexLibrary{
+				LibraryName:     libraryRelease.LibraryName,
+				Version:         libraryRelease.Version,
+				Author:          libraryRelease.Author,
+				Maintainer:      libraryRelease.Maintainer,
+				License:         libraryRelease.License,
+				Sentence:        libraryRelease.Sentence,
+				Paragraph:       libraryRelease.Paragraph,
+				Website:         libraryRelease.Website,
+				Category:        libraryRelease.Category,
+				Architectures:   libraryRelease.Architectures,
+				ArchiveFileName: libraryRelease.ArchiveFileName,
+				URL:             libraryRelease.URL,
+				Size:            libraryRelease.Size,
+				Checksum:        libraryRelease.Checksum,
+				SupportLevel:    lib.SupportLevel,
+			})
 		}
 
-		// Skip libraries without release
-		if latest == nil {
-			continue
-		}
-
-		// Skip malformed release
-		if latest.Size == 0 || latest.Checksum == "" {
-			continue
-		}
-
-		// Copy db.Library into db.indexLibrary
-		libraries = append(libraries, indexLibrary{
-			LibraryName:   latest.LibraryName,
-			Version:       latest.Version,
-			Author:        latest.Author,
-			Maintainer:    latest.Maintainer,
-			License:       latest.License,
-			Sentence:      latest.Sentence,
-			Paragraph:     latest.Paragraph,
-			Website:       latest.Website,
-			Category:      latest.Category,
-			Architectures: latest.Architectures,
-
-			ArchiveFileName: latest.ArchiveFileName,
-			URL:             latest.URL,
-			Size:            latest.Size,
-			Checksum:        latest.Checksum,
-
-			SupportLevel: lib.SupportLevel,
-		})
 	}
 
 	index := indexOutput{
