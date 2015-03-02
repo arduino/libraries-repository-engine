@@ -92,7 +92,7 @@ func syncLibraries(reposFile string) {
 	var errorWithARepo bool
 	for _, repo := range repos {
 		log.Println("... " + repo)
-		errors := handleRepo(repo, libraryDb, config)
+		errors := syncLibraryInRepo(repo, libraryDb, config)
 		errorWithARepo = errorWithARepo || (errors != nil && len(errors) > 0)
 	}
 
@@ -155,7 +155,7 @@ func setup(config *Config) {
 	}
 }
 
-func handleRepo(repoURL string, libraryDb *db.DB, config *Config) []error {
+func syncLibraryInRepo(repoURL string, libraryDb *db.DB, config *Config) []error {
 	repoFolder, err := libraries.CloneOrFetch(repoURL, config.GitClonesFolder)
 	if logError(err) {
 		return []error{err}
@@ -168,7 +168,7 @@ func handleRepo(repoURL string, libraryDb *db.DB, config *Config) []error {
 
 	var errors []error
 	for _, tag := range tags {
-		err = handleTag(repoFolder, tag, libraryDb, config)
+		err = syncLibraryTaggedRelease(repoFolder, tag, libraryDb, config)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -177,10 +177,20 @@ func handleRepo(repoURL string, libraryDb *db.DB, config *Config) []error {
 	return errors
 }
 
-func handleTag(repoFolder string, tag string, libraryDb *db.DB, config *Config) error {
+func syncLibraryTaggedRelease(repoFolder string, tag string, libraryDb *db.DB, config *Config) error {
 	log.Println("... ... tag " + tag)
 
 	err := libraries.CheckoutTag(repoFolder, tag)
+	if logError(err) {
+		return err
+	}
+
+	err = libraries.RemoveUndesiderFiles(repoFolder)
+	if logError(err) {
+		return err
+	}
+
+	err = libraries.RunAntiVirus(repoFolder)
 	if logError(err) {
 		return err
 	}
