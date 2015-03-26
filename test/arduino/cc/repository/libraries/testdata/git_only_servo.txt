@@ -1,1 +1,1 @@
-https://github.com/arlibs/Servo.git
+https://github.com/arlibs/Servo.git	Arduino

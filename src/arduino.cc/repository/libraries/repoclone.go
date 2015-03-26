@@ -2,14 +2,14 @@ package libraries
 
 import (
 	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/git"
 	"arduino.cc/repository/libraries/metadata"
 	"errors"
 	"io/ioutil"
 	"net/url"
 	"os"
-	"strings"
-	"arduino.cc/repository/libraries/git"
 	"path"
+	"strings"
 )
 
 func CloneOrFetch(repoURL, baseFolder string) (string, error) {
@@ -59,7 +59,7 @@ func CheckoutLastTag(folderName string) error {
 	return git.CheckoutTag(folderName, lastTagName)
 }
 
-func GenerateLibraryFromRepo(repoFolder string) (*metadata.LibraryMetadata, error) {
+func GenerateLibraryFromRepo(repoFolder string, repo *Repo) (*metadata.LibraryMetadata, error) {
 	bytes, err := ioutil.ReadFile(path.Join(repoFolder, "library.properties"))
 	if err != nil {
 		return nil, err
@@ -69,6 +69,7 @@ func GenerateLibraryFromRepo(repoFolder string) (*metadata.LibraryMetadata, erro
 	if err != nil {
 		return nil, err
 	}
+	library.Types = repo.Types
 
 	libraryErrors := library.Validate()
 	if len(libraryErrors) > 0 {

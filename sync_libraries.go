@@ -91,7 +91,7 @@ func syncLibraries(reposFile string) {
 
 	var errorWithARepo bool
 	for _, repo := range repos {
-		log.Println("... " + repo)
+		log.Println("... " + repo.Url)
 		errors := syncLibraryInRepo(repo, libraryDb, config)
 		errorWithARepo = errorWithARepo || (errors != nil && len(errors) > 0)
 	}
@@ -155,8 +155,8 @@ func setup(config *Config) {
 	}
 }
 
-func syncLibraryInRepo(repoURL string, libraryDb *db.DB, config *Config) []error {
-	repoFolder, err := libraries.CloneOrFetch(repoURL, config.GitClonesFolder)
+func syncLibraryInRepo(repo *libraries.Repo, libraryDb *db.DB, config *Config) []error {
+	repoFolder, err := libraries.CloneOrFetch(repo.Url, config.GitClonesFolder)
 	if logError(err) {
 		return []error{err}
 	}
@@ -168,7 +168,7 @@ func syncLibraryInRepo(repoURL string, libraryDb *db.DB, config *Config) []error
 
 	var errors []error
 	for _, tag := range tags {
-		err = syncLibraryTaggedRelease(repoFolder, tag, libraryDb, config)
+		err = syncLibraryTaggedRelease(repoFolder, tag, repo, libraryDb, config)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -177,12 +177,26 @@ func syncLibraryInRepo(repoURL string, libraryDb *db.DB, config *Config) []error
 	return errors
 }
 
-func syncLibraryTaggedRelease(repoFolder string, tag string, libraryDb *db.DB, config *Config) error {
+func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Repo, libraryDb *db.DB, config *Config) error {
 	log.Println("... ... tag " + tag)
 
 	err := libraries.CheckoutTag(repoFolder, tag)
 	if logError(err) {
 		return err
+	}
+
+	library, err := libraries.GenerateLibraryFromRepo(repoFolder, repo)
+	if logError(err) {
+		return err
+	}
+
+	zipFolderName := libraries.ZipFolderName(library)
+
+	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
+
+	if libraryDb.HasLibrary(library.Name) && libraryDb.HasRelease(release) {
+		log.Println("... ... tag " + tag + " already loaded: skipping")
+		return nil
 	}
 
 	err = libraries.RemoveUndesiderFiles(repoFolder)
@@ -195,19 +209,10 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, libraryDb *db.DB, c
 		return err
 	}
 
-	library, err := libraries.GenerateLibraryFromRepo(repoFolder)
-	if logError(err) {
-		return err
-	}
-
-	zipFolderName := libraries.ZipFolderName(library)
-
 	err = libraries.ZipRepo(repoFolder, config.LibrariesFolder, zipFolderName)
 	if logError(err) {
 		return err
 	}
-
-	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
 
 	err = setSizeAndChecksum(release, config.LibrariesFolder)
 	if logError(err) {

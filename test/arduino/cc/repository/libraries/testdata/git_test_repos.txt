@@ -1,9 +1,9 @@
 #organizations
 
-https://github.com/arlibs
+https://github.com/arlibs	Arduino
 
 #single repositories
 
-git@github.com:PaulStoffregen/Audio.git
-https://github.com/PaulStoffregen/OctoWS2811.git
-https://github.com/PaulStoffregen/AltSoftSerial.git
+git@github.com:PaulStoffregen/Audio.git	Contributed
+https://github.com/PaulStoffregen/OctoWS2811.git	Arduino,Contributed
+https://github.com/PaulStoffregen/AltSoftSerial.git	Contributed

@@ -17,6 +17,7 @@ type indexLibrary struct {
 	Website       string   `json:"website,omitempty"`
 	Category      string   `json:"category,omitempty"`
 	Architectures []string `json:"architectures,omitempty"`
+	Types         []string `json:"types,omitempty"`
 
 	URL             string `json:"url"`
 	ArchiveFileName string `json:"archiveFileName"`
@@ -53,6 +54,7 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 				Website:         libraryRelease.Website,
 				Category:        libraryRelease.Category,
 				Architectures:   libraryRelease.Architectures,
+				Types:           libraryRelease.Types,
 				ArchiveFileName: libraryRelease.ArchiveFileName,
 				URL:             libraryRelease.URL,
 				Size:            libraryRelease.Size,

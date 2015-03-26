@@ -22,6 +22,7 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata, baseDownloadURL str
 		Website:         library.URL, // TODO: Rename "url" field to "website" in library.properties
 		Category:        library.Category,
 		Architectures:   architectures,
+		Types:           library.Types,
 		URL:             baseDownloadURL + archiveFileName,
 		ArchiveFileName: archiveFileName,
 	}

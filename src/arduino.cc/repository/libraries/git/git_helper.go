@@ -1,9 +1,9 @@
 package git
 
 import (
+	"errors"
 	"os/exec"
 	"strings"
-	"errors"
 )
 
 func Clone(repoUrl string, folderName string) error {

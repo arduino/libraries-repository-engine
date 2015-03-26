@@ -22,8 +22,8 @@ func TestUpdateLibraryJson(t *testing.T) {
 	libraryDb := db.Init("./testdata/test_db.json")
 	defer os.RemoveAll("./testdata/test_db.json")
 
-	for _, repoURL := range repos {
-		repoFolder, err := libraries.CloneOrFetch(repoURL, "/tmp")
+	for _, repo := range repos {
+		repoFolder, err := libraries.CloneOrFetch(repo.Url, "/tmp")
 
 		require.NoError(t, err)
 		require.NotNil(t, repoFolder)
@@ -33,16 +33,16 @@ func TestUpdateLibraryJson(t *testing.T) {
 		err = libraries.CheckoutLastTag(repoFolder)
 		require.NoError(t, err)
 
-		library, err := libraries.GenerateLibraryFromRepo(repoFolder)
+		library, err := libraries.GenerateLibraryFromRepo(repoFolder, repo)
 		require.NoError(t, err)
 		require.NotNil(t, library)
 
 		zipFolderName := libraries.ZipFolderName(library)
 
+		release := db.FromLibraryToRelease(library, "http://www.example.com/", zipFolderName + ".zip")
+
 		err = libraries.ZipRepo(repoFolder, librariesRepo, zipFolderName)
 		require.NoError(t, err)
-
-		release := db.FromLibraryToRelease(library, "http://www.example.com/", zipFolderName + ".zip")
 
 		err = libraries.UpdateLibrary(release, libraryDb)
 		require.NoError(t, err)

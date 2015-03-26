@@ -12,11 +12,13 @@ The source of may be any of the following:
 */
 package metadata
 
-import "bytes"
-import "encoding/base64"
-import "errors"
-import "github.com/vaughan0/go-ini"
-import "github.com/google/go-github/github"
+import (
+	"bytes"
+	"encoding/base64"
+	"errors"
+	"github.com/google/go-github/github"
+	ini "github.com/vaughan0/go-ini"
+)
 
 // Metadata for a library.properties file
 type LibraryMetadata struct {
@@ -30,6 +32,7 @@ type LibraryMetadata struct {
 	URL           string
 	Architectures string
 	Category      string
+	Types         []string
 }
 
 func (library *LibraryMetadata) Validate() []error {
@@ -43,6 +46,11 @@ func (library *LibraryMetadata) Validate() []error {
 	// Check sentence and paragraph and url existence
 	if library.Sentence == "" || library.URL == "" {
 		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence' and 'url' fields must be defined"))
+	}
+
+	// Check sentence and paragraph and url existence
+	if library.Types == nil || len(library.Types) == 0 {
+		errorsAccumulator = append(errorsAccumulator, errors.New("Missing types"))
 	}
 
 	return errorsAccumulator

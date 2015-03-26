@@ -1,10 +1,10 @@
 package libraries
 
 import (
-	"os/exec"
-	"os"
-	"strings"
 	"errors"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 func envSliceToMap(env []string) map[string]string {

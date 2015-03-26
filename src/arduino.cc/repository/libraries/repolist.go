@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func loadRepoListFromFile(filename string) ([]string, error) {
+func loadRepoListFromFile(filename string) ([]*Repo, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -16,7 +16,7 @@ func loadRepoListFromFile(filename string) ([]string, error) {
 
 	defer file.Close()
 
-	var repos []string
+	var repos []*Repo
 
 	reader := bufio.NewReader(file)
 	var line string
@@ -24,9 +24,11 @@ func loadRepoListFromFile(filename string) ([]string, error) {
 		line, err = reader.ReadString('\n')
 		line = strings.TrimRight(line, "\n")
 		if len(line) > 0 && line[0] != '#' {
-			repos = append(repos, line)
+			lineParts := strings.Split(line, "\t")
+			url := lineParts[0]
+			types := strings.Split(lineParts[1], ",")
+			repos = append(repos, &Repo{url, types})
 		}
-
 	}
 
 	return repos, nil
@@ -57,23 +59,42 @@ func (_ repoMatcherIfGithub) Match(r string) bool {
 */
 
 type GitURLsError struct {
-	GitURLs []string
+	Repos []*Repo
+}
+
+type Repo struct {
+	Url   string
+	Types []string
+}
+
+type ReposByUrl []*Repo
+
+func (r ReposByUrl) Len() int {
+	return len(r)
+}
+
+func (r ReposByUrl) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
+}
+
+func (r ReposByUrl) Less(i, j int) bool {
+	return r[i].Url < r[j].Url
 }
 
 func (err GitURLsError) Error() string {
 	error := bytes.NewBufferString("Following URL are unknown or unsupported git repos:\n")
-	for _, v := range err.GitURLs {
-		fmt.Fprintln(error, v)
+	for _, v := range err.Repos {
+		fmt.Fprintln(error, v.Url)
 	}
 
 	return error.String()
 }
 
-func filterReposBy(repos []string, matcher repoMatcher) ([]string, error) {
-	var filtered []string
-	var wrong []string
+func filterReposBy(repos []*Repo, matcher repoMatcher) ([]*Repo, error) {
+	var filtered []*Repo
+	var wrong []*Repo
 	for _, repo := range repos {
-		if matcher.Match(repo) {
+		if matcher.Match(repo.Url) {
 			filtered = append(filtered, repo)
 		} else {
 			wrong = append(wrong, repo)
@@ -81,7 +102,7 @@ func filterReposBy(repos []string, matcher repoMatcher) ([]string, error) {
 	}
 	var err error
 	if len(wrong) > 0 {
-		err = GitURLsError{GitURLs: wrong}
+		err = GitURLsError{wrong}
 	}
 	return filtered, err
 }
@@ -125,35 +146,28 @@ func findGithubOrgs(repos []string) (orgs []*github.Organization, err error) {
 }
 */
 
-func toListOfUniqueRepos(repos []string) []string {
-	repoSet := make(map[string]bool)
+func toListOfUniqueRepos(repos []*Repo) []*Repo {
+	repoSet := make(map[string]*Repo)
 
 	for _, repo := range repos {
-		repoSet[repo] = false
+		repoSet[repo.Url] = repo
 	}
 
-	var finalRepos []string
-	for key := range repoSet {
-		finalRepos = append(finalRepos, key)
+	var finalRepos []*Repo
+	for _, value := range repoSet {
+		finalRepos = append(finalRepos, value)
 	}
 
 	return finalRepos
 }
 
-func ListRepos(reposFilename string) ([]string, error) {
+func ListRepos(reposFilename string) ([]*Repo, error) {
 	repos, err := loadRepoListFromFile(reposFilename)
 	if err != nil {
 		return nil, err
 	}
 
 	repos, err = filterReposBy(repos, repoMatcherIfDotGit{})
-
-	/*
-		reposToVerify := filterReposBy(repos, repoMatcherIfNotDotGit{})
-		githubReposToVerify := filterReposBy(reposToVerify, repoMatcherIfGithub{})
-		githubOrgs, err := findGithubOrgs(githubReposToVerify)
-		reposOfOrgs, err := reposFromGithubOrgs(githubOrgs)
-	*/
 
 	finalRepos := toListOfUniqueRepos(repos)
 

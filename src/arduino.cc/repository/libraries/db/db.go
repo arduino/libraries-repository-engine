@@ -34,6 +34,7 @@ type Release struct {
 	Website         string
 	Category        string
 	Architectures   []string
+	Types           []string
 	URL             string
 	ArchiveFileName string
 	Size            int64
@@ -160,7 +161,6 @@ func (db *DB) FindReleasesOfLibrary(lib *Library) []*Release {
 	}
 	return releases
 }
-
 
 func (db *DB) Commit() error {
 	return db.SaveToFile()
