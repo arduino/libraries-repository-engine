@@ -53,6 +53,12 @@ func (library *LibraryMetadata) Validate() []error {
 		errorsAccumulator = append(errorsAccumulator, errors.New("Missing types"))
 	}
 
+	newVersion, err := VersionToSemverCompliant(library.Version)
+	if err != nil {
+		errorsAccumulator = append(errorsAccumulator, err)
+	}
+	library.Version = newVersion
+
 	return errorsAccumulator
 }
 
