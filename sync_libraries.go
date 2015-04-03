@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"strings"
 )
 
 // TODO(cm): Merge this struct with config/config.go
@@ -190,16 +191,12 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 		return err
 	}
 
-	zipFolderName := libraries.ZipFolderName(library)
-
-	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
-
-	if libraryDb.HasLibrary(library.Name) && libraryDb.HasRelease(release) {
+	if libraryDb.HasLibrary(library.Name) && libraryDb.HasReleaseByNameVersion(library.Name, library.Version) {
 		log.Println("... ... tag " + tag + " already loaded: skipping")
 		return nil
 	}
 
-	err = libraries.RemoveUndesiderFiles(repoFolder)
+	err = libraries.FailIfHasUndesiredFiles(repoFolder)
 	if logError(err) {
 		return err
 	}
@@ -209,14 +206,31 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 		return err
 	}
 
+	zipFolderName := libraries.ZipFolderName(library)
+
+	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
+
 	err = libraries.ZipRepo(repoFolder, config.LibrariesFolder, zipFolderName)
 	if logError(err) {
 		return err
 	}
 
-	err = setSizeAndChecksum(release, config.LibrariesFolder)
+	size, checksum, err := getSizeAndCalculateChecksum(config.LibrariesFolder + release.ArchiveFileName)
 	if logError(err) {
 		return err
+	}
+	release.Size = size
+	release.Checksum = checksum
+
+	if strings.Index(repo.Url, "https://github.com") != -1 {
+		url, size, checksum, err := libraries.GithubDownloadRelease(repo.Url, tag)
+		if logError(err) {
+			return err
+		}
+		release.URL = url
+		release.Size = size
+		release.Checksum = checksum
+		release.ArchiveFileName = zipFolderName + "-github.zip"
 	}
 
 	err = libraries.UpdateLibrary(release, libraryDb)
@@ -227,18 +241,18 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 	return nil
 }
 
-func setSizeAndChecksum(release *db.Release, librariesFolder string) error {
-	info, err := os.Stat(librariesFolder + release.ArchiveFileName)
+func getSizeAndCalculateChecksum(filePath string) (int64, string, error) {
+	info, err := os.Stat(filePath)
 	if err != nil {
-		return err
+		return -1, "", err
 	}
 
-	release.Size = info.Size()
-	checksum, err := hash.Checksum(librariesFolder + release.ArchiveFileName)
-	if err != nil {
-		return err
-	}
-	release.Checksum = checksum
+	size := info.Size()
 
-	return nil
+	checksum, err := hash.Checksum(filePath)
+	if err != nil {
+		return -1, "", err
+	}
+
+	return size, checksum, nil
 }

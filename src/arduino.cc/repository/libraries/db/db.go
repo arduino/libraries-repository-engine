@@ -79,14 +79,22 @@ func (db *DB) AddRelease(release *Release) error {
 	return nil
 }
 
-func (db *DB) HasRelease(release *Release) bool {
-	found, _ := db.FindRelease(release)
+func (db *DB) HasReleaseByNameVersion(libraryName string, libraryVersion string) bool {
+	found, _ := db.FindReleaseByNameVersion(libraryName, libraryVersion)
 	return found != nil
 }
 
+func (db *DB) HasRelease(release *Release) bool {
+	return db.HasReleaseByNameVersion(release.LibraryName, release.Version.String())
+}
+
 func (db *DB) FindRelease(release *Release) (*Release, error) {
+	return db.FindReleaseByNameVersion(release.LibraryName, release.Version.String())
+}
+
+func (db *DB) FindReleaseByNameVersion(libraryName string, libraryVersion string) (*Release, error) {
 	for _, r := range db.Releases {
-		if r.LibraryName == release.LibraryName && r.Version == release.Version {
+		if r.LibraryName == libraryName && r.Version.String() == libraryVersion {
 			return r, nil
 		}
 	}
