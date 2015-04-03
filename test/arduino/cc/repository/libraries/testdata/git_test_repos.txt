@@ -1,6 +1,6 @@
 #organizations
 
-https://github.com/arlibs	Arduino
+https://github.com/arduino-libraries	Arduino
 
 #single repositories
 

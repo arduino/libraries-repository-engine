@@ -19,7 +19,7 @@ func TestListRepos(t *testing.T) {
 	require.Error(t, err)
 
 	error := err.(libraries.GitURLsError)
-	require.Equal(t, error.Repos[0].Url, "https://github.com/arlibs")
+	require.Equal(t, error.Repos[0].Url, "https://github.com/arduino-libraries")
 	require.Equal(t, error.Repos[1].Url, "git@github.com:PaulStoffregen/Audio.git")
 
 }

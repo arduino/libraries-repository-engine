@@ -8,7 +8,7 @@ import (
 )
 
 func TestCloneRepos(t *testing.T) {
-	repo, err := libraries.CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
+	repo, err := libraries.CloneOrFetch("https://github.com/arduino-libraries/Servo.git", "/tmp")
 
 	require.NoError(t, err)
 	require.NotNil(t, repo)
@@ -20,7 +20,7 @@ func TestCloneRepos(t *testing.T) {
 }
 
 func TestLastTag(t *testing.T) {
-	repo, err := libraries.CloneOrFetch("https://github.com/arlibs/Servo.git", "/tmp")
+	repo, err := libraries.CloneOrFetch("https://github.com/arduino-libraries/Servo.git", "/tmp")
 
 	require.NoError(t, err)
 	require.NotNil(t, repo)

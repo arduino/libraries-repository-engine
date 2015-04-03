@@ -329,7 +329,7 @@ func PushInitialEmptyRepository(c *gin.Context, repo *github.Repository) {
 	Run(gitFolder, "touch", "README.md")
 	Run(gitFolder, "git", "add", "README.md")
 	Run(gitFolder, "git", "commit", "-m", "Initialized library repostiory")
-	Run(gitFolder, "git", "remote", "add", "origin", "git@github-as-arlib0:arlibs/"+*repo.Name+".git")
+	Run(gitFolder, "git", "remote", "add", "origin", "git@github-as-arlib0:arduino-libraries/"+*repo.Name+".git")
 	Run(gitFolder, "git", "push", "-u", "origin", "master")
 }
 
@@ -344,7 +344,7 @@ func Run(workdir string, name string, arg ...string) int {
 }
 
 func ListAdmins() ([]string, error) {
-	teams, _, err := gh.Organizations.ListTeams("arlibs", nil)
+	teams, _, err := gh.Organizations.ListTeams("arduino-libraries", nil)
 	if err != nil {
 		return nil, err
 	}
