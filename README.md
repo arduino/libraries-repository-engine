@@ -14,7 +14,7 @@ go build -o libraries-repository-engine
 TDD
 ----------------------------
 
-In order to run the test, run
+In order to run the tests, type
 
 ```
 go test -v ./test/...
