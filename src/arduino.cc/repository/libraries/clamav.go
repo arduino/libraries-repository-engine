@@ -32,7 +32,7 @@ func modifyEnv(env []string, key, value string) []string {
 }
 
 func RunAntiVirus(folder string) error {
-	cmd := exec.Command("clamscan", "-i", "-r", folder)
+	cmd := exec.Command("clamdscan", "-i", folder)
 	cmd.Env = modifyEnv(os.Environ(), "LANG", "en")
 
 	bytes, err := cmd.CombinedOutput()
