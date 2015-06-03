@@ -13,7 +13,7 @@ func Clone(repoUrl string, folderName string) error {
 }
 
 func Fetch(folderName string) error {
-	cmd := exec.Command("git", "fetch", "--all")
+	cmd := exec.Command("git", "fetch", "--all", "--tags")
 	cmd.Dir = folderName
 	_, err := cmd.CombinedOutput()
 	return err
@@ -42,6 +42,13 @@ func LastTag(folderName string) (string, error) {
 		return "", err
 	}
 	return rows[len(rows)-1], nil
+}
+
+func RemoveTag(folderName, tag string) error {
+	cmd := exec.Command("git", "tag", "-d", tag)
+	cmd.Dir = folderName
+	_, err := cmd.CombinedOutput()
+	return err
 }
 
 func filterEmpty(rows []string) []string {

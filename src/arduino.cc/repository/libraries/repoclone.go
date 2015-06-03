@@ -26,6 +26,17 @@ func CloneOrFetch(repoURL, baseFolder string) (string, error) {
 		}
 	}
 
+	tags, err := git.ListTags(folderName)
+	if err != nil {
+		return "", err
+	}
+	for _, tag := range tags {
+		err = git.RemoveTag(folderName, tag)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	err = git.Fetch(folderName)
 	if err != nil {
 		return "", err
