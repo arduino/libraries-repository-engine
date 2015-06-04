@@ -7,3 +7,18 @@ https://github.com/arduino-libraries	Arduino
 git@github.com:PaulStoffregen/Audio.git	Contributed
 https://github.com/PaulStoffregen/OctoWS2811.git	Arduino,Contributed
 https://github.com/PaulStoffregen/AltSoftSerial.git	Contributed
+
+
+https://github.com/Cheong2K/ble-sdk-arduino.git	Contributed
+https://github.com/arduino-libraries/Bridge.git	Contributed
+
+https://github.com/adafruit/Adafruit_ADS1X15.git	Recommended
+https://github.com/adafruit/Adafruit_ADXL345.git	Recommended
+https://github.com/adafruit/Adafruit_AHRS.git	Recommended
+https://github.com/adafruit/Adafruit_AM2315.git	Recommended
+
+
+https://github.com/arduino-libraries/Scheduler.git	Arduino
+https://github.com/arduino-libraries/SD.git	Arduino
+https://github.com/arduino-libraries/Servo.git	Arduino
+

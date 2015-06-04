@@ -147,15 +147,14 @@ func findGithubOrgs(repos []string) (orgs []*github.Organization, err error) {
 */
 
 func toListOfUniqueRepos(repos []*Repo) []*Repo {
-	repoSet := make(map[string]*Repo)
+	repoMap := make(map[string]*Repo)
+	var finalRepos []*Repo
 
 	for _, repo := range repos {
-		repoSet[repo.Url] = repo
-	}
-
-	var finalRepos []*Repo
-	for _, value := range repoSet {
-		finalRepos = append(finalRepos, value)
+		if _, contains := repoMap[repo.Url]; !contains {
+			finalRepos = append(finalRepos, repo)
+			repoMap[repo.Url] = repo
+		}
 	}
 
 	return finalRepos
