@@ -63,7 +63,7 @@ func filterEmpty(rows []string) []string {
 }
 
 func CheckoutTag(folderName string, tag string) error {
-	cmd := exec.Command("git", "checkout", "refs/tags/"+tag)
+	cmd := exec.Command("git", "checkout", "-f", "refs/tags/"+tag)
 	cmd.Dir = folderName
 	_, err := cmd.CombinedOutput()
 	return err
