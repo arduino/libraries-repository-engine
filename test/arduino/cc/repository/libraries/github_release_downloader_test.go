@@ -11,7 +11,7 @@ func TestGithubDownload(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, url, "https://github.com/arduino-libraries/Audio/archive/1.0.0.zip")
-	require.Equal(t, checksum, "SHA-256:ccafda9702f98a1332adfdc19cf242479cf715129fdcf47928db81adf2bf2077")
-	require.Equal(t, size, 7314)
+	require.Equal(t, checksum, "SHA-256:a4da301186904b0f95ea691681b40867bd5a1fe608963a79a7c0a2d45f80a320")
+	require.Equal(t, size, int64(7314))
 
 }
