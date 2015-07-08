@@ -29,10 +29,6 @@ func ListTags(folderName string) ([]string, error) {
 	output := string(bytes)
 	rows := filterEmpty(strings.Split(output, "\n"))
 
-	if len(rows) == 0 {
-		return nil, errors.New("No tags")
-	}
-
 	return rows, nil
 }
 
@@ -40,6 +36,9 @@ func LastTag(folderName string) (string, error) {
 	rows, err := ListTags(folderName)
 	if err != nil {
 		return "", err
+	}
+	if len(rows) == 0 {
+		return "", errors.New("No tags")
 	}
 	return rows[len(rows)-1], nil
 }
