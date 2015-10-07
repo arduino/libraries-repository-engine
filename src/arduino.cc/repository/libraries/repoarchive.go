@@ -4,12 +4,12 @@ import (
 	"arduino.cc/repository/libraries/metadata"
 	"arduino.cc/repository/libraries/zip"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 )
 
 func ZipRepo(repoFolder string, librariesBaseFolder string, zipFolderName string) error {
-	absoluteFileName := path.Join(librariesBaseFolder, zipFolderName+".zip")
+	absoluteFileName := filepath.Join(librariesBaseFolder, zipFolderName+".zip")
 	zipFile, err := os.Create(absoluteFileName)
 	if err != nil {
 		return err

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 )
 
 func FailIfHasUndesiredFiles(folder string) error {
@@ -19,7 +19,7 @@ var FORBIDDEN_FILES = []string{".development"}
 
 func failIfContainsForbiddenFileInRoot(folder string) error {
 	for _, file := range FORBIDDEN_FILES {
-		if _, err := os.Stat(path.Join(folder, file)); err == nil {
+		if _, err := os.Stat(filepath.Join(folder, file)); err == nil {
 			return errors.New("... ... " + file + " file found, skipping")
 		}
 	}

@@ -8,16 +8,15 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 )
 
 func CloneOrFetch(repoURL, baseFolder string) (string, error) {
 	parsedURL, err := url.Parse(repoURL)
 	folderName := strings.NewReplacer(".git", "").Replace(parsedURL.Path)
-	folderNameParts := strings.Split(folderName, "/")
-	folderName = folderNameParts[len(folderNameParts)-1]
-	folderName = path.Join(baseFolder, folderName)
+	folderNameParts := strings.Split(folderName, "/")[1:]
+	folderName = filepath.Join(baseFolder, filepath.Join(folderNameParts...))
 
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
 		err = git.Clone(repoURL, folderName)
@@ -71,7 +70,7 @@ func CheckoutLastTag(folderName string) error {
 }
 
 func GenerateLibraryFromRepo(repoFolder string, repo *Repo) (*metadata.LibraryMetadata, error) {
-	bytes, err := ioutil.ReadFile(path.Join(repoFolder, "library.properties"))
+	bytes, err := ioutil.ReadFile(filepath.Join(repoFolder, "library.properties"))
 	if err != nil {
 		return nil, err
 	}

@@ -10,6 +10,7 @@ import (
 func TestCloneRepos(t *testing.T) {
 	repo, err := libraries.CloneOrFetch("https://github.com/arduino-libraries/Servo.git", "/tmp")
 
+	require.Equal(t, "/tmp/arduino-libraries/Servo", repo)
 	require.NoError(t, err)
 	require.NotNil(t, repo)
 
