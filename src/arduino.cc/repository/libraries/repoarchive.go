@@ -8,16 +8,20 @@ import (
 	"regexp"
 )
 
-func ZipRepo(repoFolder string, librariesBaseFolder string, zipFolderName string) error {
-	absoluteFileName := filepath.Join(librariesBaseFolder, zipFolderName+".zip")
+func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string, error) {
+	err := os.MkdirAll(baseFolder, os.FileMode(0755))
+	if err != nil {
+		return "", err
+	}
+	absoluteFileName := filepath.Join(baseFolder, zipFolderName+".zip")
 	zipFile, err := os.Create(absoluteFileName)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer zipFile.Close()
 
-	return zip.ZipDirectory(repoFolder, zipFolderName, zipFile)
+	return absoluteFileName, zip.ZipDirectory(repoFolder, zipFolderName, zipFile)
 }
 
 func ZipFolderName(library *metadata.LibraryMetadata) string {

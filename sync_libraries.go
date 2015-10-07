@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -185,12 +186,12 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 
 	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
 
-	err = libraries.ZipRepo(repoFolder, config.LibrariesFolder, zipFolderName)
+	zipFilePath, err := libraries.ZipRepo(repoFolder, filepath.Join(config.LibrariesFolder, filepath.Base(filepath.Clean(filepath.Join(repoFolder, "..")))), zipFolderName)
 	if logError(err) {
 		return err
 	}
 
-	size, checksum, err := getSizeAndCalculateChecksum(config.LibrariesFolder + release.ArchiveFileName)
+	size, checksum, err := getSizeAndCalculateChecksum(zipFilePath)
 	if logError(err) {
 		return err
 	}
