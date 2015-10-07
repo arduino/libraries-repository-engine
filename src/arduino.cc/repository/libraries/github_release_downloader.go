@@ -1,12 +1,12 @@
 package libraries
 
 import (
-	"io/ioutil"
-	"os"
-	"net/http"
-	"strings"
-	"io"
 	"arduino.cc/repository/libraries/hash"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
 )
 
 func GithubDownloadRelease(repoUrl, version string) (string, int64, string, error) {

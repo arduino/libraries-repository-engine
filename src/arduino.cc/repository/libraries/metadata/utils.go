@@ -27,7 +27,7 @@ func VersionToSemverCompliant(version string) (string, error) {
 
 func replaceEndingLetter(version string, letter uint8) string {
 	if version[len(version)-1] == letter {
-		version = version[:len(version)-1]+".1"
+		version = version[:len(version)-1] + ".1"
 	}
 	return version
 }

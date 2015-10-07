@@ -1,15 +1,15 @@
 package libraries
 
 import (
-	"os/exec"
 	"errors"
 	"os"
+	"os/exec"
 	"path"
 )
 
 func FailIfHasUndesiredFiles(folder string) error {
 	err := failIfContainsForbiddenFileInRoot(folder)
-	if (err != nil) {
+	if err != nil {
 		return err
 	}
 	return failIfContainsExes(folder)

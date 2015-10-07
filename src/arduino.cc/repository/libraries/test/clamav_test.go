@@ -2,10 +2,10 @@ package libraries
 
 import (
 	"arduino.cc/repository/libraries"
-	"testing"
-	"io/ioutil"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"os"
+	"testing"
 )
 
 func TestRunClamAV(t *testing.T) {

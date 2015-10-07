@@ -1,9 +1,9 @@
 package metadata
 
 import (
-	"testing"
-	"github.com/stretchr/testify/require"
 	"arduino.cc/repository/libraries/metadata"
+	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestVersionFix(t *testing.T) {
@@ -21,14 +21,14 @@ func TestVersionFix(t *testing.T) {
 	require.Equal(t, "1.2.0", version)
 
 	/*
-	version, err = metadata.VersionToSemverCompliant("1.2b")
+		version, err = metadata.VersionToSemverCompliant("1.2b")
 
-	require.NoError(t, err)
-	require.Equal(t, "1.2.1", version)
+		require.NoError(t, err)
+		require.Equal(t, "1.2.1", version)
 
-	version, err = metadata.VersionToSemverCompliant("05")
+		version, err = metadata.VersionToSemverCompliant("05")
 
-	require.NoError(t, err)
-	require.Equal(t, "5.0.0", version)
+		require.NoError(t, err)
+		require.Equal(t, "5.0.0", version)
 	*/
 }

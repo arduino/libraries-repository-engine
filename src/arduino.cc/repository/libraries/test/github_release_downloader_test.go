@@ -1,9 +1,9 @@
 package libraries
 
 import (
-	"testing"
 	"arduino.cc/repository/libraries"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestGithubDownload(t *testing.T) {

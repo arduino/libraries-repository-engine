@@ -1,9 +1,9 @@
 package libraries
 
 import (
-	"testing"
 	"arduino.cc/repository/libraries"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestBadFileFinderDotDevelopment(t *testing.T) {
@@ -20,4 +20,3 @@ func TestBadFileFinderValid(t *testing.T) {
 	err := libraries.FailIfHasUndesiredFiles("./testdata/lib_valid")
 	assert.NoError(t, err)
 }
-

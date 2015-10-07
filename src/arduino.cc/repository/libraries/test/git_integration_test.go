@@ -39,7 +39,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 		zipFolderName := libraries.ZipFolderName(library)
 
-		release := db.FromLibraryToRelease(library, "http://www.example.com/", zipFolderName + ".zip")
+		release := db.FromLibraryToRelease(library, "http://www.example.com/", zipFolderName+".zip")
 
 		err = libraries.ZipRepo(repoFolder, librariesRepo, zipFolderName)
 		require.NoError(t, err)

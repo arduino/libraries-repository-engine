@@ -3,7 +3,6 @@ BUILD
 
 ```
 go get github.com/google/go-github/github
-go get github.com/robfig/cron
 go get github.com/vaughan0/go-ini
 go get github.com/blang/semver
 go get github.com/stretchr/testify
