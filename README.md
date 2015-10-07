@@ -17,7 +17,7 @@ TDD
 In order to run the tests, type
 
 ```
-go test -v ./test/...
+go test -v ./src/arduino.cc/repository/libraries/test/...
 ```
 
 RUN
