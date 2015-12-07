@@ -20,6 +20,10 @@ func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile *os.File)
 	defer zipFileWriter.Close()
 
 	addEntryToZip := func(path string, info os.FileInfo, err error) error {
+		info, err = os.Stat(path)
+		if err != nil {
+			return err
+		}
 		rel, err := filepath.Rel(rootFolder, path)
 		if err != nil {
 			return err
