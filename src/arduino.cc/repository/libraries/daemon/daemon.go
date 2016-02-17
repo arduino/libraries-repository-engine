@@ -225,7 +225,9 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 		}
 		fmt.Println(github.Stringify(newRelease))
 
-		dbRelease := db.FromLibraryToRelease(library, *newRelease.TarballURL)
+		url := *newRelease.TarballURL
+		sep := strings.LastIndex(url, "/")
+		dbRelease := db.FromLibraryToRelease(library, url[:sep], url[sep+1:])
 
 		err = libs.AddRelease(dbRelease)
 		if err != nil {
