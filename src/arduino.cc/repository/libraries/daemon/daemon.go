@@ -5,7 +5,7 @@ import (
 	"arduino.cc/repository/libraries/cron"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/metadata"
-	"code.google.com/p/goauth2/oauth"
+	"golang.org/x/oauth2"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -17,8 +17,9 @@ import (
 )
 
 // Global github client
-var gh_auth = &oauth.Transport{Token: &oauth.Token{AccessToken: config.GithubAuthToken()}}
-var gh = github.NewClient(gh_auth.Client())
+var gh_token = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.GithubAuthToken()})
+var gh_oauthClient = oauth2.NewClient(oauth2.NoContext, gh_token)
+var gh = github.NewClient(gh_oauthClient)
 
 // Global db client
 var libs *db.DB
