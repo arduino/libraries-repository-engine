@@ -199,17 +199,18 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 	release.Size = size
 	release.Checksum = checksum
 
-	if strings.Index(repo.Url, "https://github.com") != -1 {
-		url, size, checksum, err := libraries.GithubDownloadRelease(repo.Url, tag)
-		if logError(err) {
-			return err
+	/*
+		if strings.Index(repo.Url, "https://github.com") != -1 {
+			url, size, checksum, err := libraries.GithubDownloadRelease(repo.Url, tag)
+			if logError(err) {
+				return err
+			}
+			release.URL = url
+			release.Size = size
+			release.Checksum = checksum
+			release.ArchiveFileName = zipFolderName + "-github.zip"
 		}
-		release.URL = url
-		release.Size = size
-		release.Checksum = checksum
-		release.ArchiveFileName = zipFolderName + "-github.zip"
-	}
-
+	*/
 	err = libraries.UpdateLibrary(release, libraryDb)
 	if logError(err) {
 		return err
