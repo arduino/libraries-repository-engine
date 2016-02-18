@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
+	//"strings"
 )
 
 // TODO(cm): Merge this struct with config/config.go
@@ -183,10 +183,8 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 	}
 
 	zipFolderName := libraries.ZipFolderName(library)
-
-	release := db.FromLibraryToRelease(library, config.BaseDownloadUrl, zipFolderName+".zip")
-
-	zipFilePath, err := libraries.ZipRepo(repoFolder, filepath.Join(config.LibrariesFolder, filepath.Base(filepath.Clean(filepath.Join(repoFolder, "..")))), zipFolderName)
+	libFolder := filepath.Base(filepath.Clean(filepath.Join(repoFolder, "..")))
+	zipFilePath, err := libraries.ZipRepo(repoFolder, filepath.Join(config.LibrariesFolder, libFolder), zipFolderName)
 	if logError(err) {
 		return err
 	}
@@ -195,6 +193,9 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 	if logError(err) {
 		return err
 	}
+	release := db.FromLibraryToRelease(library)
+	release.URL = config.BaseDownloadUrl + libFolder + "/" + zipFolderName + ".zip"
+	release.ArchiveFileName = zipFolderName + ".zip"
 	release.Size = size
 	release.Checksum = checksum
 

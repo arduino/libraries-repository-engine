@@ -5,11 +5,11 @@ import (
 	"arduino.cc/repository/libraries/cron"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/metadata"
-	"golang.org/x/oauth2"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 	"log"
 	"strconv"
 	"strings"
@@ -227,7 +227,9 @@ func ProcessClosePullRequest(pull *github.PullRequest) {
 
 		url := *newRelease.TarballURL
 		sep := strings.LastIndex(url, "/")
-		dbRelease := db.FromLibraryToRelease(library, url[:sep], url[sep+1:])
+		dbRelease := db.FromLibraryToRelease(library)
+		dbRelease.URL = url
+		dbRelease.ArchiveFileName = url[sep+1:]
 
 		err = libs.AddRelease(dbRelease)
 		if err != nil {

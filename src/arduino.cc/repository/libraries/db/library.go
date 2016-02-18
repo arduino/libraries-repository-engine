@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func FromLibraryToRelease(library *metadata.LibraryMetadata, baseDownloadURL string, archiveFileName string) *Release {
+func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 	architectures := strings.Split(library.Architectures, ",")
 	for i, v := range architectures {
 		architectures[i] = strings.TrimSpace(v)
@@ -23,8 +23,6 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata, baseDownloadURL str
 		Category:        library.Category,
 		Architectures:   architectures,
 		Types:           library.Types,
-		URL:             baseDownloadURL + archiveFileName,
-		ArchiveFileName: archiveFileName,
 	}
 
 	return &dbRelease
