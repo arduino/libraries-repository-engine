@@ -48,7 +48,7 @@ func New(libraryFile string) *DB {
 func (db *DB) AddLibrary(library *Library) error {
 	found, _ := db.FindLibrary(library.Name)
 	if found != nil {
-		return errors.New("library alredy existent")
+		return errors.New("library already exists")
 	}
 	db.Libraries = append(db.Libraries, library)
 	return nil
@@ -70,10 +70,10 @@ func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 
 func (db *DB) AddRelease(release *Release) error {
 	if !db.HasLibrary(release.LibraryName) {
-		return errors.New("released library not found")
+		return errors.New("library not found")
 	}
 	if db.HasRelease(release) {
-		return errors.New("release already existent")
+		return errors.New("release already exists")
 	}
 	db.Releases = append(db.Releases, release)
 	return nil
