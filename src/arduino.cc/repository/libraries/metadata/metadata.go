@@ -35,6 +35,29 @@ type LibraryMetadata struct {
 	Types         []string
 }
 
+const CATEGORY_UNCATEGORIZED string = "Uncategorized"
+
+func IsValidCategory(category string) bool {
+	validCategories := []string{
+		"Display",
+		"Communication",
+		"Signal Input/Output",
+		"Sensors",
+		"Device Control",
+		"Timing",
+		"Data Storage",
+		"Data Processing",
+		"Other",
+		CATEGORY_UNCATEGORIZED,
+	}
+	for _, c := range validCategories {
+		if category == c {
+			return true
+		}
+	}
+	return false
+}
+
 func (library *LibraryMetadata) Validate() []error {
 	var errorsAccumulator []error
 
@@ -58,6 +81,11 @@ func (library *LibraryMetadata) Validate() []error {
 		errorsAccumulator = append(errorsAccumulator, err)
 	}
 	library.Version = newVersion
+
+	// Check if the category is valid and set to "Uncategorized" if not
+	if !IsValidCategory(library.Category) {
+		library.Category = CATEGORY_UNCATEGORIZED
+	}
 
 	return errorsAccumulator
 }
