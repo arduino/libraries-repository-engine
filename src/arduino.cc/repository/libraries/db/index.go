@@ -52,7 +52,7 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 				Sentence:        libraryRelease.Sentence,
 				Paragraph:       libraryRelease.Paragraph,
 				Website:         libraryRelease.Website,
-				Category:        libraryRelease.Category,
+				Category:        lib.LatestCategory,
 				Architectures:   libraryRelease.Architectures,
 				Types:           libraryRelease.Types,
 				ArchiveFileName: libraryRelease.ArchiveFileName,

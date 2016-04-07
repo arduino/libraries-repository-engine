@@ -20,6 +20,9 @@ type Library struct {
 	Name         string
 	Repository   string
 	SupportLevel string
+
+	// Category of the latest release of the library
+	LatestCategory string
 }
 
 // A release
@@ -69,13 +72,23 @@ func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 }
 
 func (db *DB) AddRelease(release *Release) error {
-	if !db.HasLibrary(release.LibraryName) {
-		return errors.New("library not found")
+	lib, err := db.FindLibrary(release.LibraryName)
+	if err != nil {
+		return err
 	}
+
 	if db.HasRelease(release) {
 		return errors.New("release already exists")
 	}
 	db.Releases = append(db.Releases, release)
+
+	// Update LatestCategory with the Category of the latest release
+	last, err := db.FindLatestReleaseOfLibrary(lib)
+	if err != nil {
+		return err
+	}
+	lib.LatestCategory = last.Category
+
 	return nil
 }
 
