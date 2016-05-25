@@ -6,6 +6,7 @@ go get github.com/google/go-github/github
 go get github.com/vaughan0/go-ini
 go get github.com/blang/semver
 go get github.com/stretchr/testify
+go get github.com/arduino/arduino-modules
 
 go build -o libraries-repository-engine
 ```
