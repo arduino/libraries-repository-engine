@@ -3,6 +3,7 @@ package db
 import (
 	"encoding/json"
 	"errors"
+	"github.com/blang/semver"
 	"io"
 	"log"
 	"os"
@@ -28,7 +29,7 @@ type Library struct {
 // A release
 type Release struct {
 	LibraryName     string // The library name
-	Version         Version
+	Version         semver.Version
 	Author          string
 	Maintainer      string
 	License         string
@@ -163,9 +164,7 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 			found = rel
 			continue
 		}
-		if less, err := found.Version.Less(rel.Version); err != nil {
-			return nil, err
-		} else if less {
+		if found.Version.LT(rel.Version) {
 			found = rel
 		}
 	}

@@ -1,5 +1,7 @@
 package db
 
+import "github.com/blang/semver"
+
 // Output structure used to generate library_index.json file
 type indexOutput struct {
 	Libraries []indexLibrary `json:"libraries"`
@@ -7,17 +9,17 @@ type indexOutput struct {
 
 // Output structure used to generate library_index.json file
 type indexLibrary struct {
-	LibraryName   string   `json:"name"`
-	Version       Version  `json:"version"`
-	Author        string   `json:"author"`
-	Maintainer    string   `json:"maintainer"`
-	License       string   `json:"license,omitempty"`
-	Sentence      string   `json:"sentence"`
-	Paragraph     string   `json:"paragraph,omitempty"`
-	Website       string   `json:"website,omitempty"`
-	Category      string   `json:"category,omitempty"`
-	Architectures []string `json:"architectures,omitempty"`
-	Types         []string `json:"types,omitempty"`
+	LibraryName   string         `json:"name"`
+	Version       semver.Version `json:"version"`
+	Author        string         `json:"author"`
+	Maintainer    string         `json:"maintainer"`
+	License       string         `json:"license,omitempty"`
+	Sentence      string         `json:"sentence"`
+	Paragraph     string         `json:"paragraph,omitempty"`
+	Website       string         `json:"website,omitempty"`
+	Category      string         `json:"category,omitempty"`
+	Architectures []string       `json:"architectures,omitempty"`
+	Types         []string       `json:"types,omitempty"`
 
 	URL             string `json:"url"`
 	ArchiveFileName string `json:"archiveFileName"`

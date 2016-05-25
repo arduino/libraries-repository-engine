@@ -11,9 +11,14 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 		architectures[i] = strings.TrimSpace(v)
 	}
 
+	version, err := ParseVersion(library.Version)
+	if err != nil {
+		panic(err)
+	}
+
 	dbRelease := Release{
 		LibraryName:   library.Name,
-		Version:       VersionFromString(library.Version),
+		Version:       version,
 		Author:        library.Author,
 		Maintainer:    library.Maintainer,
 		License:       library.License,

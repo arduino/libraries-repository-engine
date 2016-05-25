@@ -1,29 +1,18 @@
 package db
 
-import "encoding/json"
+import "strings"
+import "github.com/blang/semver"
 
-type Version struct {
-	version string
-}
+func ParseVersion(version string) (semver.Version, error) {
+	//version = replaceEndingLetter(version, 'b')
 
-func (version *Version) Less(other Version) (bool, error) {
-	// TODO: apply semantic versioning
-	return version.version < other.version, nil
-}
+	//version = removeLeading(version, '0')
 
-func (version *Version) String() string {
-	return version.version
-}
+	versionParts := strings.Split(version, ".")
+	for i := len(versionParts); i < 3; i++ {
+		versionParts = append(versionParts, "0")
+	}
+	version = strings.Join(versionParts, ".")
 
-func (version *Version) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &version.version)
-}
-
-func (version *Version) MarshalJSON() ([]byte, error) {
-	// Encode version as a string
-	return json.Marshal(version.version)
-}
-
-func VersionFromString(str string) Version {
-	return Version{version: str}
+	return semver.Parse(version)
 }
