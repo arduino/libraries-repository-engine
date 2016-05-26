@@ -2,9 +2,9 @@ package libraries
 
 import (
 	"arduino.cc/repository/libraries/db"
-	"arduino.cc/repository/libraries/git"
 	"arduino.cc/repository/libraries/metadata"
 	"errors"
+	"github.com/arduino/arduino-modules/git"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -12,65 +12,58 @@ import (
 	"strings"
 )
 
-func CloneOrFetch(repoURL, baseFolder string) (string, error) {
+func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {
 	parsedURL, err := url.Parse(repoURL)
 	folderName := strings.NewReplacer(".git", "").Replace(parsedURL.Path)
 	folderNameParts := strings.Split(folderName, "/")[1:]
 	folderName = filepath.Join(baseFolder, filepath.Join(folderNameParts...))
 
+	var repo *git.Repository
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
-		err = git.Clone(repoURL, folderName)
+		repo, err = git.Clone(repoURL, folderName)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
+	} else {
+		repo = &git.Repository{FolderPath: folderName}
 	}
 
-	tags, err := git.ListTags(folderName)
+	tags, err := repo.ListTags()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	for _, tag := range tags {
-		err = git.RemoveTag(folderName, tag)
-		if err != nil {
-			return "", err
+		if err = repo.RemoveTag(tag); err != nil {
+			return nil, err
 		}
 	}
 
-	err = git.Fetch(folderName)
-	if err != nil {
-		return "", err
+	if err = repo.Fetch(); err != nil {
+		return nil, err
 	}
 
-	return folderName, err
+	return repo, err
 }
 
-func ListTags(folderName string) ([]string, error) {
-	return git.ListTags(folderName)
-}
-
-func lastTagName(folderName string) (string, error) {
-	return git.LastTag(folderName)
-}
-
-func CheckoutTag(folderName string, tagName string) error {
-	return git.CheckoutTag(folderName, tagName)
-}
-
-func CheckoutLastTag(folderName string) error {
-	lastTagName, err := lastTagName(folderName)
+func CheckoutLastTag(repo *git.Repository) error {
+	tags, err := repo.ListTags()
 	if err != nil {
 		return err
 	}
-
-	if lastTagName == "" {
-		return errors.New("Repository " + folderName + " has not tags")
+	if len(tags) == 0 {
+		return errors.New("No tags in repository " + repo.FolderPath)
 	}
 
-	return git.CheckoutTag(folderName, lastTagName)
+	lastTagName := tags[len(tags)-1]
+	if lastTagName == "" {
+		return errors.New("Repository " + repo.FolderPath + " has not tags")
+	}
+
+	return repo.CheckoutTag(lastTagName)
 }
 
-func GenerateLibraryFromRepo(repoFolder string, repo *Repo) (*metadata.LibraryMetadata, error) {
-	bytes, err := ioutil.ReadFile(filepath.Join(repoFolder, "library.properties"))
+func GenerateLibraryFromRepo(repo *git.Repository, repoMeta *Repo) (*metadata.LibraryMetadata, error) {
+	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +72,7 @@ func GenerateLibraryFromRepo(repoFolder string, repo *Repo) (*metadata.LibraryMe
 	if err != nil {
 		return nil, err
 	}
-	library.Types = repo.Types
+	library.Types = repoMeta.Types
 
 	libraryErrors := library.Validate()
 	if len(libraryErrors) > 0 {
