@@ -8,7 +8,7 @@ go get github.com/blang/semver
 go get github.com/stretchr/testify
 go get github.com/arduino/arduino-modules
 
-go build -o libraries-repository-engine
+go build arduino.cc/repository/libraries-repository-engine
 ```
 
 TDD

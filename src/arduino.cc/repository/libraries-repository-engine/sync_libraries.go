@@ -5,6 +5,7 @@ import (
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
 	"encoding/json"
+	"github.com/arduino/arduino-modules/git"
 	"log"
 	"os"
 	"path/filepath"
@@ -132,20 +133,20 @@ func setup(config *Config) {
 	}
 }
 
-func syncLibraryInRepo(repo *libraries.Repo, libraryDb *db.DB, config *Config) []error {
-	repoFolder, err := libraries.CloneOrFetch(repo.Url, config.GitClonesFolder)
+func syncLibraryInRepo(repoMeta *libraries.Repo, libraryDb *db.DB, config *Config) []error {
+	repo, err := libraries.CloneOrFetch(repoMeta.Url, config.GitClonesFolder)
 	if logError(err) {
 		return []error{err}
 	}
 
-	tags, err := libraries.ListTags(repoFolder)
+	tags, err := repo.ListTags()
 	if logError(err) {
 		return []error{err}
 	}
 
 	var errors []error
 	for _, tag := range tags {
-		err = syncLibraryTaggedRelease(repoFolder, tag, repo, libraryDb, config)
+		err = syncLibraryTaggedRelease(repo, tag, repoMeta, libraryDb, config)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -154,15 +155,15 @@ func syncLibraryInRepo(repo *libraries.Repo, libraryDb *db.DB, config *Config) [
 	return errors
 }
 
-func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Repo, libraryDb *db.DB, config *Config) error {
+func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB, config *Config) error {
 	log.Println("... ... tag " + tag)
 
-	err := libraries.CheckoutTag(repoFolder, tag)
+	err := repo.CheckoutTag(tag)
 	if logError(err) {
 		return err
 	}
 
-	library, err := libraries.GenerateLibraryFromRepo(repoFolder, repo)
+	library, err := libraries.GenerateLibraryFromRepo(repo, repoMeta)
 	if logError(err) {
 		return err
 	}
@@ -172,19 +173,19 @@ func syncLibraryTaggedRelease(repoFolder string, tag string, repo *libraries.Rep
 		return nil
 	}
 
-	err = libraries.FailIfHasUndesiredFiles(repoFolder)
+	err = libraries.FailIfHasUndesiredFiles(repo.FolderPath)
 	if logError(err) {
 		return err
 	}
 
-	err = libraries.RunAntiVirus(repoFolder)
+	err = libraries.RunAntiVirus(repo.FolderPath)
 	if logError(err) {
 		return err
 	}
 
 	zipFolderName := libraries.ZipFolderName(library)
-	libFolder := filepath.Base(filepath.Clean(filepath.Join(repoFolder, "..")))
-	zipFilePath, err := libraries.ZipRepo(repoFolder, filepath.Join(config.LibrariesFolder, libFolder), zipFolderName)
+	libFolder := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
+	zipFilePath, err := libraries.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, libFolder), zipFolderName)
 	if logError(err) {
 		return err
 	}

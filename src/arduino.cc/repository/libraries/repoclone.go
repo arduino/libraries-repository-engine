@@ -62,8 +62,8 @@ func CheckoutLastTag(repo *git.Repository) error {
 	return repo.CheckoutTag(lastTagName)
 }
 
-func GenerateLibraryFromRepo(repoFolder string, repo *Repo) (*metadata.LibraryMetadata, error) {
-	bytes, err := ioutil.ReadFile(filepath.Join(repoFolder, "library.properties"))
+func GenerateLibraryFromRepo(repo *git.Repository, repoMeta *Repo) (*metadata.LibraryMetadata, error) {
+	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func GenerateLibraryFromRepo(repoFolder string, repo *Repo) (*metadata.LibraryMe
 	if err != nil {
 		return nil, err
 	}
-	library.Types = repo.Types
+	library.Types = repoMeta.Types
 
 	libraryErrors := library.Validate()
 	if len(libraryErrors) > 0 {
