@@ -18,16 +18,20 @@ func loadRepoListFromFile(filename string) ([]*Repo, error) {
 
 	var repos []*Repo
 
-	reader := bufio.NewReader(file)
-	var line string
-	for err == nil {
-		line, err = reader.ReadString('\n')
-		line = strings.TrimRight(line, "\n")
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
 		if len(line) > 0 && line[0] != '#' {
-			lineParts := strings.Split(line, "\t")
-			url := lineParts[0]
-			types := strings.Split(lineParts[1], ",")
-			repos = append(repos, &Repo{url, types})
+			split := strings.Split(line, "|")
+			url := split[0]
+			types := strings.Split(split[1], ",")
+			name := split[2]
+			repos = append(repos, &Repo{
+				Url:         url,
+				Types:       types,
+				LibraryName: name,
+			})
 		}
 	}
 
@@ -63,8 +67,9 @@ type GitURLsError struct {
 }
 
 type Repo struct {
-	Url   string
-	Types []string
+	Url         string
+	Types       []string
+	LibraryName string
 }
 
 type ReposByUrl []*Repo
