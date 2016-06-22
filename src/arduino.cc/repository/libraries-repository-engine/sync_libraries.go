@@ -163,10 +163,11 @@ func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *librar
 		return err
 	}
 
-	library, err := libraries.GenerateLibraryFromRepo(repo, repoMeta)
+	library, err := libraries.GenerateLibraryFromRepo(repo)
 	if logError(err) {
 		return err
 	}
+	library.Types = repoMeta.Types
 
 	if libraryDb.HasLibrary(library.Name) && libraryDb.HasReleaseByNameVersion(library.Name, library.Version) {
 		log.Println("... ... tag " + tag + " already loaded: skipping")

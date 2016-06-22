@@ -71,11 +71,6 @@ func (library *LibraryMetadata) Validate() []error {
 		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence' and 'url' fields must be defined"))
 	}
 
-	// Check sentence and paragraph and url existence
-	if library.Types == nil || len(library.Types) == 0 {
-		errorsAccumulator = append(errorsAccumulator, errors.New("Missing types"))
-	}
-
 	newVersion, err := VersionToSemverCompliant(library.Version)
 	if err != nil {
 		errorsAccumulator = append(errorsAccumulator, err)
