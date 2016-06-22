@@ -2,14 +2,15 @@ package libraries
 
 import (
 	"arduino.cc/repository/libraries/db"
-	"arduino.cc/repository/libraries/metadata"
 	"errors"
-	"github.com/arduino/arduino-modules/git"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"arduino.cc/repository/libraries/metadata"
+	"github.com/arduino/arduino-modules/git"
 )
 
 func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {

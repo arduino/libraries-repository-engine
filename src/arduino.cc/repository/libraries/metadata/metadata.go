@@ -16,6 +16,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+
 	"github.com/google/go-github/github"
 	ini "github.com/vaughan0/go-ini"
 )

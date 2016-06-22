@@ -1,15 +1,15 @@
 package main
 
 import (
-	"arduino.cc/repository/libraries"
-	"arduino.cc/repository/libraries/db"
-	"arduino.cc/repository/libraries/hash"
 	"encoding/json"
-	"github.com/arduino/arduino-modules/git"
 	"log"
 	"os"
 	"path/filepath"
-	//"strings"
+
+	"arduino.cc/repository/libraries"
+	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/hash"
+	"github.com/arduino/arduino-modules/git"
 )
 
 // TODO(cm): Merge this struct with config/config.go
