@@ -67,11 +67,9 @@ func syncLibraries(reposFile string) {
 
 	libraryDb := db.Init(config.LibrariesDB)
 
-	var errorWithARepo bool
 	for _, repo := range repos {
 		log.Println("... " + repo.Url)
-		errors := syncLibraryInRepo(repo, libraryDb, config)
-		errorWithARepo = errorWithARepo || (errors != nil && len(errors) > 0)
+		syncLibraryInRepo(repo, libraryDb)
 	}
 
 	libraryIndex, err := libraryDb.OutputLibraryIndex()
@@ -133,7 +131,7 @@ func setup(config *Config) {
 	}
 }
 
-func syncLibraryInRepo(repoMeta *libraries.Repo, libraryDb *db.DB, config *Config) []error {
+func syncLibraryInRepo(repoMeta *libraries.Repo, libraryDb *db.DB) []error {
 	repo, err := libraries.CloneOrFetch(repoMeta.Url, config.GitClonesFolder)
 	if logError(err) {
 		return []error{err}
@@ -146,7 +144,7 @@ func syncLibraryInRepo(repoMeta *libraries.Repo, libraryDb *db.DB, config *Confi
 
 	var errors []error
 	for _, tag := range tags {
-		err = syncLibraryTaggedRelease(repo, tag, repoMeta, libraryDb, config)
+		err = syncLibraryTaggedRelease(repo, tag, repoMeta, libraryDb)
 		if err != nil {
 			errors = append(errors, err)
 		}
@@ -155,7 +153,7 @@ func syncLibraryInRepo(repoMeta *libraries.Repo, libraryDb *db.DB, config *Confi
 	return errors
 }
 
-func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB, config *Config) error {
+func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
 	log.Println("... ... tag " + tag)
 
 	err := repo.CheckoutTag(tag)
