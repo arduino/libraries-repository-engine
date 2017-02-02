@@ -10,6 +10,7 @@ import (
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
 	"github.com/arduino/arduino-modules/git"
+	"github.com/arduino/golang-concurrent-workers"
 )
 
 // TODO(cm): Merge this struct with config/config.go
@@ -65,11 +66,65 @@ func syncLibraries(reposFile string) {
 		os.Exit(1)
 	}
 
+	type jobContext struct {
+		id           int
+		repoMetadata *libraries.Repo
+	}
+
 	libraryDb := db.Init(config.LibrariesDB)
 
-	for _, repo := range repos {
-		log.Println("... " + repo.Url)
-		syncLibraryInRepo(repo, libraryDb)
+	jobQueue := make(chan *jobContext)
+
+	pool := cc.New(4)
+	worker := func() {
+		log.Println("Started worker...")
+		for job := range jobQueue {
+			log.Printf("JOB %03d ... %s", job.id, job.repoMetadata.Url)
+
+			// Clone repository
+			repo, err := libraries.CloneOrFetch(job.repoMetadata.Url, config.GitClonesFolder)
+			if err != nil {
+				log.Printf("JOB %03d - error while fetching repository: %s", job.id, err)
+				continue
+			}
+
+			// Retrieve the list of git-tags
+			tags, err := repo.ListTags()
+			if err != nil {
+				log.Printf("JOB %03d - error retrieving tags: %s", job.id, err)
+				continue
+			}
+
+			for _, tag := range tags {
+				// Sync the library release for each git-tag
+				err = syncLibraryTaggedRelease(repo, tag, job.repoMetadata, libraryDb)
+				if err != nil {
+					log.Printf("JOB %03d - error syncing library: %s", job.id, err)
+				}
+			}
+		}
+		log.Println("Completed worker!")
+	}
+	pool.Run(worker)
+	//pool.Run(worker)
+	//pool.Run(worker)
+	//pool.Run(worker)
+	pool.Wait()
+
+	go func() {
+		id := 0
+		for _, repo := range repos {
+			jobQueue <- &jobContext{
+				id:           id,
+				repoMetadata: repo,
+			}
+			id++
+		}
+		close(jobQueue)
+	}()
+
+	for err := range pool.Errors {
+		logError(err)
 	}
 
 	libraryIndex, err := libraryDb.OutputLibraryIndex()
@@ -131,38 +186,15 @@ func setup(config *Config) {
 	}
 }
 
-func syncLibraryInRepo(repoMeta *libraries.Repo, libraryDb *db.DB) []error {
-	repo, err := libraries.CloneOrFetch(repoMeta.Url, config.GitClonesFolder)
-	if logError(err) {
-		return []error{err}
-	}
-
-	tags, err := repo.ListTags()
-	if logError(err) {
-		return []error{err}
-	}
-
-	var errors []error
-	for _, tag := range tags {
-		err = syncLibraryTaggedRelease(repo, tag, repoMeta, libraryDb)
-		if err != nil {
-			errors = append(errors, err)
-		}
-	}
-
-	return errors
-}
-
 func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
 	log.Println("... ... tag " + tag)
 
-	err := repo.CheckoutTag(tag)
-	if logError(err) {
+	if err := repo.CheckoutTag(tag); err != nil {
 		return err
 	}
 
 	library, err := libraries.GenerateLibraryFromRepo(repo)
-	if logError(err) {
+	if err != nil {
 		return err
 	}
 	library.Types = repoMeta.Types
@@ -173,25 +205,23 @@ func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *librar
 		return nil
 	}
 
-	err = libraries.FailIfHasUndesiredFiles(repo.FolderPath)
-	if logError(err) {
+	if err := libraries.FailIfHasUndesiredFiles(repo.FolderPath); err != nil {
 		return err
 	}
 
-	err = libraries.RunAntiVirus(repo.FolderPath)
-	if logError(err) {
+	if err := libraries.RunAntiVirus(repo.FolderPath); err != nil {
 		return err
 	}
 
 	zipFolderName := libraries.ZipFolderName(library)
 	libFolder := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
 	zipFilePath, err := libraries.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, libFolder), zipFolderName)
-	if logError(err) {
+	if err != nil {
 		return err
 	}
 
 	size, checksum, err := getSizeAndCalculateChecksum(zipFilePath)
-	if logError(err) {
+	if err != nil {
 		return err
 	}
 	release := db.FromLibraryToRelease(library)
@@ -213,7 +243,7 @@ func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *librar
 		}
 	*/
 	err = libraries.UpdateLibrary(release, libraryDb)
-	if logError(err) {
+	if err != nil {
 		return err
 	}
 
