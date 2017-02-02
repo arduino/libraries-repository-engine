@@ -109,9 +109,9 @@ func syncLibraries(reposFile string) {
 		log.Println("Completed worker!")
 	}
 	pool.Run(worker)
-	//pool.Run(worker)
-	//pool.Run(worker)
-	//pool.Run(worker)
+	pool.Run(worker)
+	pool.Run(worker)
+	pool.Run(worker)
 	pool.Wait()
 
 	go func() {
