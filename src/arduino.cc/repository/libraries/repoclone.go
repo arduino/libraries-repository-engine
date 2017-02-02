@@ -1,13 +1,16 @@
 package libraries
 
 import (
-	"arduino.cc/repository/libraries/db"
 	"errors"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"arduino.cc/repository/libraries/db"
+
+	"fmt"
 
 	"arduino.cc/repository/libraries/metadata"
 	"github.com/arduino/arduino-modules/git"
@@ -66,7 +69,7 @@ func CheckoutLastTag(repo *git.Repository) error {
 func GenerateLibraryFromRepo(repo *git.Repository) (*metadata.LibraryMetadata, error) {
 	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't read library.properties: %s", err)
 	}
 
 	library, err := metadata.Parse(bytes)
