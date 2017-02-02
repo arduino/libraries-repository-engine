@@ -191,7 +191,7 @@ func setup(config *Config) {
 
 func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
 	logger.Printf("Checking out tag: %s", tag)
-	if out, err := repo.CheckoutTag(tag); err != nil {
+	if out, err := repo.CheckoutTagWithOutput(tag); err != nil {
 		logger.Printf("git output: %s", out)
 		return fmt.Errorf("Error checking out repo: %s", err)
 	}
