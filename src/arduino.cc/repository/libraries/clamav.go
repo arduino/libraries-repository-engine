@@ -31,19 +31,19 @@ func modifyEnv(env []string, key, value string) []string {
 	return envMapToSlice(envMap)
 }
 
-func RunAntiVirus(folder string) error {
+func RunAntiVirus(folder string) ([]byte, error) {
 	cmd := exec.Command("clamdscan", "-i", folder)
 	cmd.Env = modifyEnv(os.Environ(), "LANG", "en")
 
-	bytes, err := cmd.CombinedOutput()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return out, err
 	}
 
-	output := string(bytes)
+	output := string(out)
 	if strings.Index(output, "Infected files: 0") == -1 {
-		return errors.New("Infected files found!")
+		return out, errors.New("Infected files found!")
 	}
 
-	return nil
+	return out, nil
 }

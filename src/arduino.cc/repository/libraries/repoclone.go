@@ -63,7 +63,8 @@ func CheckoutLastTag(repo *git.Repository) error {
 		return errors.New("Repository " + repo.FolderPath + " has not tags")
 	}
 
-	return repo.CheckoutTag(lastTagName)
+	_, err = repo.CheckoutTag(lastTagName)
+	return err
 }
 
 func GenerateLibraryFromRepo(repo *git.Repository) (*metadata.LibraryMetadata, error) {

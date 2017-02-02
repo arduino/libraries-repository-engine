@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"fmt"
+
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
@@ -79,27 +81,28 @@ func syncLibraries(reposFile string) {
 	worker := func() {
 		log.Println("Started worker...")
 		for job := range jobQueue {
-			log.Printf("JOB %03d ... %s", job.id, job.repoMetadata.Url)
+			logger := log.New(os.Stdout, fmt.Sprintf("JOB %03d - ", job.id), log.LstdFlags)
+			logger.Printf("Scraping %s", job.repoMetadata.Url)
 
 			// Clone repository
 			repo, err := libraries.CloneOrFetch(job.repoMetadata.Url, config.GitClonesFolder)
 			if err != nil {
-				log.Printf("JOB %03d - error while fetching repository: %s", job.id, err)
+				logger.Printf("Error fetching repository: %s", err)
 				continue
 			}
 
 			// Retrieve the list of git-tags
 			tags, err := repo.ListTags()
 			if err != nil {
-				log.Printf("JOB %03d - error retrieving tags: %s", job.id, err)
+				logger.Printf("Error retrieving git-tags: %s", err)
 				continue
 			}
 
 			for _, tag := range tags {
 				// Sync the library release for each git-tag
-				err = syncLibraryTaggedRelease(repo, tag, job.repoMetadata, libraryDb)
+				err = syncLibraryTaggedRelease(logger, repo, tag, job.repoMetadata, libraryDb)
 				if err != nil {
-					log.Printf("JOB %03d - error syncing library: %s", job.id, err)
+					logger.Printf("Error syncing library: %s", err)
 				}
 			}
 		}
@@ -186,22 +189,22 @@ func setup(config *Config) {
 	}
 }
 
-func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
-	log.Println("... ... tag " + tag)
-
-	if err := repo.CheckoutTag(tag); err != nil {
-		return err
+func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
+	logger.Printf("Checking out tag: %s", tag)
+	if out, err := repo.CheckoutTag(tag); err != nil {
+		logger.Printf("git output: %s", out)
+		return fmt.Errorf("Error checking out repo: %s", err)
 	}
 
 	library, err := libraries.GenerateLibraryFromRepo(repo)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error generating library from repo: %s", err)
 	}
 	library.Types = repoMeta.Types
 	library.Name = repoMeta.LibraryName
 
 	if libraryDb.HasLibrary(library.Name) && libraryDb.HasReleaseByNameVersion(library.Name, library.Version) {
-		log.Println("... ... tag " + tag + " already loaded: skipping")
+		logger.Printf("Release %s:%s already loaded, skipping", library.Name, library.Version)
 		return nil
 	}
 
@@ -209,7 +212,8 @@ func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *librar
 		return err
 	}
 
-	if err := libraries.RunAntiVirus(repo.FolderPath); err != nil {
+	if out, err := libraries.RunAntiVirus(repo.FolderPath); err != nil {
+		logger.Printf("clamav output:\n%s", out)
 		return err
 	}
 
@@ -217,12 +221,12 @@ func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *librar
 	libFolder := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
 	zipFilePath, err := libraries.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, libFolder), zipFolderName)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error while zipping library: %s", err)
 	}
 
 	size, checksum, err := getSizeAndCalculateChecksum(zipFilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error while calculating checksums: %s", err)
 	}
 	release := db.FromLibraryToRelease(library)
 	release.URL = config.BaseDownloadUrl + libFolder + "/" + zipFolderName + ".zip"
@@ -242,9 +246,8 @@ func syncLibraryTaggedRelease(repo *git.Repository, tag string, repoMeta *librar
 			release.ArchiveFileName = zipFolderName + "-github.zip"
 		}
 	*/
-	err = libraries.UpdateLibrary(release, libraryDb)
-	if err != nil {
-		return err
+	if err := libraries.UpdateLibrary(release, libraryDb); err != nil {
+		return fmt.Errorf("Error while updating library DB: %s", err)
 	}
 
 	return nil

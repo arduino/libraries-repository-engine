@@ -20,7 +20,7 @@ var FORBIDDEN_FILES = []string{".development"}
 func failIfContainsForbiddenFileInRoot(folder string) error {
 	for _, file := range FORBIDDEN_FILES {
 		if _, err := os.Stat(filepath.Join(folder, file)); err == nil {
-			return errors.New("... ... " + file + " file found, skipping")
+			return errors.New(file + " file found, skipping")
 		}
 	}
 
@@ -37,7 +37,7 @@ func failIfContainsExes(folder string) error {
 			return err
 		}
 		if len(string(output)) > 0 {
-			return errors.New("... ... " + pattern + " files found, skipping")
+			return errors.New(pattern + " files found, skipping")
 		}
 	}
 	return nil
