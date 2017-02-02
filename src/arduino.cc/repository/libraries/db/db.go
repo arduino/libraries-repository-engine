@@ -6,13 +6,16 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 )
 
 // The libraries DB
 type DB struct {
+	Libraries []*Library
+	Releases  []*Release
+
 	libraryFile string
-	Libraries   []*Library
-	Releases    []*Release
+	mutex       sync.Mutex
 }
 
 // A library
@@ -49,7 +52,9 @@ func New(libraryFile string) *DB {
 }
 
 func (db *DB) AddLibrary(library *Library) error {
-	found, _ := db.FindLibrary(library.Name)
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	found, _ := db.findLibrary(library.Name)
 	if found != nil {
 		return errors.New("library already exists")
 	}
@@ -58,11 +63,23 @@ func (db *DB) AddLibrary(library *Library) error {
 }
 
 func (db *DB) HasLibrary(libraryName string) bool {
-	found, _ := db.FindLibrary(libraryName)
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.hasLibrary(libraryName)
+}
+
+func (db *DB) hasLibrary(libraryName string) bool {
+	found, _ := db.findLibrary(libraryName)
 	return found != nil
 }
 
 func (db *DB) FindLibrary(libraryName string) (*Library, error) {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.findLibrary(libraryName)
+}
+
+func (db *DB) findLibrary(libraryName string) (*Library, error) {
 	for _, lib := range db.Libraries {
 		if lib.Name == libraryName {
 			return lib, nil
@@ -72,18 +89,20 @@ func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 }
 
 func (db *DB) AddRelease(release *Release) error {
-	lib, err := db.FindLibrary(release.LibraryName)
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	lib, err := db.findLibrary(release.LibraryName)
 	if err != nil {
 		return err
 	}
 
-	if db.HasRelease(release) {
+	if db.hasRelease(release) {
 		return errors.New("release already exists")
 	}
 	db.Releases = append(db.Releases, release)
 
 	// Update LatestCategory with the Category of the latest release
-	last, err := db.FindLatestReleaseOfLibrary(lib)
+	last, err := db.findLatestReleaseOfLibrary(lib)
 	if err != nil {
 		return err
 	}
@@ -93,19 +112,33 @@ func (db *DB) AddRelease(release *Release) error {
 }
 
 func (db *DB) HasReleaseByNameVersion(libraryName string, libraryVersion string) bool {
-	found, _ := db.FindReleaseByNameVersion(libraryName, libraryVersion)
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.hasReleaseByNameVersion(libraryName, libraryVersion)
+}
+
+func (db *DB) hasReleaseByNameVersion(libraryName string, libraryVersion string) bool {
+	found, _ := db.findReleaseByNameVersion(libraryName, libraryVersion)
 	return found != nil
 }
 
 func (db *DB) HasRelease(release *Release) bool {
-	return db.HasReleaseByNameVersion(release.LibraryName, release.Version.String())
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.hasRelease(release)
+}
+
+func (db *DB) hasRelease(release *Release) bool {
+	return db.hasReleaseByNameVersion(release.LibraryName, release.Version.String())
 }
 
 func (db *DB) FindRelease(release *Release) (*Release, error) {
-	return db.FindReleaseByNameVersion(release.LibraryName, release.Version.String())
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.findReleaseByNameVersion(release.LibraryName, release.Version.String())
 }
 
-func (db *DB) FindReleaseByNameVersion(libraryName string, libraryVersion string) (*Release, error) {
+func (db *DB) findReleaseByNameVersion(libraryName string, libraryVersion string) (*Release, error) {
 	for _, r := range db.Releases {
 		if r.LibraryName == libraryName && r.Version.String() == libraryVersion {
 			return r, nil
@@ -139,15 +172,23 @@ func Load(r io.Reader) (*DB, error) {
 }
 
 func (db *DB) SaveToFile() error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
 	file, err := os.Create(db.libraryFile)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	return db.Save(file)
+	return db.save(file)
 }
 
 func (db *DB) Save(r io.Writer) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.save(r)
+}
+
+func (db *DB) save(r io.Writer) error {
 	buff, err := json.MarshalIndent(*db, "", "  ")
 	if err != nil {
 		return err
@@ -156,9 +197,9 @@ func (db *DB) Save(r io.Writer) error {
 	return err
 }
 
-func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
+func (db *DB) findLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	var found *Release = nil
-	for _, rel := range db.FindReleasesOfLibrary(lib) {
+	for _, rel := range db.findReleasesOfLibrary(lib) {
 		if found == nil {
 			found = rel
 			continue
@@ -173,6 +214,12 @@ func (db *DB) FindLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 }
 
 func (db *DB) FindReleasesOfLibrary(lib *Library) []*Release {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.findReleasesOfLibrary(lib)
+}
+
+func (db *DB) findReleasesOfLibrary(lib *Library) []*Release {
 	var releases []*Release
 	for _, rel := range db.Releases {
 		if rel.LibraryName != lib.Name {
