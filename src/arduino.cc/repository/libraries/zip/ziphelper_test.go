@@ -2,11 +2,11 @@ package zip
 
 import (
 	"archive/zip"
-	arduinozip "arduino.cc/repository/libraries/zip"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestZip(t *testing.T) {
@@ -14,7 +14,7 @@ func TestZip(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(zipFile.Name())
 
-	err = arduinozip.ZipDirectory("./testzip", "a_zip", zipFile)
+	err = ZipDirectory("./testzip", "a_zip", zipFile)
 	require.NoError(t, err)
 
 	zipFileReader, err := zip.OpenReader(zipFile.Name())
