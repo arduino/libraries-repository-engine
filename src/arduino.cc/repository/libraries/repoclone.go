@@ -16,11 +16,30 @@ import (
 	"github.com/arduino/arduino-modules/git"
 )
 
-func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {
+func RemoveClone(repoURL, baseFolder string) error {
+	repoFolder, err := determineRepoFolder(repoURL, baseFolder)
+	if err != nil {
+		return err
+	}
+	return os.RemoveAll(repoFolder)
+}
+
+func determineRepoFolder(repoURL, baseFolder string) (string, error) {
 	parsedURL, err := url.Parse(repoURL)
+	if err != nil {
+		return "", err
+	}
 	folderName := strings.NewReplacer(".git", "").Replace(parsedURL.Path)
 	folderNameParts := strings.Split(folderName, "/")[1:]
 	folderName = filepath.Join(baseFolder, filepath.Join(folderNameParts...))
+	return folderName, nil
+}
+
+func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {
+	folderName, err := determineRepoFolder(repoURL, baseFolder)
+	if err != nil {
+		return nil, err
+	}
 
 	var repo *git.Repository
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {

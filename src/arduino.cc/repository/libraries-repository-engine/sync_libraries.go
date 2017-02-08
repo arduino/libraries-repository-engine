@@ -178,7 +178,14 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 	repo, err := libraries.CloneOrFetch(repoMetadata.Url, config.GitClonesFolder)
 	if err != nil {
 		logger.Printf("Error fetching repository: %s", err)
-		return
+		logger.Printf("Removing clone and trying again")
+		libraries.RemoveClone(repoMetadata.Url, config.GitClonesFolder)
+		repo, err = libraries.CloneOrFetch(repoMetadata.Url, config.GitClonesFolder)
+		if err != nil {
+			logger.Printf("Error fetching repository: %s", err)
+			logger.Printf("Leaving...")
+			return
+		}
 	}
 
 	// Retrieve the list of git-tags
