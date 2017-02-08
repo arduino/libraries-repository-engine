@@ -8,6 +8,8 @@ import (
 
 	"fmt"
 
+	"bytes"
+
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
@@ -81,30 +83,10 @@ func syncLibraries(reposFile string) {
 	worker := func() {
 		log.Println("Started worker...")
 		for job := range jobQueue {
-			logger := log.New(os.Stdout, fmt.Sprintf("JOB %03d - ", job.id), log.LstdFlags)
-			logger.Printf("Scraping %s", job.repoMetadata.Url)
-
-			// Clone repository
-			repo, err := libraries.CloneOrFetch(job.repoMetadata.Url, config.GitClonesFolder)
-			if err != nil {
-				logger.Printf("Error fetching repository: %s", err)
-				continue
-			}
-
-			// Retrieve the list of git-tags
-			tags, err := repo.ListTags()
-			if err != nil {
-				logger.Printf("Error retrieving git-tags: %s", err)
-				continue
-			}
-
-			for _, tag := range tags {
-				// Sync the library release for each git-tag
-				err = syncLibraryTaggedRelease(logger, repo, tag, job.repoMetadata, libraryDb)
-				if err != nil {
-					logger.Printf("Error syncing library: %s", err)
-				}
-			}
+			buffer := &bytes.Buffer{}
+			logger := log.New(buffer, fmt.Sprintf("JOB %03d - ", job.id), log.LstdFlags)
+			syncLibrary(logger, job.repoMetadata, libraryDb)
+			fmt.Println(buffer.String())
 		}
 		log.Println("Completed worker!")
 	}
@@ -186,6 +168,32 @@ func setup(config *Config) {
 	err = os.MkdirAll(config.LibrariesFolder, os.FileMode(0777))
 	if logError(err) {
 		os.Exit(1)
+	}
+}
+
+func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db.DB) {
+	logger.Printf("Scraping %s", repoMetadata.Url)
+
+	// Clone repository
+	repo, err := libraries.CloneOrFetch(repoMetadata.Url, config.GitClonesFolder)
+	if err != nil {
+		logger.Printf("Error fetching repository: %s", err)
+		return
+	}
+
+	// Retrieve the list of git-tags
+	tags, err := repo.ListTags()
+	if err != nil {
+		logger.Printf("Error retrieving git-tags: %s", err)
+		return
+	}
+
+	for _, tag := range tags {
+		// Sync the library release for each git-tag
+		err = syncLibraryTaggedRelease(logger, repo, tag, repoMetadata, libraryDb)
+		if err != nil {
+			logger.Printf("Error syncing library: %s", err)
+		}
 	}
 }
 
