@@ -17,7 +17,6 @@ import (
 	"github.com/arduino/golang-concurrent-workers"
 )
 
-// TODO(cm): Merge this struct with config/config.go
 type Config struct {
 	BaseDownloadUrl string
 	LibrariesFolder string
@@ -140,7 +139,6 @@ func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
 	}
 }
 
-// TODO(cm): Merge this struct with config/config.go
 func readConf(configFile string) *Config {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		logError(err)
@@ -249,18 +247,6 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag stri
 	release.Size = size
 	release.Checksum = checksum
 
-	/*
-		if strings.Index(repo.Url, "https://github.com") != -1 {
-			url, size, checksum, err := libraries.GithubDownloadRelease(repo.Url, tag)
-			if logError(err) {
-				return err
-			}
-			release.URL = url
-			release.Size = size
-			release.Checksum = checksum
-			release.ArchiveFileName = zipFolderName + "-github.zip"
-		}
-	*/
 	if err := libraries.UpdateLibrary(release, libraryDb); err != nil {
 		return fmt.Errorf("Error while updating library DB: %s", err)
 	}
