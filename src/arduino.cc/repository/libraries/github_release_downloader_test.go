@@ -1,13 +1,13 @@
 package libraries
 
 import (
-	"arduino.cc/repository/libraries"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGithubDownload(t *testing.T) {
-	url, size, checksum, err := libraries.GithubDownloadRelease("https://github.com/arduino-libraries/Audio.git", "1.0.0")
+	url, size, checksum, err := GithubDownloadRelease("https://github.com/arduino-libraries/Audio.git", "1.0.0")
 
 	require.NoError(t, err)
 	require.Equal(t, url, "https://github.com/arduino-libraries/Audio/archive/1.0.0.zip")
