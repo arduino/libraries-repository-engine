@@ -68,24 +68,6 @@ func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {
 	return repo, err
 }
 
-func CheckoutLastTag(repo *git.Repository) error {
-	tags, err := repo.ListTags()
-	if err != nil {
-		return err
-	}
-	if len(tags) == 0 {
-		return errors.New("No tags in repository " + repo.FolderPath)
-	}
-
-	lastTagName := tags[len(tags)-1]
-	if lastTagName == "" {
-		return errors.New("Repository " + repo.FolderPath + " has not tags")
-	}
-
-	_, err = repo.CheckoutTagWithOutput(lastTagName)
-	return err
-}
-
 func GenerateLibraryFromRepo(repo *git.Repository) (*metadata.LibraryMetadata, error) {
 	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {

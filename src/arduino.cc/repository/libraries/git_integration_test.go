@@ -30,7 +30,11 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 		defer os.RemoveAll(r.FolderPath)
 
-		err = CheckoutLastTag(r)
+		tags, err := r.ListTags()
+		require.NoError(t, err)
+		require.NotEmpty(t, tags)
+
+		err = r.CheckoutTag(tags[0])
 		require.NoError(t, err)
 
 		library, err := GenerateLibraryFromRepo(r)
