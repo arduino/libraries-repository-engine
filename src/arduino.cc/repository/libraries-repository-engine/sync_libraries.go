@@ -23,6 +23,7 @@ type Config struct {
 	LibrariesDB     string
 	LibrariesIndex  string
 	GitClonesFolder string
+	DoNotRunClamav  bool
 }
 
 func logError(err error) bool {
@@ -229,9 +230,11 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag stri
 		return err
 	}
 
-	if out, err := libraries.RunAntiVirus(repo.FolderPath); err != nil {
-		logger.Printf("clamav output:\n%s", out)
-		return err
+	if !config.DoNotRunClamav {
+		if out, err := libraries.RunAntiVirus(repo.FolderPath); err != nil {
+			logger.Printf("clamav output:\n%s", out)
+			return err
+		}
 	}
 
 	zipFolderName := libraries.ZipFolderName(library)
