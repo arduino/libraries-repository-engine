@@ -12,7 +12,7 @@ func TestCloneRepos(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, repo)
-	require.Equal(t, "/tmp/arduino-libraries/Servo", repo.FolderPath)
+	require.Equal(t, "/tmp/github.com/arduino-libraries/Servo", repo.FolderPath)
 
 	defer os.RemoveAll(repo.FolderPath)
 
