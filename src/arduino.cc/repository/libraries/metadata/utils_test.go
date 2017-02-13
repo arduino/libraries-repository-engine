@@ -7,7 +7,7 @@ import (
 )
 
 func TestVersionFix(t *testing.T) {
-	version, err := VersionToSemverCompliant("1.0")
+	version, err := VersionToSemverCompliant("1")
 	require.NoError(t, err)
 	require.Equal(t, "1.0.0", version)
 
