@@ -203,12 +203,14 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 }
 
 func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
+	// Checkout desired tag
 	logger.Printf("Checking out tag: %s", tag)
 	if out, err := repo.CheckoutTagWithOutput(tag); err != nil {
 		logger.Printf("git output: %s", out)
 		return fmt.Errorf("Error checking out repo: %s", err)
 	}
 
+	// Create library metadata from library.properties
 	library, err := libraries.GenerateLibraryFromRepo(repo)
 	if err != nil {
 		return fmt.Errorf("Error generating library from repo: %s", err)
@@ -216,11 +218,13 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag stri
 	library.Types = repoMeta.Types
 	library.Name = repoMeta.LibraryName
 
+	// If the release is already checked in, skip
 	if libraryDb.HasLibrary(library.Name) && libraryDb.HasReleaseByNameVersion(library.Name, library.Version) {
 		logger.Printf("Release %s:%s already loaded, skipping", library.Name, library.Version)
 		return nil
 	}
 
+	// Check if the library has undesried files
 	if err := libraries.FailIfHasUndesiredFiles(repo.FolderPath); err != nil {
 		return err
 	}
