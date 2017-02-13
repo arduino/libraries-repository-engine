@@ -30,8 +30,7 @@ func determineRepoFolder(repoURL, baseFolder string) (string, error) {
 		return "", err
 	}
 	folderName := strings.Replace(parsedURL.Path, ".git", "", -1)
-	folderNameParts := strings.Split(folderName, "/")[1:]
-	folderName = filepath.Join(baseFolder, parsedURL.Host, filepath.Join(folderNameParts...))
+	folderName = filepath.Join(baseFolder, parsedURL.Host, folderName)
 	return folderName, nil
 }
 
