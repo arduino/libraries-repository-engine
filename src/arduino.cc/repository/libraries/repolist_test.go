@@ -30,3 +30,13 @@ func TestListRepos(t *testing.T) {
 	require.Equal(t, "https://github.com/arduino-libraries", error.Repos[0].Url)
 	require.Equal(t, "git@github.com:PaulStoffregen/Audio.git", error.Repos[1].Url)
 }
+
+func TestRepoFolderPathDetermination(t *testing.T) {
+	f, err := determineRepoFolder("https://github.com/arduino-libraries/Servo.git", "/tmp")
+	require.NoError(t, err)
+	require.Equal(t, "/tmp/github.com/arduino-libraries/Servo", f)
+
+	f, err = determineRepoFolder("https://bitbucket.org/bjoern/arduino_osc", "/tmp")
+	require.NoError(t, err)
+	require.Equal(t, "/tmp/bitbucket.org/bjoern/arduino_osc", f)
+}
