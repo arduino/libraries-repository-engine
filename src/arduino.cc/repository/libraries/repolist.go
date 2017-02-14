@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -70,6 +72,19 @@ type Repo struct {
 	Url         string
 	Types       []string
 	LibraryName string
+}
+
+// AsFolder returns the URL of the repo as path, without protocol prefix or suffix.
+// For example if the repo URL is https://github.com/example/lib.git this function
+// will return "github.com/example/lib"
+func (repo *Repo) AsFolder() (string, error) {
+	u, err := url.Parse(repo.Url)
+	if err != nil {
+		return "", err
+	}
+	folderName := strings.Replace(u.Path, ".git", "", -1)
+	folderName = filepath.Join(u.Host, folderName)
+	return folderName, nil
 }
 
 type ReposByUrl []*Repo

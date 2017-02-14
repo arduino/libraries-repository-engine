@@ -3,6 +3,7 @@ package libraries
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"arduino.cc/repository/libraries/db"
@@ -23,8 +24,10 @@ func TestUpdateLibraryJson(t *testing.T) {
 	defer os.RemoveAll("./testdata/test_db.json")
 
 	for _, repo := range repos {
-		r, err := CloneOrFetch(repo.Url, "/tmp")
+		subfolder, err := repo.AsFolder()
+		require.NoError(t, err)
 
+		r, err := CloneOrFetch(repo, filepath.Join("/tmp", subfolder))
 		require.NoError(t, err)
 		require.NotNil(t, r)
 

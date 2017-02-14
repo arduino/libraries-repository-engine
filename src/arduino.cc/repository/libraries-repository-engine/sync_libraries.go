@@ -173,13 +173,20 @@ func setup(config *Config) {
 func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db.DB) {
 	logger.Printf("Scraping %s", repoMetadata.Url)
 
+	repoFolderName, err := repoMetadata.AsFolder()
+	if err != nil {
+		logger.Printf("Invalid URL: %s", err.Error())
+		return
+	}
+	repoFolder := filepath.Join(config.GitClonesFolder, repoFolderName)
+
 	// Clone repository
-	repo, err := libraries.CloneOrFetch(repoMetadata.Url, config.GitClonesFolder)
+	repo, err := libraries.CloneOrFetch(repoMetadata, repoFolder)
 	if err != nil {
 		logger.Printf("Error fetching repository: %s", err)
 		logger.Printf("Removing clone and trying again")
-		libraries.RemoveClone(repoMetadata.Url, config.GitClonesFolder)
-		repo, err = libraries.CloneOrFetch(repoMetadata.Url, config.GitClonesFolder)
+		os.RemoveAll(repoFolder)
+		repo, err = libraries.CloneOrFetch(repoMetadata, repoFolder)
 		if err != nil {
 			logger.Printf("Error fetching repository: %s", err)
 			logger.Printf("Leaving...")

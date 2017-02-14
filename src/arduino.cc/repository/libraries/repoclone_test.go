@@ -2,13 +2,19 @@ package libraries
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestCloneRepos(t *testing.T) {
-	repo, err := CloneOrFetch("https://github.com/arduino-libraries/Servo.git", "/tmp")
+	meta := &Repo{Url: "https://github.com/arduino-libraries/Servo.git"}
+
+	subfolder, err := meta.AsFolder()
+	require.NoError(t, err)
+
+	repo, err := CloneOrFetch(meta, filepath.Join("/tmp", subfolder))
 
 	require.NoError(t, err)
 	require.NotNil(t, repo)

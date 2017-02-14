@@ -3,7 +3,6 @@ package libraries
 import (
 	"errors"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,33 +15,10 @@ import (
 	"github.com/arduino/arduino-modules/git"
 )
 
-func RemoveClone(repoURL, baseFolder string) error {
-	repoFolder, err := determineRepoFolder(repoURL, baseFolder)
-	if err != nil {
-		return err
-	}
-	return os.RemoveAll(repoFolder)
-}
-
-func determineRepoFolder(repoURL, baseFolder string) (string, error) {
-	parsedURL, err := url.Parse(repoURL)
-	if err != nil {
-		return "", err
-	}
-	folderName := strings.Replace(parsedURL.Path, ".git", "", -1)
-	folderName = filepath.Join(baseFolder, parsedURL.Host, folderName)
-	return folderName, nil
-}
-
-func CloneOrFetch(repoURL, baseFolder string) (*git.Repository, error) {
-	folderName, err := determineRepoFolder(repoURL, baseFolder)
-	if err != nil {
-		return nil, err
-	}
-
+func CloneOrFetch(repoMeta *Repo, folderName string) (*git.Repository, error) {
 	var repo *git.Repository
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
-		repo, err = git.Clone(repoURL, folderName)
+		repo, err = git.Clone(repoMeta.Url, folderName)
 		if err != nil {
 			return nil, err
 		}
