@@ -10,6 +10,8 @@ import (
 
 	"bytes"
 
+	"io/ioutil"
+
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
@@ -20,6 +22,7 @@ import (
 type Config struct {
 	BaseDownloadUrl string
 	LibrariesFolder string
+	LogsFolder      string
 	LibrariesDB     string
 	LibrariesIndex  string
 	GitClonesFolder string
@@ -86,6 +89,13 @@ func syncLibraries(reposFile string) {
 			buffer := &bytes.Buffer{}
 			logger := log.New(buffer, fmt.Sprintf("JOB %03d - ", job.id), log.LstdFlags)
 			syncLibrary(logger, job.repoMetadata, libraryDb)
+
+			// Output log to file
+			if err := outputLogFile(logger, job.repoMetadata, buffer); err != nil {
+				logger.Printf("Error writing log file: %s", err.Error())
+			}
+
+			// Output log to stdout
 			fmt.Println(buffer.String())
 		}
 		log.Println("Completed worker!")
@@ -284,4 +294,27 @@ func getSizeAndCalculateChecksum(filePath string) (int64, string, error) {
 	}
 
 	return size, checksum, nil
+}
+
+func outputLogFile(logger *log.Logger, repoMetadata *libraries.Repo, buffer *bytes.Buffer) error {
+	if config.LogsFolder == "" {
+		return nil
+	}
+	repoSubFolder, err := repoMetadata.AsFolder()
+	if err != nil {
+		return fmt.Errorf("URL Path: %s", err.Error())
+	}
+	logFolder := filepath.Join(config.LogsFolder, repoSubFolder)
+	if _, err = os.Stat(logFolder); os.IsNotExist(err) {
+		err = os.MkdirAll(logFolder, os.FileMode(0755))
+	}
+	if err != nil {
+		return fmt.Errorf("mkdir %s: %s", logFolder, err.Error())
+	}
+	logFile := filepath.Join(logFolder, "index.html")
+	output := "<pre>\n" + buffer.String() + "\n</pre>"
+	if err := ioutil.WriteFile(logFile, []byte(output), 0644); err != nil {
+		return fmt.Errorf("write log to file: %s", err.Error())
+	}
+	return nil
 }
