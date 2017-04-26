@@ -9,7 +9,7 @@ if [ -z $ISSUE ]; then
 	exit 1
 fi
 
-REPO_URL=`curl -s -f https://api.github.com/repos/$REPO/issues/$ISSUE | jq -r .body | egrep -o 'https?://[^ )]+'`.git
+REPO_URL=`curl -s -f https://api.github.com/repos/$REPO/issues/$ISSUE | jq -r .body | tr "\\r\\n" " " | egrep -o 'https?://[^ )]+' | head -n1`.git
 
 echo Detected repo url is: $REPO_URL
 echo Press enter to continue
