@@ -45,7 +45,7 @@ for TAG in "$TAGS"; do
 	echo "Found name: $NAME"
 done
 
-if [ -z $NAME ]; then
+if [ -z "$NAME" ]; then
 	echo "ERROR: Failed to detect library NAME."
 	exit 2
 fi
@@ -71,6 +71,6 @@ echo Press enter to proceed
 read
 
 echo $ADDED_LINE >> repositories.txt
-git add -u
+git add -u repositories.txt
 echo -e "Added lib $NAME\n\nhttps://github.com/arduino/Arduino/issues/$ISSUE" | git commit -F -
 
