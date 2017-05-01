@@ -24,7 +24,7 @@ if [ $? != 0 ]; then
 	exit 1
 fi
 cd $TMP
-TAGS=`git tag`
+TAGS=`git tag | tail -n 1`
 echo TAGS=$TAGS
 
 if [ -z $TAGS ]; then
