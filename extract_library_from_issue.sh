@@ -24,24 +24,24 @@ if [ $? != 0 ]; then
 	exit 1
 fi
 cd $TMP
-TAGS=`git tag | tail -n 1`
+TAGS=`git tag`
 echo TAGS=$TAGS
 
-if [ -z $TAGS ]; then
+if [ -z "$TAGS" ]; then
 	echo "ERROR: Failed to detect TAGS."
 	exit 2
 fi
 
 git config advice.detachedHead false
 
-for TAG in "$TAGS"; do
+for TAG in `git tag`; do
 	git checkout "$TAG"
-	NAME=`cat library.properties | grep name`
+	N=`cat library.properties | grep "name="`
 	if [ $? != 0 ]; then
 		echo "Invalid library.properties in tag $TAG"
 		continue
 	fi
-	NAME=${NAME#*=}
+	NAME=${N#*=}
 	echo "Found name: $NAME"
 done
 
