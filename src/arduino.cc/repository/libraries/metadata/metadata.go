@@ -14,6 +14,7 @@ package metadata
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"errors"
 
@@ -95,7 +96,7 @@ func ParsePullRequest(gh *github.Client, pull *github.PullRequest) (*LibraryMeta
 	getContentOpts := &github.RepositoryContentGetOptions{
 		Ref: *head.SHA,
 	}
-	libPropContent, _, _, err := gh.Repositories.GetContents(*headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
+	libPropContent, _, _, err := gh.Repositories.GetContents(context.TODO(), *headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
 	if err != nil {
 		return nil, err
 	}
