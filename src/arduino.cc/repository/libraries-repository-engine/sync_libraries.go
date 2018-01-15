@@ -234,7 +234,12 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag stri
 		return fmt.Errorf("Error generating library from repo: %s", err)
 	}
 	library.Types = repoMeta.Types
-	library.Name = repoMeta.LibraryName
+
+	// If the release name is different from the listed name, skip release...
+	if library.Name != repoMeta.LibraryName {
+		logger.Printf("Release %s:%s has wrong library name, should be %s", library.Name, library.Version, repoMeta.LibraryName)
+		return nil
+	}
 
 	// If the release is already checked in, skip
 	if libraryDb.HasLibrary(library.Name) && libraryDb.HasReleaseByNameVersion(library.Name, library.Version) {
