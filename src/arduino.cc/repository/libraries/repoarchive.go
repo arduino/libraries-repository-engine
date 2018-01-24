@@ -1,11 +1,12 @@
 package libraries
 
 import (
-	"arduino.cc/repository/libraries/metadata"
-	"arduino.cc/repository/libraries/zip"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"arduino.cc/repository/libraries/metadata"
+	"arduino.cc/repository/libraries/zip"
 )
 
 func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string, error) {
@@ -18,10 +19,15 @@ func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string
 	if err != nil {
 		return "", err
 	}
+	err = zip.ZipDirectory(repoFolder, zipFolderName, zipFile)
+	zipFile.Close()
 
-	defer zipFile.Close()
+	if err != nil {
+		os.Remove(absoluteFileName)
+		return "", err
+	}
 
-	return absoluteFileName, zip.ZipDirectory(repoFolder, zipFolderName, zipFile)
+	return absoluteFileName, nil
 }
 
 func ZipFolderName(library *metadata.LibraryMetadata) string {
