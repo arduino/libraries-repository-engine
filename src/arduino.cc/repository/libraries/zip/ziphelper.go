@@ -2,10 +2,12 @@ package zip
 
 import (
 	"archive/zip"
-	"arduino.cc/repository/libraries/file"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+
+	"arduino.cc/repository/libraries/file"
 )
 
 // Create a new zip archive that contains a copy of "rootFolder" into "zipFile".
@@ -20,9 +22,13 @@ func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile *os.File)
 	defer zipFileWriter.Close()
 
 	addEntryToZip := func(path string, info os.FileInfo, err error) error {
-		info, err = os.Stat(path)
+		info, err = os.Lstat(path)
 		if err != nil {
 			return err
+		}
+		if (info.Mode() & os.ModeSymlink) != 0 {
+			dest, _ := os.Readlink(path)
+			return fmt.Errorf("Symlink not allowed: %s -> %s", path, dest)
 		}
 		rel, err := filepath.Rel(rootFolder, path)
 		if err != nil {
