@@ -67,7 +67,7 @@ func (library *LibraryMetadata) Validate() []error {
 	if library.Author == "" {
 		errorsAccumulator = append(errorsAccumulator, errors.New("'author' field must be defined"))
 	}
-	if library.Maintainer="" {
+	if library.Maintainer == "" {
 		library.Maintainer = library.Author
 	}
 
