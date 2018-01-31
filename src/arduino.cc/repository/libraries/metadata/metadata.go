@@ -63,9 +63,12 @@ func IsValidCategory(category string) bool {
 func (library *LibraryMetadata) Validate() []error {
 	var errorsAccumulator []error
 
-	// Check author and mainteiner existence
-	if library.Author == "" || library.Maintainer == "" {
-		errorsAccumulator = append(errorsAccumulator, errors.New("'author' and 'maintainer' fields must be defined"))
+	// Check author and maintainer existence
+	if library.Author == "" {
+		errorsAccumulator = append(errorsAccumulator, errors.New("'author' field must be defined"))
+	}
+	if library.Maintainer="" {
+		library.Maintainer = library.Author
 	}
 
 	// Check sentence and paragraph and url existence
