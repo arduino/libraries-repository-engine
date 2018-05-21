@@ -278,7 +278,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag stri
 	release.Size = size
 	release.Checksum = checksum
 
-	if err := libraries.UpdateLibrary(release, libraryDb); err != nil {
+	if err := libraries.UpdateLibrary(release, repo.URL, libraryDb); err != nil {
 		return fmt.Errorf("Error while updating library DB: %s", err)
 	}
 

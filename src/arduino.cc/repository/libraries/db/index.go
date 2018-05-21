@@ -18,6 +18,7 @@ type indexLibrary struct {
 	Category         string   `json:"category,omitempty"`
 	Architectures    []string `json:"architectures"`
 	Types            []string `json:"types,omitempty"`
+	Repository       string   `json:"repository,omitempty"`
 	ProvidesIncludes []string `json:"provides_includes,omitempty"`
 
 	URL             string `json:"url"`
@@ -61,6 +62,7 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 				Size:             libraryRelease.Size,
 				Checksum:         libraryRelease.Checksum,
 				SupportLevel:     lib.SupportLevel,
+				Repository:       lib.Repository,
 				ProvidesIncludes: libraryRelease.Includes,
 			})
 		}

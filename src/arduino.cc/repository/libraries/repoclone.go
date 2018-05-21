@@ -23,7 +23,7 @@ func CloneOrFetch(repoMeta *Repo, folderName string) (*git.Repository, error) {
 			return nil, err
 		}
 	} else {
-		repo = &git.Repository{FolderPath: folderName}
+		repo = &git.Repository{FolderPath: folderName, URL: repoMeta.Url}
 	}
 
 	tags, err := repo.ListTags()
@@ -67,11 +67,13 @@ func GenerateLibraryFromRepo(repo *git.Repository) (*metadata.LibraryMetadata, e
 	return library, nil
 }
 
-func UpdateLibrary(release *db.Release, libraryDb *db.DB) error {
+func UpdateLibrary(release *db.Release, repoURL string, libraryDb *db.DB) error {
 	var err error
 
 	if !libraryDb.HasLibrary(release.LibraryName) {
-		err = libraryDb.AddLibrary(&db.Library{Name: release.LibraryName})
+		err = libraryDb.AddLibrary(&db.Library{
+			Name:       release.LibraryName,
+			Repository: repoURL})
 		if err != nil {
 			return err
 		}
@@ -86,7 +88,7 @@ func UpdateLibrary(release *db.Release, libraryDb *db.DB) error {
 		return nil
 	}
 
-	err = libraryDb.AddRelease(release)
+	err = libraryDb.AddRelease(release, repoURL)
 	if err != nil {
 		return err
 	}

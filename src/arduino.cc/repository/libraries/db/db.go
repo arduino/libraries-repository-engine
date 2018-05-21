@@ -89,13 +89,14 @@ func (db *DB) findLibrary(libraryName string) (*Library, error) {
 	return nil, errors.New("library not found")
 }
 
-func (db *DB) AddRelease(release *Release) error {
+func (db *DB) AddRelease(release *Release, repoURL string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 	lib, err := db.findLibrary(release.LibraryName)
 	if err != nil {
 		return err
 	}
+	lib.Repository = repoURL
 
 	if db.hasRelease(release) {
 		return errors.New("release already exists")
