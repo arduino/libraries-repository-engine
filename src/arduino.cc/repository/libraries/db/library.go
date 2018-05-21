@@ -1,16 +1,12 @@
 package db
 
 import (
-	"arduino.cc/repository/libraries/metadata"
 	"strings"
+
+	"arduino.cc/repository/libraries/metadata"
 )
 
 func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
-	architectures := strings.Split(library.Architectures, ",")
-	for i, v := range architectures {
-		architectures[i] = strings.TrimSpace(v)
-	}
-
 	dbRelease := Release{
 		LibraryName:   library.Name,
 		Version:       VersionFromString(library.Version),
@@ -21,9 +17,22 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 		Paragraph:     library.Paragraph,
 		Website:       library.URL, // TODO: Rename "url" field to "website" in library.properties
 		Category:      library.Category,
-		Architectures: architectures,
+		Architectures: extractStringList(library.Architectures),
 		Types:         library.Types,
+		Includes:      extractStringList(library.Includes),
 	}
 
 	return &dbRelease
+}
+
+func extractStringList(value string) []string {
+	split := strings.Split(value, ",")
+	res := []string{}
+	for _, s := range split {
+		s := strings.TrimSpace(s)
+		if s != "" {
+			res = append(res, s)
+		}
+	}
+	return res
 }

@@ -45,6 +45,7 @@ type Release struct {
 	ArchiveFileName string
 	Size            int64
 	Checksum        string
+	Includes        []string
 }
 
 func New(libraryFile string) *DB {

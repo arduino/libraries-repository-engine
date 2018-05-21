@@ -7,17 +7,18 @@ type indexOutput struct {
 
 // Output structure used to generate library_index.json file
 type indexLibrary struct {
-	LibraryName   string   `json:"name"`
-	Version       Version  `json:"version"`
-	Author        string   `json:"author"`
-	Maintainer    string   `json:"maintainer"`
-	License       string   `json:"license,omitempty"`
-	Sentence      string   `json:"sentence"`
-	Paragraph     string   `json:"paragraph,omitempty"`
-	Website       string   `json:"website,omitempty"`
-	Category      string   `json:"category,omitempty"`
-	Architectures []string `json:"architectures,omitempty"`
-	Types         []string `json:"types,omitempty"`
+	LibraryName      string   `json:"name"`
+	Version          Version  `json:"version"`
+	Author           string   `json:"author"`
+	Maintainer       string   `json:"maintainer"`
+	License          string   `json:"license,omitempty"`
+	Sentence         string   `json:"sentence"`
+	Paragraph        string   `json:"paragraph,omitempty"`
+	Website          string   `json:"website,omitempty"`
+	Category         string   `json:"category,omitempty"`
+	Architectures    []string `json:"architectures"`
+	Types            []string `json:"types,omitempty"`
+	ProvidesIncludes []string `json:"provides_includes,omitempty"`
 
 	URL             string `json:"url"`
 	ArchiveFileName string `json:"archiveFileName"`
@@ -44,22 +45,23 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 
 			// Copy db.Library into db.indexLibrary
 			libraries = append(libraries, indexLibrary{
-				LibraryName:     libraryRelease.LibraryName,
-				Version:         libraryRelease.Version,
-				Author:          libraryRelease.Author,
-				Maintainer:      libraryRelease.Maintainer,
-				License:         libraryRelease.License,
-				Sentence:        libraryRelease.Sentence,
-				Paragraph:       libraryRelease.Paragraph,
-				Website:         libraryRelease.Website,
-				Category:        lib.LatestCategory,
-				Architectures:   libraryRelease.Architectures,
-				Types:           libraryRelease.Types,
-				ArchiveFileName: libraryRelease.ArchiveFileName,
-				URL:             libraryRelease.URL,
-				Size:            libraryRelease.Size,
-				Checksum:        libraryRelease.Checksum,
-				SupportLevel:    lib.SupportLevel,
+				LibraryName:      libraryRelease.LibraryName,
+				Version:          libraryRelease.Version,
+				Author:           libraryRelease.Author,
+				Maintainer:       libraryRelease.Maintainer,
+				License:          libraryRelease.License,
+				Sentence:         libraryRelease.Sentence,
+				Paragraph:        libraryRelease.Paragraph,
+				Website:          libraryRelease.Website,
+				Category:         lib.LatestCategory,
+				Architectures:    libraryRelease.Architectures,
+				Types:            libraryRelease.Types,
+				ArchiveFileName:  libraryRelease.ArchiveFileName,
+				URL:              libraryRelease.URL,
+				Size:             libraryRelease.Size,
+				Checksum:         libraryRelease.Checksum,
+				SupportLevel:     lib.SupportLevel,
+				ProvidesIncludes: libraryRelease.Includes,
 			})
 		}
 

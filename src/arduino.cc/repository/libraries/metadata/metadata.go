@@ -35,6 +35,7 @@ type LibraryMetadata struct {
 	Architectures string
 	Category      string
 	Types         []string
+	Includes      string
 }
 
 const CATEGORY_UNCATEGORIZED string = "Uncategorized"
@@ -146,6 +147,7 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 		URL:           get("url"),
 		Architectures: get("architectures"),
 		Category:      get("category"),
+		Includes:      get("includes"),
 	}
 	return library, nil
 }
