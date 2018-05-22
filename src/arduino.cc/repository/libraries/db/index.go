@@ -19,7 +19,7 @@ type indexLibrary struct {
 	Architectures    []string `json:"architectures"`
 	Types            []string `json:"types,omitempty"`
 	Repository       string   `json:"repository,omitempty"`
-	ProvidesIncludes []string `json:"provides_includes,omitempty"`
+	ProvidesIncludes []string `json:"providesIncludes,omitempty"`
 
 	URL             string `json:"url"`
 	ArchiveFileName string `json:"archiveFileName"`
