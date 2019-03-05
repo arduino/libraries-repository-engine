@@ -1,5 +1,5 @@
 /*
-A package to handle library.properties metadata.
+Package metadata handles library.properties metadata.
 
 The functions in this package helps on parsing/validation of
 library.properties metadata. All metadata are parsed into a
@@ -17,12 +17,13 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"strings"
 
 	"github.com/google/go-github/github"
 	ini "github.com/vaughan0/go-ini"
 )
 
-// Metadata for a library.properties file
+// LibraryMetadata contains metadata for a library.properties file
 type LibraryMetadata struct {
 	Name          string
 	Version       string
@@ -36,23 +37,26 @@ type LibraryMetadata struct {
 	Category      string
 	Types         []string
 	Includes      string
+	Depends       string
 }
 
-const CATEGORY_UNCATEGORIZED string = "Uncategorized"
+const categoryUcategorized string = "Uncategorized"
 
+var validCategories = []string{
+	"Display",
+	"Communication",
+	"Signal Input/Output",
+	"Sensors",
+	"Device Control",
+	"Timing",
+	"Data Storage",
+	"Data Processing",
+	"Other",
+	categoryUcategorized,
+}
+
+// IsValidCategory checks if category is a valid category
 func IsValidCategory(category string) bool {
-	validCategories := []string{
-		"Display",
-		"Communication",
-		"Signal Input/Output",
-		"Sensors",
-		"Device Control",
-		"Timing",
-		"Data Storage",
-		"Data Processing",
-		"Other",
-		CATEGORY_UNCATEGORIZED,
-	}
 	for _, c := range validCategories {
 		if category == c {
 			return true
@@ -61,8 +65,14 @@ func IsValidCategory(category string) bool {
 	return false
 }
 
+// Validate checks LibraryMetadata for errors, returns an array of the errors found
 func (library *LibraryMetadata) Validate() []error {
 	var errorsAccumulator []error
+
+	// Check lib name
+	if !IsValidLibraryName(library.Name) {
+		errorsAccumulator = append(errorsAccumulator, errors.New("Invalid 'name' field: "+library.Name))
+	}
 
 	// Check author and maintainer existence
 	if library.Author == "" {
@@ -85,13 +95,48 @@ func (library *LibraryMetadata) Validate() []error {
 
 	// Check if the category is valid and set to "Uncategorized" if not
 	if !IsValidCategory(library.Category) {
-		library.Category = CATEGORY_UNCATEGORIZED
+		library.Category = categoryUcategorized
 	}
 
+	// Check if 'depends' field is correctly written
+	if !IsValidDependency(library.Depends) {
+		errorsAccumulator = append(errorsAccumulator, errors.New("Invalid 'depends' field: "+library.Depends))
+	}
 	return errorsAccumulator
 }
 
-// Make a LibraryMetadata by reading library.properties from a github.PullRequest
+// IsValidLibraryName checks if a string is a valid library name
+func IsValidLibraryName(name string) bool {
+	if len(name) == 0 {
+		return false
+	}
+	if name[0] == '-' || name[0] == '_' || name[0] == ' ' {
+		return false
+	}
+	for _, char := range name {
+		if !strings.Contains("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ", string(char)) {
+			return false
+		}
+	}
+	return true
+}
+
+// IsValidDependency checks if the `depends` field of library.properties is correctly formatted
+func IsValidDependency(depends string) bool {
+	deps := strings.Split(depends, ",")
+	if len(deps) == 1 && deps[0] == "" {
+		return true
+	}
+	for _, dep := range deps {
+		dep = strings.TrimSpace(dep)
+		if !IsValidLibraryName(dep) {
+			return false
+		}
+	}
+	return true
+}
+
+// ParsePullRequest makes a LibraryMetadata by reading library.properties from a github.PullRequest
 func ParsePullRequest(gh *github.Client, pull *github.PullRequest) (*LibraryMetadata, error) {
 	head := *pull.Head
 	headRepo := *head.Repo
@@ -110,7 +155,7 @@ func ParsePullRequest(gh *github.Client, pull *github.PullRequest) (*LibraryMeta
 	return ParseRepositoryContent(libPropContent)
 }
 
-// Make a LibraryMetadata by reading library.properties from a github.RepositoryContent
+// ParseRepositoryContent makes a LibraryMetadata by reading library.properties from a github.RepositoryContent
 func ParseRepositoryContent(content *github.RepositoryContent) (*LibraryMetadata, error) {
 	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
 	if err != nil {
@@ -119,7 +164,7 @@ func ParseRepositoryContent(content *github.RepositoryContent) (*LibraryMetadata
 	return Parse(libPropertiesData)
 }
 
-// Make a LibraryMetadata by parsing a library.properties file contained in a byte array
+// Parse makes a LibraryMetadata by parsing a library.properties file contained in a byte array
 func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 	// Create an io.Reader from []bytes
 	reader := bytes.NewReader(propertiesData)
@@ -132,9 +177,8 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 		value, ok := properties.Get("", key)
 		if ok {
 			return value
-		} else {
-			return ""
 		}
+		return ""
 	}
 	library := &LibraryMetadata{
 		Name:          get("name"),
@@ -148,6 +192,7 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 		Architectures: get("architectures"),
 		Category:      get("category"),
 		Includes:      get("includes"),
+		Depends:       get("depends"),
 	}
 	return library, nil
 }

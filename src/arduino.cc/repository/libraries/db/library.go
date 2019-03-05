@@ -6,6 +6,8 @@ import (
 	"arduino.cc/repository/libraries/metadata"
 )
 
+// FromLibraryToRelease extract a Release from LibraryMetadata. LibraryMetadata must be
+// validated before running this function.
 func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 	dbRelease := Release{
 		LibraryName:   library.Name,

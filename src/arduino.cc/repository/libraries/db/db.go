@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// The libraries DB
+// DB is the libraries database
 type DB struct {
 	Libraries []*Library
 	Releases  []*Release
@@ -18,7 +18,7 @@ type DB struct {
 	mutex       sync.Mutex
 }
 
-// A library
+// Library is an Arduino library
 type Library struct {
 	Name         string
 	Repository   string
@@ -28,7 +28,7 @@ type Library struct {
 	LatestCategory string
 }
 
-// A release
+// Release is a library release
 type Release struct {
 	LibraryName     string // The library name
 	Version         Version
@@ -200,7 +200,7 @@ func (db *DB) save(r io.Writer) error {
 }
 
 func (db *DB) findLatestReleaseOfLibrary(lib *Library) (*Release, error) {
-	var found *Release = nil
+	var found *Release
 	for _, rel := range db.findReleasesOfLibrary(lib) {
 		if found == nil {
 			found = rel
@@ -237,12 +237,12 @@ func (db *DB) Commit() error {
 }
 
 func Init(libraryFile string) *DB {
-	if libs, err := LoadFromFile(libraryFile); err != nil {
+	libs, err := LoadFromFile(libraryFile)
+	if err != nil {
 		log.Print(err)
 		log.Print("starting with an empty DB")
 		return New(libraryFile)
-	} else {
-		log.Printf("Loaded %v libraries from DB", len(libs.Libraries))
-		return libs
 	}
+	log.Printf("Loaded %v libraries from DB", len(libs.Libraries))
+	return libs
 }

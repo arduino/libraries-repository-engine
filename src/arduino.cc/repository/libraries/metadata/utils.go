@@ -6,6 +6,8 @@ import (
 	"github.com/blang/semver"
 )
 
+// VersionToSemverCompliant transforms a truncated version to a semver compliant version,
+// for example "1.0" is converted to "1.0.0".
 func VersionToSemverCompliant(version string) (string, error) {
 	versionParts := len(strings.Split(version, "."))
 	for versionParts < 3 {

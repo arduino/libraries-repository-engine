@@ -1,22 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-
-	"fmt"
-
-	"bytes"
-
-	"io/ioutil"
 
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
 	"github.com/arduino/arduino-modules/git"
-	"github.com/arduino/golang-concurrent-workers"
+	cc "github.com/arduino/golang-concurrent-workers"
 )
 
 type Config struct {
