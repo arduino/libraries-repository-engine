@@ -46,6 +46,13 @@ type Release struct {
 	Size            int64
 	Checksum        string
 	Includes        []string
+	Dependencies    []*Dependency
+}
+
+// Dependency is a library dependency
+type Dependency struct {
+	Name    string
+	Version string
 }
 
 func New(libraryFile string) *DB {

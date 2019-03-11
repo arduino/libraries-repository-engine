@@ -7,26 +7,31 @@ type indexOutput struct {
 
 // Output structure used to generate library_index.json file
 type indexLibrary struct {
-	LibraryName      string   `json:"name"`
-	Version          Version  `json:"version"`
-	Author           string   `json:"author"`
-	Maintainer       string   `json:"maintainer"`
-	License          string   `json:"license,omitempty"`
-	Sentence         string   `json:"sentence"`
-	Paragraph        string   `json:"paragraph,omitempty"`
-	Website          string   `json:"website,omitempty"`
-	Category         string   `json:"category,omitempty"`
-	Architectures    []string `json:"architectures"`
-	Types            []string `json:"types,omitempty"`
-	Repository       string   `json:"repository,omitempty"`
-	ProvidesIncludes []string `json:"providesIncludes,omitempty"`
-
-	URL             string `json:"url"`
-	ArchiveFileName string `json:"archiveFileName"`
-	Size            int64  `json:"size"`
-	Checksum        string `json:"checksum"`
+	LibraryName      string             `json:"name"`
+	Version          Version            `json:"version"`
+	Author           string             `json:"author"`
+	Maintainer       string             `json:"maintainer"`
+	License          string             `json:"license,omitempty"`
+	Sentence         string             `json:"sentence"`
+	Paragraph        string             `json:"paragraph,omitempty"`
+	Website          string             `json:"website,omitempty"`
+	Category         string             `json:"category,omitempty"`
+	Architectures    []string           `json:"architectures"`
+	Types            []string           `json:"types,omitempty"`
+	Repository       string             `json:"repository,omitempty"`
+	ProvidesIncludes []string           `json:"providesIncludes,omitempty"`
+	Dependencies     []*indexDependency `json:"dependencies,omitempty"`
+	URL              string             `json:"url"`
+	ArchiveFileName  string             `json:"archiveFileName"`
+	Size             int64              `json:"size"`
+	Checksum         string             `json:"checksum"`
 
 	SupportLevel string `json:"supportLevel,omitempty"`
+}
+
+type indexDependency struct {
+	Name    string `json:"name"`
+	Version string `json:"version,omitempty"`
 }
 
 // Generate an object that once JSON-marshaled produces a json
@@ -42,6 +47,14 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 			// Skip malformed release
 			if libraryRelease.Size == 0 || libraryRelease.Checksum == "" {
 				continue
+			}
+
+			deps := []*indexDependency{}
+			for _, dep := range libraryRelease.Dependencies {
+				deps = append(deps, &indexDependency{
+					Name:    dep.Name,
+					Version: dep.Version,
+				})
 			}
 
 			// Copy db.Library into db.indexLibrary
@@ -64,6 +77,7 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 				SupportLevel:     lib.SupportLevel,
 				Repository:       lib.Repository,
 				ProvidesIncludes: libraryRelease.Includes,
+				Dependencies:     deps,
 			})
 		}
 

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
 
 	"arduino.cc/repository/libraries/metadata"
@@ -22,6 +24,7 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 		Architectures: extractStringList(library.Architectures),
 		Types:         library.Types,
 		Includes:      extractStringList(library.Includes),
+		Dependencies:  extractDependenciesList(library.Depends),
 	}
 
 	return &dbRelease
@@ -37,4 +40,26 @@ func extractStringList(value string) []string {
 		}
 	}
 	return res
+}
+
+var re = regexp.MustCompile("^([a-zA-Z0-9](?:[a-zA-Z0-9._\\- ]*[a-zA-Z0-9])?)(?: \\(([^()]*)\\))?$")
+
+func extractDependenciesList(depends string) []*Dependency {
+	deps := []*Dependency{}
+	for _, dep := range strings.Split(depends, ",") {
+		dep = strings.TrimSpace(dep)
+		if dep == "" {
+			continue
+		}
+		matches := re.FindAllStringSubmatch(dep, -1)
+		if matches == nil {
+			fmt.Println("invalid dep:", dep)
+			return nil
+		}
+		deps = append(deps, &Dependency{
+			Name:    matches[0][1],
+			Version: matches[0][2],
+		})
+	}
+	return deps
 }
