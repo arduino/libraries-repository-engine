@@ -34,9 +34,8 @@ type indexDependency struct {
 	Version string `json:"version,omitempty"`
 }
 
-// Generate an object that once JSON-marshaled produces a json
-// file suitable for the library installer (i.e. produce a valid
-// library_index.json file)
+// OutputLibraryIndex generates an object that once JSON-marshaled produces a json
+// file suitable for the library installer (i.e. produce a valid library_index.json file)
 func (db *DB) OutputLibraryIndex() (interface{}, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
