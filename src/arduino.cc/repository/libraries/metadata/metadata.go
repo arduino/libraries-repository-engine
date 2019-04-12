@@ -114,7 +114,7 @@ func IsValidLibraryName(name string) bool {
 		return false
 	}
 	for _, char := range name {
-		if !strings.Contains("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_- ", string(char)) {
+		if !strings.Contains("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-. ", string(char)) {
 			return false
 		}
 	}
