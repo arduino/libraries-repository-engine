@@ -1,27 +1,19 @@
 package zip
 
 import (
-	"archive/zip"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"arduino.cc/repository/libraries/file"
 )
 
-// Create a new zip archive that contains a copy of "rootFolder" into "zipFile".
-// Inside the archive "rootFolder" will be renamed to "zipRootFolder".
-func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile *os.File) error {
-	rootFolder, err := filepath.Abs(rootFolder)
-	if err != nil {
-		return err
-	}
-
-	zipFileWriter := zip.NewWriter(zipFile)
-	defer zipFileWriter.Close()
-
-	addEntryToZip := func(path string, info os.FileInfo, err error) error {
+// ZipDirectory creates a new zip archive that contains a copy of "rootFolder" into "zipFile".
+// Inside the archive "rootFolder" will be renamed to "zipRootFolderName".
+func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile string) error {
+	checks := func(path string, info os.FileInfo, err error) error {
 		info, err = os.Lstat(path)
 		if err != nil {
 			return err
@@ -30,39 +22,42 @@ func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile *os.File)
 			dest, _ := os.Readlink(path)
 			return fmt.Errorf("Symlink not allowed: %s -> %s", path, dest)
 		}
-		rel, err := filepath.Rel(rootFolder, path)
-		if err != nil {
-			return err
-		}
-
 		if file.IsSCCS(info.Name()) {
 			return filepath.SkipDir
 		}
-		if rel[0] == '.' || info.IsDir() {
-			return nil
-		}
-
-		rel = filepath.Join(zipRootFolderName, rel)
-		writer, err := zipFileWriter.Create(rel)
-		if err != nil {
-			return err
-		}
-		file, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		_, err = io.Copy(writer, file)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	}
 
-	err = filepath.Walk(rootFolder, addEntryToZip)
+	rootFolder, err := filepath.Abs(rootFolder)
 	if err != nil {
 		return err
+	}
+
+	if err := filepath.Walk(rootFolder, checks); err != nil {
+		return err
+	}
+
+	tmpdir, err := ioutil.TempDir("", "ziphelper")
+	if err != nil {
+		return fmt.Errorf("creating temp dir for zip archive: %s", err)
+	}
+	defer os.RemoveAll(tmpdir)
+	if err := os.Symlink(rootFolder, filepath.Join(tmpdir, zipRootFolderName)); err != nil {
+		return fmt.Errorf("creating temp dir for zip archive: %s", err)
+	}
+
+	args := []string{"-r", zipFile, zipRootFolderName, "-x", ".*", "-x", "*/.*"}
+	for sccs := range file.SCCSFiles {
+		args = append(args, "-x")
+		args = append(args, "*/"+sccs+"/*")
+		args = append(args, "-x")
+		args = append(args, sccs+"/*")
+	}
+
+	zipCmd := exec.Command("zip", args...)
+	zipCmd.Dir = tmpdir
+	if _, err := zipCmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("archiving into zip: %s", err)
 	}
 	return nil
 }
