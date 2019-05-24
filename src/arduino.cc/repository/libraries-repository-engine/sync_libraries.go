@@ -84,7 +84,7 @@ func syncLibraries(reposFile string) {
 		log.Println("Started worker...")
 		for job := range jobQueue {
 			buffer := &bytes.Buffer{}
-			logger := log.New(buffer, fmt.Sprintf("JOB %03d - ", job.id), log.LstdFlags)
+			logger := log.New(buffer, fmt.Sprintf("JOB %03d - ", job.id), log.LstdFlags|log.LUTC)
 			syncLibrary(logger, job.repoMetadata, libraryDb)
 
 			// Output log to file
