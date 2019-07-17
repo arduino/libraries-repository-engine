@@ -11,6 +11,7 @@ import (
 // FromLibraryToRelease extract a Release from LibraryMetadata. LibraryMetadata must be
 // validated before running this function.
 func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
+	deps, _ := ExtractDependenciesList(library.Depends)
 	dbRelease := Release{
 		LibraryName:   library.Name,
 		Version:       VersionFromString(library.Version),
@@ -24,7 +25,7 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 		Architectures: extractStringList(library.Architectures),
 		Types:         library.Types,
 		Includes:      extractStringList(library.Includes),
-		Dependencies:  extractDependenciesList(library.Depends),
+		Dependencies:  deps,
 	}
 
 	return &dbRelease
@@ -44,7 +45,8 @@ func extractStringList(value string) []string {
 
 var re = regexp.MustCompile("^([a-zA-Z0-9](?:[a-zA-Z0-9._\\- ]*[a-zA-Z0-9])?) *(?: \\(([^()]*)\\))?$")
 
-func extractDependenciesList(depends string) []*Dependency {
+// ExtractDependenciesList extracts dependencies from the "depends" field of library.properties
+func ExtractDependenciesList(depends string) ([]*Dependency, error) {
 	deps := []*Dependency{}
 	for _, dep := range strings.Split(depends, ",") {
 		dep = strings.TrimSpace(dep)
@@ -53,13 +55,12 @@ func extractDependenciesList(depends string) []*Dependency {
 		}
 		matches := re.FindAllStringSubmatch(dep, -1)
 		if matches == nil {
-			fmt.Println("invalid dep:", dep)
-			return nil
+			return nil, fmt.Errorf("invalid dep: %s", dep)
 		}
 		deps = append(deps, &Dependency{
 			Name:    matches[0][1],
 			Version: matches[0][2],
 		})
 	}
-	return deps
+	return deps, nil
 }

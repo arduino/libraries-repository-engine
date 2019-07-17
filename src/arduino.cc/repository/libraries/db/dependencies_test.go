@@ -8,7 +8,8 @@ import (
 
 func TestDependencyExtract(t *testing.T) {
 	check := func(depDefinition string, name []string, ver []string) {
-		dep := extractDependenciesList(depDefinition)
+		dep, err := ExtractDependenciesList(depDefinition)
+		require.NoError(t, err)
 		require.NotNil(t, dep)
 		require.Len(t, dep, len(name))
 		for i := range name {
@@ -16,8 +17,10 @@ func TestDependencyExtract(t *testing.T) {
 			require.Equal(t, ver[i], dep[i].Version)
 		}
 	}
-	invalid := func(dep string) {
-		require.Nil(t, extractDependenciesList(dep))
+	invalid := func(depends string) {
+		dep, err := ExtractDependenciesList(depends)
+		require.Nil(t, dep)
+		require.Error(t, err)
 	}
 	invalid("-invalidname")
 	invalid("_invalidname")
