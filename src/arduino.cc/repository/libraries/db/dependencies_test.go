@@ -35,4 +35,7 @@ func TestDependencyExtract(t *testing.T) {
 	check("Arduino Uno WiFi Dev Ed Library   ,   LoRa Node    (^2.1.2)",
 		[]string{"Arduino Uno WiFi Dev Ed Library", "LoRa Node"},
 		[]string{"", "^2.1.2"})
+	check("Arduino_OAuth, ArduinoHttpClient (<0.3.0), NonExistentLib",
+		[]string{"Arduino_OAuth", "ArduinoHttpClient", "NonExistentLib"},
+		[]string{"", "<0.3.0", ""})
 }
