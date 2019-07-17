@@ -29,4 +29,10 @@ func TestDependencyExtract(t *testing.T) {
 	invalid("MyLib (>=1.2.3)()")
 	invalid("MyLib (>=1.2.3),_aaaa")
 	invalid("MyLib (>=1.2.3)(),AnotherLib, YetAnotherLib (=1.0.0)")
+	check("Arduino Uno WiFi Dev Ed Library, LoRa Node (^2.1.2)",
+		[]string{"Arduino Uno WiFi Dev Ed Library", "LoRa Node"},
+		[]string{"", "^2.1.2"})
+	check("Arduino Uno WiFi Dev Ed Library   ,   LoRa Node    (^2.1.2)",
+		[]string{"Arduino Uno WiFi Dev Ed Library", "LoRa Node"},
+		[]string{"", "^2.1.2"})
 }
