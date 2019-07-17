@@ -17,9 +17,8 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"regexp"
 	"strings"
-
-	"arduino.cc/repository/libraries/db"
 
 	"github.com/google/go-github/github"
 	ini "github.com/vaughan0/go-ini"
@@ -123,10 +122,26 @@ func IsValidLibraryName(name string) bool {
 	return true
 }
 
+var re = regexp.MustCompile("^([a-zA-Z0-9](?:[a-zA-Z0-9._\\- ]*[a-zA-Z0-9])?) *(?: \\(([^()]*)\\))?$")
+
 // IsValidDependency checks if the `depends` field of library.properties is correctly formatted
 func IsValidDependency(depends string) bool {
-	_, err := db.ExtractDependenciesList(depends)
-	return err == nil
+	// TODO: merge this method with db.ExtractDependenciesList
+	depends = strings.TrimSpace(depends)
+	if depends == "" {
+		return true
+	}
+	for _, dep := range strings.Split(depends, ",") {
+		dep = strings.TrimSpace(dep)
+		if dep == "" {
+			return false
+		}
+		matches := re.FindAllStringSubmatch(dep, -1)
+		if matches == nil {
+			return false
+		}
+	}
+	return true
 }
 
 // ParsePullRequest makes a LibraryMetadata by reading library.properties from a github.PullRequest
