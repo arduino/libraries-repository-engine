@@ -10,7 +10,7 @@ if [ -z $ISSUE ]; then
 fi
 
 TOKEN=`cat token`
-REPO_URL=`curl -H "Authorization: token $TOKEN" -s -f https://api.github.com/repos/$REPO/issues/$ISSUE | jq -r .body | tr "\\r\\n" " " | egrep -o 'https?://[^ )]+' | head -n1 | sed -r 's/[/]releases[/].*//' | sed -r 's/.+\\]\\(//' | sed -r 's/[,.]$//' | sed -r 's/.git$//'`.git
+REPO_URL=`curl -H "Authorization: token $TOKEN" -s -f https://api.github.com/repos/$REPO/issues/$ISSUE | jq -r .body | tr "\\r\\n" " " | egrep -o 'https?://[^ )]+' | head -n1 | sed -r 's/[/]releases[/].*//' | sed -r 's/.+\\]\\(//' | sed -r 's/[,./]$//' | sed -r 's/.git$//'`.git
 
 echo Detected repo url is: $REPO_URL
 echo Press enter to continue
