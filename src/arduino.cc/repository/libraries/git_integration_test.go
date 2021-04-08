@@ -52,7 +52,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEmpty(t, zipFilePath)
 
-		err = UpdateLibrary(release, libraryDb)
+		err = UpdateLibrary(release, r.URL, libraryDb)
 		require.NoError(t, err)
 
 	}
