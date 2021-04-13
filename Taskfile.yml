@@ -1,0 +1,30 @@
+# See: https://taskfile.dev/#/usage
+version: "3"
+
+env:
+  GOPATH: "$(echo $PWD)"
+
+tasks:
+  go:deps:
+    desc: Install dependencies
+    cmds:
+      - go get github.com/arduino/arduino-modules/git
+      - go get github.com/arduino/golang-concurrent-workers
+      - go get github.com/blang/semver
+      - go get github.com/google/go-github/github
+      - go get github.com/stretchr/testify
+      - go get github.com/vaughan0/go-ini
+
+  go:build:
+    desc: Build the project
+    deps:
+      - task: go:deps
+    cmds:
+      - go build arduino.cc/repository/libraries-repository-engine
+
+  go:test:
+    desc: Run unit tests
+    deps:
+      - task: go:deps
+    cmds:
+      - go test -v ./src/arduino.cc/repository/libraries/...
