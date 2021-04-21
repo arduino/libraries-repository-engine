@@ -5,11 +5,15 @@ on:
   push:
     paths:
       - ".github/workflows/test-go.yml"
+      - "go.mod"
+      - "go.sum"
       - "Taskfile.yml"
       - "**.go"
   pull_request:
     paths:
       - ".github/workflows/test-go.yml"
+      - "go.mod"
+      - "go.sum"
       - "Taskfile.yml"
       - "**.go"
   workflow_dispatch:
@@ -33,9 +37,6 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: 3.x
-
-      - name: Configure Git for go get access to private repo
-        run: git config --global url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Build application
         run: task go:build
@@ -64,9 +65,6 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: 3.x
-
-      - name: Configure Git for go get access to private repo
-        run: git config --global url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
       - name: Run tests
         run: task go:test

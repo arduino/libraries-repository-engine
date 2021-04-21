@@ -1,9 +1,10 @@
 token
 
-bin
+coverage_*.txt
 libraries-repository-engine
-src/code.google.com
-src/github.com
+libraries-repository-engine.exe
+repository
+repository.exe
 test/arduino/cc/repository/libraries/testdata/test_db.json
 config.json
 repos.txt
