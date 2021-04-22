@@ -1,11 +1,8 @@
 #!/bin/bash -x
 
 go fmt ./src/arduino.cc/repository/...
-go fmt main.go
 go fmt sync_libraries.go
 go fix ./src/arduino.cc/repository/...
-go fix main.go
 go fix sync_libraries.go
 go vet ./src/arduino.cc/repository/...
-go vet main.go
 go vet sync_libraries.go
