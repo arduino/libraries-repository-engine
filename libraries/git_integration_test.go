@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"arduino.cc/repository/libraries/db"
+	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,11 +34,14 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 		defer os.RemoveAll(r.FolderPath)
 
-		tags, err := r.ListTags()
+		tags, err := r.Repository.Tags()
 		require.NoError(t, err)
-		require.NotEmpty(t, tags)
+		tag, err := tags.Next()
+		require.NoError(t, err)
 
-		err = r.CheckoutTag(tags[0])
+		repoTree, err := r.Repository.Worktree()
+		require.NoError(t, err)
+		err = repoTree.Checkout(&git.CheckoutOptions{Hash: tag.Hash()})
 		require.NoError(t, err)
 
 		library, err := GenerateLibraryFromRepo(r)

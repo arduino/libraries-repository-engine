@@ -2,29 +2,16 @@
 version: "3"
 
 env:
-  GOPATH: "$(echo $PWD)"
+  DEFAULT_GO_PACKAGES:
+    sh: echo $(go list ./... | tr '\n' ' ')
 
 tasks:
-  go:deps:
-    desc: Install dependencies
-    cmds:
-      - go get github.com/arduino/arduino-modules/git
-      - go get github.com/arduino/golang-concurrent-workers
-      - go get github.com/blang/semver
-      - go get github.com/google/go-github/github
-      - go get github.com/stretchr/testify
-      - go get github.com/vaughan0/go-ini
-
   go:build:
     desc: Build the project
-    deps:
-      - task: go:deps
     cmds:
-      - go build arduino.cc/repository/libraries-repository-engine
+      - go build -v -o libraries-repository-engine{{exeExt}}
 
   go:test:
     desc: Run unit tests
-    deps:
-      - task: go:deps
     cmds:
-      - go test -v ./src/arduino.cc/repository/libraries/...
+      - go test -v -short -run '{{default ".*" .GO_TEST_REGEX}}' {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} -coverprofile=coverage_unit.txt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}

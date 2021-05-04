@@ -12,8 +12,9 @@ import (
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
 	"arduino.cc/repository/libraries/hash"
-	"github.com/arduino/arduino-modules/git"
 	cc "github.com/arduino/golang-concurrent-workers"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 type Config struct {
@@ -202,13 +203,19 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 	}
 
 	// Retrieve the list of git-tags
-	tags, err := repo.ListTags()
+	tags, err := repo.Repository.Tags()
 	if err != nil {
 		logger.Printf("Error retrieving git-tags: %s", err)
 		return
 	}
 
-	for _, tag := range tags {
+	for {
+		tag, err := tags.Next()
+		if err != nil {
+			// Reached end of tags
+			break
+		}
+
 		// Sync the library release for each git-tag
 		err = syncLibraryTaggedRelease(logger, repo, tag, repoMetadata, libraryDb)
 		if err != nil {
@@ -217,11 +224,16 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 	}
 }
 
-func syncLibraryTaggedRelease(logger *log.Logger, repo *git.Repository, tag string, repoMeta *libraries.Repo, libraryDb *db.DB) error {
+func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, tag *plumbing.Reference, repoMeta *libraries.Repo, libraryDb *db.DB) error {
 	// Checkout desired tag
-	logger.Printf("Checking out tag: %s", tag)
-	if out, err := repo.CheckoutTagWithOutput(tag); err != nil {
-		logger.Printf("git output: %s", out)
+	logger.Printf("Checking out tag: %s", tag.Name())
+
+	repoTree, err := repo.Repository.Worktree()
+	if err != nil {
+		return err
+	}
+
+	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: tag.Hash()}); err != nil {
 		return fmt.Errorf("Error checking out repo: %s", err)
 	}
 

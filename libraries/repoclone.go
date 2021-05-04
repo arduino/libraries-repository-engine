@@ -12,38 +12,59 @@ import (
 	"fmt"
 
 	"arduino.cc/repository/libraries/metadata"
-	"github.com/arduino/arduino-modules/git"
+	"github.com/go-git/go-git/v5"
 )
 
-func CloneOrFetch(repoMeta *Repo, folderName string) (*git.Repository, error) {
-	var repo *git.Repository
+// Repository represents a Git repository located on the filesystem.
+type Repository struct {
+	Repository *git.Repository
+	FolderPath string
+	URL        string
+}
+
+func CloneOrFetch(repoMeta *Repo, folderName string) (*Repository, error) {
+	repo := Repository{
+		FolderPath: folderName,
+		URL:        repoMeta.Url,
+	}
+
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
-		repo, err = git.Clone(repoMeta.Url, folderName)
+		repo.Repository, err = git.PlainClone(folderName, false, &git.CloneOptions{URL: repoMeta.Url})
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		repo = &git.Repository{FolderPath: folderName, URL: repoMeta.Url}
-	}
-
-	tags, err := repo.ListTags()
-	if err != nil {
-		return nil, err
-	}
-	for _, tag := range tags {
-		if err = repo.RemoveTag(tag); err != nil {
+		repo.Repository, err = git.PlainOpen(folderName)
+		if err != nil {
 			return nil, err
 		}
 	}
 
-	if err = repo.Fetch(); err != nil {
+	tags, err := repo.Repository.Tags()
+	if err != nil {
 		return nil, err
 	}
 
-	return repo, err
+	for {
+		tag, err := tags.Next()
+		if err != nil {
+			// Reached end of tags
+			break
+		}
+
+		if err = repo.Repository.DeleteTag(strings.TrimPrefix(tag.Name().String(), "refs/tags/")); err != nil {
+			return nil, err
+		}
+	}
+
+	if err = repo.Repository.Fetch(&git.FetchOptions{Tags: git.AllTags}); err != nil {
+		return nil, err
+	}
+
+	return &repo, err
 }
 
-func GenerateLibraryFromRepo(repo *git.Repository) (*metadata.LibraryMetadata, error) {
+func GenerateLibraryFromRepo(repo *Repository) (*metadata.LibraryMetadata, error) {
 	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {
 		return nil, fmt.Errorf("can't read library.properties: %s", err)
