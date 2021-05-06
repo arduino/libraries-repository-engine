@@ -12,7 +12,7 @@ import (
 
 // ZipDirectory creates a new zip archive that contains a copy of "rootFolder" into "zipFile".
 // Inside the archive "rootFolder" will be renamed to "zipRootFolderName".
-func ZipDirectory(rootFolder string, zipRootFolderName string, zipFile string) error {
+func Directory(rootFolder string, zipRootFolderName string, zipFile string) error {
 	checks := func(path string, info os.FileInfo, err error) error {
 		info, err = os.Lstat(path)
 		if err != nil {

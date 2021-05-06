@@ -25,11 +25,11 @@ type Repository struct {
 func CloneOrFetch(repoMeta *Repo, folderName string) (*Repository, error) {
 	repo := Repository{
 		FolderPath: folderName,
-		URL:        repoMeta.Url,
+		URL:        repoMeta.URL,
 	}
 
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
-		repo.Repository, err = git.PlainClone(folderName, false, &git.CloneOptions{URL: repoMeta.Url})
+		repo.Repository, err = git.PlainClone(folderName, false, &git.CloneOptions{URL: repoMeta.URL})
 		if err != nil {
 			return nil, err
 		}

@@ -15,7 +15,7 @@ func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string
 		return "", err
 	}
 	absoluteFileName := filepath.Join(baseFolder, zipFolderName+".zip")
-	if err := zip.ZipDirectory(repoFolder, zipFolderName, absoluteFileName); err != nil {
+	if err := zip.Directory(repoFolder, zipFolderName, absoluteFileName); err != nil {
 		os.Remove(absoluteFileName)
 		return "", err
 	}
