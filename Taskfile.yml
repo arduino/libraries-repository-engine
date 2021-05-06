@@ -15,3 +15,34 @@ tasks:
     desc: Run unit tests
     cmds:
       - go test -v -short -run '{{default ".*" .GO_TEST_REGEX}}' {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} -coverprofile=coverage_unit.txt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  go:check:
+    desc: Check for problems with Go code
+    deps:
+      - task: go:vet
+      - task: go:lint
+
+  go:vet:
+    desc: Check for errors in Go code
+    cmds:
+      - go vet {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  go:lint:
+    desc: Lint Go code
+    cmds:
+      - |
+        PROJECT_PATH="$PWD"
+        # `go get` and `go list` commands must be run from a temporary folder to avoid polluting go.mod
+        cd "$(mktemp -d "${TMPDIR-${TMP-/tmp}}/task-temporary-XXXXX")"
+        go get golang.org/x/lint/golint
+        GOLINT_PATH="$(go list -f '{{"{{"}}.Target{{"}}"}}' golang.org/x/lint/golint || echo "false")"
+        # `golint` must be run from the module folder
+        cd "$PROJECT_PATH"
+        "$GOLINT_PATH" \
+          {{default "-min_confidence 0.8 -set_exit_status" .GO_LINT_FLAGS}} \
+          {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  go:format:
+    desc: Format Go code
+    cmds:
+      - go fmt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
