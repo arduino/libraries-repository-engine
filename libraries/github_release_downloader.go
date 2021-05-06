@@ -1,12 +1,13 @@
 package libraries
 
 import (
-	"arduino.cc/repository/libraries/hash"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"arduino.cc/repository/libraries/hash"
 )
 
 // GithubDownloadRelease downloads GitHub's archive of the release.
