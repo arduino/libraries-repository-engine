@@ -43,7 +43,7 @@ func RunAntiVirus(folder string) ([]byte, error) {
 
 	output := string(out)
 	if strings.Index(output, "Infected files: 0") == -1 {
-		return out, errors.New("Infected files found!")
+		return out, errors.New("Infected files found")
 	}
 
 	return out, nil
