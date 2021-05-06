@@ -9,6 +9,7 @@ import (
 	"arduino.cc/repository/libraries/zip"
 )
 
+// ZipRepo creates a ZIP archive of the repo folder and returns its path.
 func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string, error) {
 	err := os.MkdirAll(baseFolder, os.FileMode(0755))
 	if err != nil {
@@ -23,6 +24,7 @@ func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string
 	return absoluteFileName, nil
 }
 
+// ZipFolderName returns the name to use for the folder.
 func ZipFolderName(library *metadata.LibraryMetadata) string {
 	pattern := regexp.MustCompile("[^a-zA-Z0-9]")
 	return pattern.ReplaceAllString(library.Name, "_") + "-" + library.Version

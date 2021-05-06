@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// GithubDownloadRelease downloads GitHub's archive of the release.
 func GithubDownloadRelease(repoURL, version string) (string, int64, string, error) {
 	tempfile, err := ioutil.TempFile("", "github")
 	if err != nil {

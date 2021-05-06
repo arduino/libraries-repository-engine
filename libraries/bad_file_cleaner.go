@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 )
 
+// FailIfHasUndesiredFiles returns an error if the folder contains any undesired files.
 func FailIfHasUndesiredFiles(folder string) error {
 	err := failIfContainsForbiddenFileInRoot(folder)
 	if err != nil {
@@ -15,6 +16,7 @@ func FailIfHasUndesiredFiles(folder string) error {
 	return failIfContainsExes(folder)
 }
 
+// ForbiddenFiles is the names of the forbidden files.
 var ForbiddenFiles = []string{".development"}
 
 func failIfContainsForbiddenFileInRoot(folder string) error {
@@ -27,6 +29,7 @@ func failIfContainsForbiddenFileInRoot(folder string) error {
 	return nil
 }
 
+// Patterns is the file patterns of executables.
 var Patterns = []string{"*.exe"}
 
 func failIfContainsExes(folder string) error {

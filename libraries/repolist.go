@@ -64,10 +64,12 @@ func (_ repoMatcherIfGithub) Match(r string) bool {
 }
 */
 
+// GitURLsError is the type for the unknown or unsupported repositories data.
 type GitURLsError struct {
 	Repos []*Repo
 }
 
+// Repo is the type for the library repository data.
 type Repo struct {
 	URL         string
 	Types       []string
@@ -87,6 +89,7 @@ func (repo *Repo) AsFolder() (string, error) {
 	return folderName, nil
 }
 
+// ReposByURL is the type for the libraries repository data.
 type ReposByURL []*Repo
 
 func (r ReposByURL) Len() int {
@@ -180,6 +183,7 @@ func toListOfUniqueRepos(repos []*Repo) []*Repo {
 	return finalRepos
 }
 
+// ListRepos loads a list from the given filename.
 func ListRepos(reposFilename string) ([]*Repo, error) {
 	repos, err := loadRepoListFromFile(reposFilename)
 	if err != nil {

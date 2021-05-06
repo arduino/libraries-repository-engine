@@ -10,7 +10,7 @@ import (
 	"arduino.cc/repository/libraries/file"
 )
 
-// ZipDirectory creates a new zip archive that contains a copy of "rootFolder" into "zipFile".
+// Directory creates a new zip archive that contains a copy of "rootFolder" into "zipFile".
 // Inside the archive "rootFolder" will be renamed to "zipRootFolderName".
 func Directory(rootFolder string, zipRootFolderName string, zipFile string) error {
 	checks := func(path string, info os.FileInfo, err error) error {

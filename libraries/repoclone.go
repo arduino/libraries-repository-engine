@@ -22,6 +22,7 @@ type Repository struct {
 	URL        string
 }
 
+// CloneOrFetch returns a Repository object. If the repository is already present, it is opened. Otherwise, cloned.
 func CloneOrFetch(repoMeta *Repo, folderName string) (*Repository, error) {
 	repo := Repository{
 		FolderPath: folderName,
@@ -64,6 +65,7 @@ func CloneOrFetch(repoMeta *Repo, folderName string) (*Repository, error) {
 	return &repo, err
 }
 
+// GenerateLibraryFromRepo parses a repository and returns the library metadata.
 func GenerateLibraryFromRepo(repo *Repository) (*metadata.LibraryMetadata, error) {
 	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {
@@ -88,6 +90,7 @@ func GenerateLibraryFromRepo(repo *Repository) (*metadata.LibraryMetadata, error
 	return library, nil
 }
 
+// UpdateLibrary adds a release to the library database.
 func UpdateLibrary(release *db.Release, repoURL string, libraryDb *db.DB) error {
 	var err error
 

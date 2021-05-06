@@ -55,10 +55,12 @@ type Dependency struct {
 	Version string
 }
 
+// New returns a new DB object.
 func New(libraryFile string) *DB {
 	return &DB{libraryFile: libraryFile}
 }
 
+// AddLibrary adds a library to the database.
 func (db *DB) AddLibrary(library *Library) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -70,6 +72,7 @@ func (db *DB) AddLibrary(library *Library) error {
 	return nil
 }
 
+// HasLibrary returns whether the database already contains the given library.
 func (db *DB) HasLibrary(libraryName string) bool {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -81,6 +84,7 @@ func (db *DB) hasLibrary(libraryName string) bool {
 	return found != nil
 }
 
+// FindLibrary returns the Library object for the given name.
 func (db *DB) FindLibrary(libraryName string) (*Library, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -96,6 +100,7 @@ func (db *DB) findLibrary(libraryName string) (*Library, error) {
 	return nil, errors.New("library not found")
 }
 
+// AddRelease adds a library release to the database.
 func (db *DB) AddRelease(release *Release, repoURL string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -120,6 +125,7 @@ func (db *DB) AddRelease(release *Release, repoURL string) error {
 	return nil
 }
 
+// HasReleaseByNameVersion returns whether the database contains a release for the given library and version number.
 func (db *DB) HasReleaseByNameVersion(libraryName string, libraryVersion string) bool {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -131,6 +137,7 @@ func (db *DB) hasReleaseByNameVersion(libraryName string, libraryVersion string)
 	return found != nil
 }
 
+// HasRelease returns whether the database already contains the given Release object.
 func (db *DB) HasRelease(release *Release) bool {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -141,6 +148,7 @@ func (db *DB) hasRelease(release *Release) bool {
 	return db.hasReleaseByNameVersion(release.LibraryName, release.Version.String())
 }
 
+// FindRelease returns the Release object from the database that matches the given object.
 func (db *DB) FindRelease(release *Release) (*Release, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -156,6 +164,7 @@ func (db *DB) findReleaseByNameVersion(libraryName string, libraryVersion string
 	return nil, errors.New("library not found")
 }
 
+// LoadFromFile returns a DB object loaded from the given filename.
 func LoadFromFile(filename string) (*DB, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -170,6 +179,7 @@ func LoadFromFile(filename string) (*DB, error) {
 	return db, nil
 }
 
+// Load returns a DB object loaded from the given reader.
 func Load(r io.Reader) (*DB, error) {
 	decoder := json.NewDecoder(r)
 	db := new(DB)
@@ -180,6 +190,7 @@ func Load(r io.Reader) (*DB, error) {
 	return db, nil
 }
 
+// SaveToFile saves the database to a file.
 func (db *DB) SaveToFile() error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -191,6 +202,7 @@ func (db *DB) SaveToFile() error {
 	return db.save(file)
 }
 
+// Save writes the database via the given writer.
 func (db *DB) Save(r io.Writer) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -222,6 +234,7 @@ func (db *DB) findLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	return found, nil
 }
 
+// FindReleasesOfLibrary returns the database's releases for the given Library object.
 func (db *DB) FindReleasesOfLibrary(lib *Library) []*Release {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
@@ -239,10 +252,12 @@ func (db *DB) findReleasesOfLibrary(lib *Library) []*Release {
 	return releases
 }
 
+// Commit saves the database to disk.
 func (db *DB) Commit() error {
 	return db.SaveToFile()
 }
 
+// Init loads a database from file and returns it.
 func Init(libraryFile string) *DB {
 	libs, err := LoadFromFile(libraryFile)
 	if err != nil {

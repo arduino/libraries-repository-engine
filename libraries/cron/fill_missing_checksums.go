@@ -8,8 +8,8 @@ import (
 )
 
 /*
-   Check for missing size and checksum field and fills them
-   by downloading a copy of the file.
+FillMissingChecksumsForDownloadArchives checks for missing size and checksum field and fills them
+by downloading a copy of the file.
 */
 func FillMissingChecksumsForDownloadArchives(URL string, filename string) (int64, string, error) {
 	size, err := download(URL, filename)

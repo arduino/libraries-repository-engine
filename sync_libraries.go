@@ -17,6 +17,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
+// Config is the type of the engine configuration.
 type Config struct {
 	BaseDownloadURL string
 	LibrariesFolder string
