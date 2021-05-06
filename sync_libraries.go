@@ -240,7 +240,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		panic(err)
 	}
 
-	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag}); err != nil {
+	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag, Force: true}); err != nil {
 		return fmt.Errorf("Error checking out repo: %s", err)
 	}
 
