@@ -1,7 +1,7 @@
 # See: https://taskfile.dev/#/usage
 version: "3"
 
-env:
+vars:
   DEFAULT_GO_PACKAGES:
     sh: echo $(go list ./... | tr '\n' ' ')
 
