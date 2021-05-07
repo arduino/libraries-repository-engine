@@ -18,7 +18,7 @@ func TestZip(t *testing.T) {
 	require.NoError(t, os.Remove(zipFileName))
 	defer os.RemoveAll(zipFileName)
 
-	err = ZipDirectory("./testzip", "a_zip", zipFileName)
+	err = Directory("./testzip", "a_zip", zipFileName)
 	require.NoError(t, err)
 
 	zipFileReader, err := zip.OpenReader(zipFileName)

@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-// Calculate hash for the file
+// Checksum calculates the hash for the file.
 func Checksum(filename string) (string, error) {
 	hasher := sha256.New()
 	file, err := os.Open(filename)

@@ -17,8 +17,9 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
+// Config is the type of the engine configuration.
 type Config struct {
-	BaseDownloadUrl string
+	BaseDownloadURL string
 	LibrariesFolder string
 	LogsFolder      string
 	LibrariesDB     string
@@ -179,7 +180,7 @@ func setup(config *Config) {
 }
 
 func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db.DB) {
-	logger.Printf("Scraping %s", repoMetadata.Url)
+	logger.Printf("Scraping %s", repoMetadata.URL)
 
 	repoFolderName, err := repoMetadata.AsFolder()
 	if err != nil {
@@ -282,7 +283,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return fmt.Errorf("Error while calculating checksums: %s", err)
 	}
 	release := db.FromLibraryToRelease(library)
-	release.URL = config.BaseDownloadUrl + host + "/" + lib + "/" + zipName + ".zip"
+	release.URL = config.BaseDownloadURL + host + "/" + lib + "/" + zipName + ".zip"
 	release.ArchiveFileName = zipName + ".zip"
 	release.Size = size
 	release.Checksum = checksum

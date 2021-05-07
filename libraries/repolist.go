@@ -30,7 +30,7 @@ func loadRepoListFromFile(filename string) ([]*Repo, error) {
 			types := strings.Split(split[1], ",")
 			name := split[2]
 			repos = append(repos, &Repo{
-				Url:         url,
+				URL:         url,
 				Types:       types,
 				LibraryName: name,
 			})
@@ -46,7 +46,7 @@ type repoMatcher interface {
 
 type repoMatcherIfDotGit struct{}
 
-func (_ repoMatcherIfDotGit) Match(url string) bool {
+func (repoMatcherIfDotGit) Match(url string) bool {
 	return strings.Index(url, "https://") == 0 && strings.LastIndex(url, ".git") == len(url)-len(".git")
 }
 
@@ -64,12 +64,14 @@ func (_ repoMatcherIfGithub) Match(r string) bool {
 }
 */
 
+// GitURLsError is the type for the unknown or unsupported repositories data.
 type GitURLsError struct {
 	Repos []*Repo
 }
 
+// Repo is the type for the library repository data.
 type Repo struct {
-	Url         string
+	URL         string
 	Types       []string
 	LibraryName string
 }
@@ -78,7 +80,7 @@ type Repo struct {
 // For example if the repo URL is https://github.com/example/lib.git this function
 // will return "github.com/example/lib"
 func (repo *Repo) AsFolder() (string, error) {
-	u, err := url.Parse(repo.Url)
+	u, err := url.Parse(repo.URL)
 	if err != nil {
 		return "", err
 	}
@@ -87,24 +89,25 @@ func (repo *Repo) AsFolder() (string, error) {
 	return folderName, nil
 }
 
-type ReposByUrl []*Repo
+// ReposByURL is the type for the libraries repository data.
+type ReposByURL []*Repo
 
-func (r ReposByUrl) Len() int {
+func (r ReposByURL) Len() int {
 	return len(r)
 }
 
-func (r ReposByUrl) Swap(i, j int) {
+func (r ReposByURL) Swap(i, j int) {
 	r[i], r[j] = r[j], r[i]
 }
 
-func (r ReposByUrl) Less(i, j int) bool {
-	return r[i].Url < r[j].Url
+func (r ReposByURL) Less(i, j int) bool {
+	return r[i].URL < r[j].URL
 }
 
 func (err GitURLsError) Error() string {
 	error := bytes.NewBufferString("Following URL are unknown or unsupported git repos:\n")
 	for _, v := range err.Repos {
-		fmt.Fprintln(error, v.Url)
+		fmt.Fprintln(error, v.URL)
 	}
 
 	return error.String()
@@ -114,7 +117,7 @@ func filterReposBy(repos []*Repo, matcher repoMatcher) ([]*Repo, error) {
 	var filtered []*Repo
 	var wrong []*Repo
 	for _, repo := range repos {
-		if matcher.Match(repo.Url) {
+		if matcher.Match(repo.URL) {
 			filtered = append(filtered, repo)
 		} else {
 			wrong = append(wrong, repo)
@@ -171,15 +174,16 @@ func toListOfUniqueRepos(repos []*Repo) []*Repo {
 	var finalRepos []*Repo
 
 	for _, repo := range repos {
-		if _, contains := repoMap[repo.Url]; !contains {
+		if _, contains := repoMap[repo.URL]; !contains {
 			finalRepos = append(finalRepos, repo)
-			repoMap[repo.Url] = repo
+			repoMap[repo.URL] = repo
 		}
 	}
 
 	return finalRepos
 }
 
+// ListRepos loads a list from the given filename.
 func ListRepos(reposFilename string) ([]*Repo, error) {
 	repos, err := loadRepoListFromFile(reposFilename)
 	if err != nil {

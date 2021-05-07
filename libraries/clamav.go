@@ -31,6 +31,7 @@ func modifyEnv(env []string, key, value string) []string {
 	return envMapToSlice(envMap)
 }
 
+// RunAntiVirus scans the folder for viruses.
 func RunAntiVirus(folder string) ([]byte, error) {
 	cmd := exec.Command("clamdscan", "-i", folder)
 	cmd.Env = modifyEnv(os.Environ(), "LANG", "en")
@@ -42,7 +43,7 @@ func RunAntiVirus(folder string) ([]byte, error) {
 
 	output := string(out)
 	if strings.Index(output, "Infected files: 0") == -1 {
-		return out, errors.New("Infected files found!")
+		return out, errors.New("Infected files found")
 	}
 
 	return out, nil

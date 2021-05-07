@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 )
 
+// FailIfHasUndesiredFiles returns an error if the folder contains any undesired files.
 func FailIfHasUndesiredFiles(folder string) error {
 	err := failIfContainsForbiddenFileInRoot(folder)
 	if err != nil {
@@ -15,10 +16,11 @@ func FailIfHasUndesiredFiles(folder string) error {
 	return failIfContainsExes(folder)
 }
 
-var FORBIDDEN_FILES = []string{".development"}
+// ForbiddenFiles is the names of the forbidden files.
+var ForbiddenFiles = []string{".development"}
 
 func failIfContainsForbiddenFileInRoot(folder string) error {
-	for _, file := range FORBIDDEN_FILES {
+	for _, file := range ForbiddenFiles {
 		if _, err := os.Stat(filepath.Join(folder, file)); err == nil {
 			return errors.New(file + " file found, skipping")
 		}
@@ -27,10 +29,11 @@ func failIfContainsForbiddenFileInRoot(folder string) error {
 	return nil
 }
 
-var PATTERNS = []string{"*.exe"}
+// Patterns is the file patterns of executables.
+var Patterns = []string{"*.exe"}
 
 func failIfContainsExes(folder string) error {
-	for _, pattern := range PATTERNS {
+	for _, pattern := range Patterns {
 		cmd := exec.Command("find", folder, "-type", "f", "-name", pattern)
 		output, err := cmd.CombinedOutput()
 		if err != nil {

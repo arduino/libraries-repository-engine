@@ -1,24 +1,26 @@
 package libraries
 
 import (
-	"arduino.cc/repository/libraries/hash"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"arduino.cc/repository/libraries/hash"
 )
 
-func GithubDownloadRelease(repoUrl, version string) (string, int64, string, error) {
+// GithubDownloadRelease downloads GitHub's archive of the release.
+func GithubDownloadRelease(repoURL, version string) (string, int64, string, error) {
 	tempfile, err := ioutil.TempFile("", "github")
 	if err != nil {
 		return "", -1, "", err
 	}
 	defer os.Remove(tempfile.Name())
 
-	zipFileUrl := strings.Replace(repoUrl, ".git", "", 1) + "/archive/" + version + ".zip"
+	zipFileURL := strings.Replace(repoURL, ".git", "", 1) + "/archive/" + version + ".zip"
 
-	err = saveUrlIn(zipFileUrl, tempfile)
+	err = saveURLIn(zipFileURL, tempfile)
 	if err != nil {
 		return "", -1, "", err
 	}
@@ -34,10 +36,10 @@ func GithubDownloadRelease(repoUrl, version string) (string, int64, string, erro
 		return "", -1, "", err
 	}
 
-	return zipFileUrl, size, checksum, nil
+	return zipFileURL, size, checksum, nil
 }
 
-func saveUrlIn(url string, tempfile *os.File) error {
+func saveURLIn(url string, tempfile *os.File) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err

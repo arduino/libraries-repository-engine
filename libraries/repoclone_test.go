@@ -9,7 +9,7 @@ import (
 )
 
 func TestCloneRepos(t *testing.T) {
-	meta := &Repo{Url: "https://github.com/arduino-libraries/Servo.git"}
+	meta := &Repo{URL: "https://github.com/arduino-libraries/Servo.git"}
 
 	subfolder, err := meta.AsFolder()
 	require.NoError(t, err)
