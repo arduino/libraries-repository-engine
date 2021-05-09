@@ -1,0 +1,7 @@
+contact_links:
+  - name: Learn about the Arduino Library Manager indexer
+    url: https://github.com/arduino/library-registry/blob/main/FAQ.md#arduino-library-manager-faq
+    about: Frequently asked questions about the Library Manager indexer.
+  - name: Support request
+    url: https://forum.arduino.cc/
+    about: We can help you out on the Arduino Forum!
