@@ -21,3 +21,11 @@ task go:test
 Create a `config.json` file (or edit example one). Same thing for `repos.txt` file.
 
 Run with `go run sync_libraries.go` or `task go:build` and then `./libraries-repository-engine`
+
+## Security
+
+If you think you found a vulnerability or other security-related bug in this project, please read our
+[security policy](https://github.com/arduino/libraries-repository-engine/security/policy) and report the bug to our Security Team 🛡️
+Thank you!
+
+e-mail contact: security@arduino.cc
