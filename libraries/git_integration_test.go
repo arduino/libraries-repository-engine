@@ -12,7 +12,7 @@ import (
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
-	repos, err := ListRepos("./testdata/git_only_servo.txt")
+	repos, err := ListRepos("./testdata/git_test_repo.txt")
 
 	require.NoError(t, err)
 	require.NotNil(t, repos)
