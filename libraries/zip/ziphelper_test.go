@@ -27,8 +27,18 @@ func TestZip(t *testing.T) {
 	defer zipFileReader.Close()
 
 	require.Equal(t, 4, len(zipFileReader.File))
-	require.Equal(t, "a_zip/", zipFileReader.File[0].Name)
-	require.Equal(t, "a_zip/testfile.txt", zipFileReader.File[1].Name)
-	require.Equal(t, "a_zip/testfolder/", zipFileReader.File[2].Name)
-	require.Equal(t, "a_zip/testfolder/testfileinfolder.txt", zipFileReader.File[3].Name)
+
+	containsName := func(name string) bool {
+		for _, file := range zipFileReader.File {
+			if file.Name == name {
+				return true
+			}
+		}
+
+		return false
+	}
+	require.True(t, containsName("a_zip/"))
+	require.True(t, containsName("a_zip/testfile.txt"))
+	require.True(t, containsName("a_zip/testfolder/"))
+	require.True(t, containsName("a_zip/testfolder/testfileinfolder.txt"))
 }
