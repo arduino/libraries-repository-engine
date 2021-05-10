@@ -47,6 +47,11 @@ tasks:
     cmds:
       - go fmt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  general:format-prettier:
+    desc: Format all supported files with Prettier
+    cmds:
+      - npx prettier --write .
+
   general:check-spelling:
     desc: Check for commonly misspelled words
     cmds:
