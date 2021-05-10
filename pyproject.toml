@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "libraries-repository-engine"
+version = "0.0.0"
+description = ""
+authors = ["Arduino <info@arduino.cc>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+codespell = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
