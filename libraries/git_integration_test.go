@@ -47,6 +47,8 @@ func TestUpdateLibraryJson(t *testing.T) {
 		require.NoError(t, err)
 		err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag, Force: true})
 		require.NoError(t, err)
+		err = repoTree.Clean(&git.CleanOptions{Dir: true})
+		require.NoError(t, err)
 
 		library, err := GenerateLibraryFromRepo(r)
 		require.NoError(t, err)

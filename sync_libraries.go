@@ -244,6 +244,10 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return fmt.Errorf("Error checking out repo: %s", err)
 	}
 
+	if err = repoTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
+		return fmt.Errorf("Error cleaning repo: %s", err)
+	}
+
 	// Create library metadata from library.properties
 	library, err := libraries.GenerateLibraryFromRepo(repo)
 	if err != nil {
