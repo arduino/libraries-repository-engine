@@ -2,6 +2,7 @@
 [![Check Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go.yml)
 [![Check Prettier Formatting status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml)
 [![Spell Check status](https://github.com/arduino/libraries-repository-engine/actions/workflows/spell-check-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/spell-check-task.yml)
+[![Check License status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-license.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-license.yml)
 
 ## BUILD
 
