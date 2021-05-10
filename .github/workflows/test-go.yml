@@ -8,6 +8,7 @@ on:
       - "go.mod"
       - "go.sum"
       - "Taskfile.yml"
+      - "**/testdata/**"
       - "**.go"
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - "go.mod"
       - "go.sum"
       - "Taskfile.yml"
+      - "**/testdata/**"
       - "**.go"
   workflow_dispatch:
   repository_dispatch:
