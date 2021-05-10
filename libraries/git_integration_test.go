@@ -45,7 +45,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 		// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved before checkout
 		resolvedTag, err := r.Repository.ResolveRevision(plumbing.Revision(tag.Hash().String()))
 		require.NoError(t, err)
-		err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag})
+		err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag, Force: true})
 		require.NoError(t, err)
 
 		library, err := GenerateLibraryFromRepo(r)
