@@ -8,11 +8,12 @@ import (
 
 	"arduino.cc/repository/libraries/db"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/stretchr/testify/require"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
-	repos, err := ListRepos("./testdata/git_only_servo.txt")
+	repos, err := ListRepos("./testdata/git_test_repo.txt")
 
 	require.NoError(t, err)
 	require.NotNil(t, repos)
@@ -41,7 +42,10 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 		repoTree, err := r.Repository.Worktree()
 		require.NoError(t, err)
-		err = repoTree.Checkout(&git.CheckoutOptions{Hash: tag.Hash()})
+		// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved before checkout
+		resolvedTag, err := r.Repository.ResolveRevision(plumbing.Revision(tag.Hash().String()))
+		require.NoError(t, err)
+		err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag})
 		require.NoError(t, err)
 
 		library, err := GenerateLibraryFromRepo(r)

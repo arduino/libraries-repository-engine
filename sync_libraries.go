@@ -234,7 +234,13 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return err
 	}
 
-	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: tag.Hash()}); err != nil {
+	// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved before checkout
+	resolvedTag, err := repo.Repository.ResolveRevision(plumbing.Revision(tag.Hash().String()))
+	if err != nil {
+		panic(err)
+	}
+
+	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag}); err != nil {
 		return fmt.Errorf("Error checking out repo: %s", err)
 	}
 
