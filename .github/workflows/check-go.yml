@@ -6,11 +6,15 @@ on:
     paths:
       - ".github/workflows/check-go.yml"
       - "Taskfile.yml"
+      - "go.mod"
+      - "go.sum"
       - "**.go"
   pull_request:
     paths:
       - ".github/workflows/check-go.yml"
       - "Taskfile.yml"
+      - "go.mod"
+      - "go.sum"
       - "**.go"
   schedule:
     # Run every Tuesday at 8 AM UTC to catch breakage caused by changes to tools.
@@ -68,4 +72,17 @@ jobs:
         run: task go:format
 
       - name: Check formatting
+        run: git diff --color --exit-code
+
+  check-config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run go mod tidy
+        run: go mod tidy
+
+      - name: Check whether any tidying was needed
         run: git diff --color --exit-code
