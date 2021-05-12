@@ -27,6 +27,11 @@ tasks:
     cmds:
       - go vet {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  go:fix:
+    desc: Modernize usages of outdated APIs
+    cmds:
+      - go fix {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
   go:lint:
     desc: Lint Go code
     cmds:
