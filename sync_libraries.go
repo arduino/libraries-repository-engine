@@ -298,12 +298,18 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	}
 
 	report, err := libraries.RunArduinoLint(repo.FolderPath, repoMeta)
+	reportTemplate := `<a href="https://arduino.github.io/arduino-lint/latest/">Arduino Lint</a> %s:
+<details><summary>Click to expand Arduino Lint report</summary>
+<hr>
+%s
+<hr>
+</details>`
 	if err != nil {
-		logger.Printf("<a href=\"https://arduino.github.io/arduino-lint/latest/\">Arduino Lint</a> found errors:\n%s", report)
+		logger.Printf(reportTemplate, "found errors", report)
 		return err
 	}
 	if report != nil {
-		logger.Printf("<a href=\"https://arduino.github.io/arduino-lint/latest/\">Arduino Lint</a> has suggestions for possible improvements:\n%s", report)
+		logger.Printf(reportTemplate, "has suggestions for possible improvements", report)
 	}
 
 	zipName := libraries.ZipFolderName(library)
