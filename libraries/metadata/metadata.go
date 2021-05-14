@@ -40,8 +40,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"regexp"
-	"strings"
 
 	"github.com/google/go-github/github"
 	ini "github.com/vaughan0/go-ini"
@@ -62,109 +60,6 @@ type LibraryMetadata struct {
 	Types         []string
 	Includes      string
 	Depends       string
-}
-
-const categoryUcategorized string = "Uncategorized"
-
-var validCategories = []string{
-	"Display",
-	"Communication",
-	"Signal Input/Output",
-	"Sensors",
-	"Device Control",
-	"Timing",
-	"Data Storage",
-	"Data Processing",
-	"Other",
-	categoryUcategorized,
-}
-
-// IsValidCategory checks if category is a valid category
-func IsValidCategory(category string) bool {
-	for _, c := range validCategories {
-		if category == c {
-			return true
-		}
-	}
-	return false
-}
-
-// Validate checks LibraryMetadata for errors, returns an array of the errors found
-func (library *LibraryMetadata) Validate() []error {
-	var errorsAccumulator []error
-
-	// Check lib name
-	if !IsValidLibraryName(library.Name) {
-		errorsAccumulator = append(errorsAccumulator, errors.New("Invalid 'name' field: "+library.Name))
-	}
-
-	// Check author and maintainer existence
-	if library.Author == "" {
-		errorsAccumulator = append(errorsAccumulator, errors.New("'author' field must be defined"))
-	}
-	if library.Maintainer == "" {
-		library.Maintainer = library.Author
-	}
-
-	// Check sentence and paragraph and url existence
-	if library.Sentence == "" || library.URL == "" {
-		errorsAccumulator = append(errorsAccumulator, errors.New("'sentence' and 'url' fields must be defined"))
-	}
-
-	newVersion, err := VersionToSemverCompliant(library.Version)
-	if err != nil {
-		errorsAccumulator = append(errorsAccumulator, err)
-	}
-	library.Version = newVersion
-
-	// Check if the category is valid and set to "Uncategorized" if not
-	if !IsValidCategory(library.Category) {
-		library.Category = categoryUcategorized
-	}
-
-	// Check if 'depends' field is correctly written
-	if !IsValidDependency(library.Depends) {
-		errorsAccumulator = append(errorsAccumulator, errors.New("Invalid 'depends' field: "+library.Depends))
-	}
-	return errorsAccumulator
-}
-
-// IsValidLibraryName checks if a string is a valid library name
-func IsValidLibraryName(name string) bool {
-	if len(name) == 0 {
-		return false
-	}
-	if name[0] == '-' || name[0] == '_' || name[0] == ' ' {
-		return false
-	}
-	for _, char := range name {
-		if !strings.Contains("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-. ", string(char)) {
-			return false
-		}
-	}
-	return true
-}
-
-var re = regexp.MustCompile("^([a-zA-Z0-9](?:[a-zA-Z0-9._\\- ]*[a-zA-Z0-9])?) *(?: \\(([^()]*)\\))?$")
-
-// IsValidDependency checks if the `depends` field of library.properties is correctly formatted
-func IsValidDependency(depends string) bool {
-	// TODO: merge this method with db.ExtractDependenciesList
-	depends = strings.TrimSpace(depends)
-	if depends == "" {
-		return true
-	}
-	for _, dep := range strings.Split(depends, ",") {
-		dep = strings.TrimSpace(dep)
-		if dep == "" {
-			return false
-		}
-		matches := re.FindAllStringSubmatch(dep, -1)
-		if matches == nil {
-			return false
-		}
-	}
-	return true
 }
 
 // ParsePullRequest makes a LibraryMetadata by reading library.properties from a github.PullRequest

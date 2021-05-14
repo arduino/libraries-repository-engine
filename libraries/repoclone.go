@@ -24,7 +24,6 @@
 package libraries
 
 import (
-	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -98,16 +97,6 @@ func GenerateLibraryFromRepo(repo *Repository) (*metadata.LibraryMetadata, error
 	library, err := metadata.Parse(bytes)
 	if err != nil {
 		return nil, err
-	}
-
-	libraryErrors := library.Validate()
-	if len(libraryErrors) > 0 {
-		var errorsString []string
-		for _, error := range libraryErrors {
-			errorsString = append(errorsString, error.Error())
-		}
-		combinedErrors := strings.Join(errorsString, ",")
-		return nil, errors.New(combinedErrors)
 	}
 
 	return library, nil

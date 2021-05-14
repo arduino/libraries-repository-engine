@@ -290,16 +290,26 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return nil
 	}
 
-	// Check if the library has undesried files
-	if err := libraries.FailIfHasUndesiredFiles(repo.FolderPath); err != nil {
-		return err
-	}
-
 	if !config.DoNotRunClamav {
 		if out, err := libraries.RunAntiVirus(repo.FolderPath); err != nil {
 			logger.Printf("clamav output:\n%s", out)
 			return err
 		}
+	}
+
+	report, err := libraries.RunArduinoLint(repo.FolderPath, repoMeta)
+	reportTemplate := `<a href="https://arduino.github.io/arduino-lint/latest/">Arduino Lint</a> %s:
+<details><summary>Click to expand Arduino Lint report</summary>
+<hr>
+%s
+<hr>
+</details>`
+	if err != nil {
+		logger.Printf(reportTemplate, "found errors", report)
+		return err
+	}
+	if report != nil {
+		logger.Printf(reportTemplate, "has suggestions for possible improvements", report)
 	}
 
 	zipName := libraries.ZipFolderName(library)
