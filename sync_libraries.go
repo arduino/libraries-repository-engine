@@ -250,7 +250,7 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 
 func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, tag *plumbing.Reference, repoMeta *libraries.Repo, libraryDb *db.DB) error {
 	// Checkout desired tag
-	logger.Printf("Checking out tag: %s", tag.Name())
+	logger.Printf("Checking out tag: %s", tag.Name().Short())
 
 	repoTree, err := repo.Repository.Worktree()
 	if err != nil {
