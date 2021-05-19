@@ -249,6 +249,8 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 }
 
 func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, tag *plumbing.Reference, repoMeta *libraries.Repo, libraryDb *db.DB) error {
+	var releaseLog string // This string will be displayed in the logs for indexed releases.
+
 	// Checkout desired tag
 	logger.Printf("Checking out tag: %s", tag.Name())
 
@@ -284,10 +286,19 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return nil
 	}
 
+	releaseQuery := db.Release{
+		LibraryName: library.Name,
+		Version:     db.VersionFromString(library.Version),
+	}
 	// If the release is already checked in, skip
-	if libraryDb.HasLibrary(library.Name) && libraryDb.HasReleaseByNameVersion(library.Name, library.Version) {
-		logger.Printf("Release %s:%s already loaded, skipping", library.Name, library.Version)
-		return nil
+	if libraryDb.HasLibrary(library.Name) {
+		if release, _ := libraryDb.FindRelease(&releaseQuery); release != nil {
+			logger.Printf("Release %s:%s already loaded, skipping", library.Name, library.Version)
+			if release.Log != "" {
+				logger.Print(release.Log)
+			}
+			return nil
+		}
 	}
 
 	if !config.DoNotRunClamav {
@@ -309,7 +320,9 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return err
 	}
 	if report != nil {
-		logger.Printf(reportTemplate, "has suggestions for possible improvements", report)
+		formattedReport := fmt.Sprintf(reportTemplate, "has suggestions for possible improvements", report)
+		logger.Print(formattedReport)
+		releaseLog += formattedReport
 	}
 
 	zipName := libraries.ZipFolderName(library)
@@ -330,6 +343,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	release.ArchiveFileName = zipName + ".zip"
 	release.Size = size
 	release.Checksum = checksum
+	release.Log = releaseLog
 
 	if err := libraries.UpdateLibrary(release, repo.URL, libraryDb); err != nil {
 		return fmt.Errorf("Error while updating library DB: %s", err)

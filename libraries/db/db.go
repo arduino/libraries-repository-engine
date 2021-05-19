@@ -70,6 +70,7 @@ type Release struct {
 	Checksum        string
 	Includes        []string
 	Dependencies    []*Dependency
+	Log             string
 }
 
 // Dependency is a library dependency
