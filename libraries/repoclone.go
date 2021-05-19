@@ -27,7 +27,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"arduino.cc/repository/libraries/db"
 
@@ -75,7 +74,7 @@ func CloneOrFetch(repoMeta *Repo, folderName string) (*Repository, error) {
 			break
 		}
 
-		if err = repo.Repository.DeleteTag(strings.TrimPrefix(tag.Name().String(), "refs/tags/")); err != nil {
+		if err = repo.Repository.DeleteTag(tag.Name().Short()); err != nil {
 			return nil, err
 		}
 	}
