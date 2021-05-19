@@ -315,7 +315,6 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	zipName := libraries.ZipFolderName(library)
 	lib := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
 	host := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..", "..")))
-	logger.Printf("path=%s/%s, archivename=%s", host, lib, zipName)
 	zipFilePath, err := libraries.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, host, lib), zipName)
 	if err != nil {
 		return fmt.Errorf("Error while zipping library: %s", err)
