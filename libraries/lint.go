@@ -49,7 +49,12 @@ func official(metadata *Repo) bool {
 }
 
 // RunArduinoLint runs Arduino Lint on the library and returns the report in the event of error or warnings.
-func RunArduinoLint(folder string, metadata *Repo) ([]byte, error) {
+func RunArduinoLint(arduinoLintPath string, folder string, metadata *Repo) ([]byte, error) {
+	if arduinoLintPath == "" {
+		// Assume Arduino Lint is installed under PATH.
+		arduinoLintPath = "arduino-lint"
+	}
+
 	JSONReportFolder, err := ioutil.TempDir("", "arduino-lint-report-")
 	if err != nil {
 		panic(err)
@@ -59,7 +64,7 @@ func RunArduinoLint(folder string, metadata *Repo) ([]byte, error) {
 
 	// See: https://arduino.github.io/arduino-lint/latest/commands/arduino-lint/
 	cmd := exec.Command(
-		"arduino-lint",
+		arduinoLintPath,
 		"--compliance=permissive",
 		"--format=text",
 		"--project-type=library",

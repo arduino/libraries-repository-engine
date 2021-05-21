@@ -4,5 +4,6 @@
   "LibrariesIndex": "/tmp/libraries/library_index.json",
   "LibrariesDB": "/tmp/libraries_db.json",
   "GitClonesFolder": "/tmp/gitclones",
+  "ArduinoLintPath": "/usr/bin/arduino-lint",
   "CronTabEntry": "0 0 0 * * *"
 }

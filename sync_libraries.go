@@ -49,6 +49,7 @@ type Config struct {
 	LibrariesIndex  string
 	GitClonesFolder string
 	DoNotRunClamav  bool
+	ArduinoLintPath string
 }
 
 func logError(err error) bool {
@@ -308,7 +309,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		}
 	}
 
-	report, err := libraries.RunArduinoLint(repo.FolderPath, repoMeta)
+	report, err := libraries.RunArduinoLint(config.ArduinoLintPath, repo.FolderPath, repoMeta)
 	reportTemplate := `<a href="https://arduino.github.io/arduino-lint/latest/">Arduino Lint</a> %s:
 <details><summary>Click to expand Arduino Lint report</summary>
 <hr>

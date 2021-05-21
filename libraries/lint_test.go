@@ -101,7 +101,7 @@ func TestRunArduinoLint(t *testing.T) {
 		} else {
 			metadata.Types = []string{"Contributed"}
 		}
-		report, err := RunArduinoLint(filepath.Join(testDataPath, "libraries", testTable.folder), &metadata)
+		report, err := RunArduinoLint("", filepath.Join(testDataPath, "libraries", testTable.folder), &metadata)
 		assert.Regexp(t, regexp.MustCompile(testTable.reportRegexp), string(report), testTable.testName)
 		testTable.errorAssertion(t, err, testTable.testName)
 	}
