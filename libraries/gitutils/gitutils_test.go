@@ -93,6 +93,52 @@ func TestResolveTag(t *testing.T) {
 	}
 }
 
+func TestSortedCommitTags(t *testing.T) {
+	// Create a folder for the test repository.
+	repositoryPath, err := paths.TempDir().MkTempDir("gitutils-TestSortedTags-repo")
+	require.Nil(t, err)
+
+	// Create test repository.
+	repository, err := git.PlainInit(repositoryPath.String(), false)
+	require.Nil(t, err)
+
+	var tags []*plumbing.Reference
+	tags = append(tags, makeTag(t, repository, "1.0.0", makeCommit(t, repository, repositoryPath), true))
+	// Throw a tree tag into the mix. This should not have any effect.
+	makeTag(t, repository, "tree-tag", getTreeHash(t, repository), true)
+	tags = append(tags, makeTag(t, repository, "1.0.1", makeCommit(t, repository, repositoryPath), false))
+
+	worktree, err := repository.Worktree()
+	require.Nil(t, err)
+	worktree.Checkout(
+		&git.CheckoutOptions{
+			Branch: "development-branch",
+			Create: true,
+		},
+	)
+	var branchTags []*plumbing.Reference
+	branchTags = append(branchTags, makeTag(t, repository, "1.0.2-rc1", makeCommit(t, repository, repositoryPath), true))
+	branchTags = append(branchTags, makeTag(t, repository, "1.0.2-rc2", makeCommit(t, repository, repositoryPath), true))
+	config, err := repository.Config()
+	require.Nil(t, err)
+	worktree.Checkout(
+		&git.CheckoutOptions{
+			Branch: plumbing.ReferenceName(config.Init.DefaultBranch),
+			Create: false,
+		},
+	)
+
+	tags = append(tags, makeTag(t, repository, "1.0.2", makeCommit(t, repository, repositoryPath), true))
+	// Throw a blob tag into the mix. This should not have any effect.
+	makeTag(t, repository, "blob-tag", getBlobHash(t, repository), true)
+	tags = append(tags, branchTags...)
+	tags = append(tags, makeTag(t, repository, "1.0.10", makeCommit(t, repository, repositoryPath), true))
+
+	sorted, err := SortedCommitTags(repository)
+	require.Nil(t, err)
+	assert.Equal(t, tags, sorted)
+}
+
 // makeCommit creates a test commit in the given repository and returns its plumbing.Hash object.
 func makeCommit(t *testing.T, repository *git.Repository, repositoryPath *paths.Path) plumbing.Hash {
 	_, err := paths.WriteToTempFile([]byte{}, repositoryPath, "gitutils-makeCommit-tempfile")

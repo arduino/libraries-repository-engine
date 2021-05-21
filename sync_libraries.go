@@ -34,6 +34,7 @@ import (
 
 	"arduino.cc/repository/libraries"
 	"arduino.cc/repository/libraries/db"
+	"arduino.cc/repository/libraries/gitutils"
 	"arduino.cc/repository/libraries/hash"
 	cc "github.com/arduino/golang-concurrent-workers"
 	"github.com/go-git/go-git/v5"
@@ -227,19 +228,13 @@ func syncLibrary(logger *log.Logger, repoMetadata *libraries.Repo, libraryDb *db
 	}
 
 	// Retrieve the list of git-tags
-	tags, err := repo.Repository.Tags()
+	tags, err := gitutils.SortedCommitTags(repo.Repository)
 	if err != nil {
 		logger.Printf("Error retrieving git-tags: %s", err)
 		return
 	}
 
-	for {
-		tag, err := tags.Next()
-		if err != nil {
-			// Reached end of tags
-			break
-		}
-
+	for _, tag := range tags {
 		// Sync the library release for each git-tag
 		err = syncLibraryTaggedRelease(logger, repo, tag, repoMetadata, libraryDb)
 		if err != nil {
@@ -260,8 +255,9 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	}
 
 	// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved before checkout
-	resolvedTag, err := repo.Repository.ResolveRevision(plumbing.Revision(tag.Hash().String()))
+	resolvedTag, err := gitutils.ResolveTag(tag, repo.Repository)
 	if err != nil {
+		// All unresolvable tags were already removed by gitutils.SortedCommitTags(), so there will never be an error under normal conditions.
 		panic(err)
 	}
 
