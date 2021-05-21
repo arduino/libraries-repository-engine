@@ -73,20 +73,6 @@ func (repoMatcherIfDotGit) Match(url string) bool {
 	return strings.Index(url, "https://") == 0 && strings.LastIndex(url, ".git") == len(url)-len(".git")
 }
 
-/*
-type repoMatcherIfNotDotGit struct{}
-
-func (_ repoMatcherIfNotDotGit) Match(r string) bool {
-	return !repoMatcherIfDotGit{}.Match(r)
-}
-
-type repoMatcherIfGithub struct{}
-
-func (_ repoMatcherIfGithub) Match(r string) bool {
-	return strings.Index(r, "//github.com") != -1 || strings.Index(r, "@github.com") != -1
-}
-*/
-
 // GitURLsError is the type for the unknown or unsupported repositories data.
 type GitURLsError struct {
 	Repos []*Repo
@@ -152,45 +138,6 @@ func filterReposBy(repos []*Repo, matcher repoMatcher) ([]*Repo, error) {
 	}
 	return filtered, err
 }
-
-/*
-func newGithubClient() *github.Client {
-	gh_auth := &oauth.Transport{Token: &oauth.Token{AccessToken: config.GithubAuthToken()}}
-	return github.NewClient(gh_auth.Client())
-}
-
-func reposFromGithubOrgs(orgs []*github.Organization) ([]string, error) {
-	client := newGithubClient()
-	var repos []string
-	for _, org := range orgs {
-		repositories, _, err := client.Repositories.ListByOrg(*org.Login, &github.RepositoryListByOrgOptions{})
-		if err != nil {
-			return nil, err
-		}
-		for _, repository := range repositories {
-			repos = append(repos, *repository.CloneURL)
-		}
-	}
-
-	return repos, nil
-}
-
-func findGithubOrgs(repos []string) (orgs []*github.Organization, err error) {
-	client := newGithubClient()
-	for _, repo := range repos {
-		parsedURL, err := url.Parse(repo)
-		if err != nil {
-			return nil, err
-		}
-		orgName := strings.Split(parsedURL.Path, "/")[1]
-		org, _, err := client.Organizations.Get(orgName)
-		if err == nil {
-			orgs = append(orgs, org)
-		}
-	}
-	return orgs, nil
-}
-*/
 
 func toListOfUniqueRepos(repos []*Repo) []*Repo {
 	repoMap := make(map[string]*Repo)
