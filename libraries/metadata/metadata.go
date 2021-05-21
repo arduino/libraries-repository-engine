@@ -37,11 +37,7 @@ package metadata
 
 import (
 	"bytes"
-	"context"
-	"encoding/base64"
-	"errors"
 
-	"github.com/google/go-github/github"
 	ini "github.com/vaughan0/go-ini"
 )
 
@@ -60,34 +56,6 @@ type LibraryMetadata struct {
 	Types         []string
 	Includes      string
 	Depends       string
-}
-
-// ParsePullRequest makes a LibraryMetadata by reading library.properties from a github.PullRequest
-func ParsePullRequest(gh *github.Client, pull *github.PullRequest) (*LibraryMetadata, error) {
-	head := *pull.Head
-	headRepo := *head.Repo
-
-	// Get library.properties from pull request HEAD
-	getContentOpts := &github.RepositoryContentGetOptions{
-		Ref: *head.SHA,
-	}
-	libPropContent, _, _, err := gh.Repositories.GetContents(context.TODO(), *headRepo.Owner.Login, *headRepo.Name, "library.properties", getContentOpts)
-	if err != nil {
-		return nil, err
-	}
-	if libPropContent == nil {
-		return nil, errors.New("library.properties file not found")
-	}
-	return ParseRepositoryContent(libPropContent)
-}
-
-// ParseRepositoryContent makes a LibraryMetadata by reading library.properties from a github.RepositoryContent
-func ParseRepositoryContent(content *github.RepositoryContent) (*LibraryMetadata, error) {
-	libPropertiesData, err := base64.StdEncoding.DecodeString(*content.Content)
-	if err != nil {
-		return nil, err
-	}
-	return Parse(libPropertiesData)
 }
 
 // Parse makes a LibraryMetadata by parsing a library.properties file contained in a byte array
