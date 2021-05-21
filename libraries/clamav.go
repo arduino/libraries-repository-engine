@@ -56,7 +56,7 @@ func modifyEnv(env []string, key, value string) []string {
 
 // RunAntiVirus scans the folder for viruses.
 func RunAntiVirus(folder string) ([]byte, error) {
-	cmd := exec.Command("clamdscan", "-i", folder)
+	cmd := exec.Command("clamdscan", "--fdpass", "-i", folder)
 	cmd.Env = modifyEnv(os.Environ(), "LANG", "en")
 
 	out, err := cmd.CombinedOutput()
