@@ -3,6 +3,7 @@ module arduino.cc/repository
 go 1.14
 
 require (
+	github.com/arduino/go-paths-helper v1.5.0
 	github.com/arduino/golang-concurrent-workers v0.0.0-20170202182617-6710cdc954bc
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/go-git/go-git/v5 v5.3.0

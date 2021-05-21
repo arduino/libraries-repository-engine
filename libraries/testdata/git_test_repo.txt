@@ -1,3 +1,4 @@
 # Must not contain any non-compliant releases (so use an archived repo to avoid breakage).
 # Should contain both lightweight and annotated tags.
+# Must not contain any tags for non-commit objects.
 https://github.com/arduino-libraries/ArduinoCloud.git|Arduino|ArduinoCloud
