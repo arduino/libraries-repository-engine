@@ -38,6 +38,7 @@ package metadata
 import (
 	"bytes"
 
+	"github.com/arduino/arduino-cli/arduino/libraries"
 	ini "github.com/vaughan0/go-ini"
 	semver "go.bug.st/relaxed-semver"
 )
@@ -111,4 +112,13 @@ func normalizeVersion(version string) string {
 
 	versionObject.Normalize()
 	return versionObject.String()
+}
+
+// normalizeCategory restricts category values to the allowed list.
+func normalizeCategory(category string) string {
+	if !libraries.ValidCategories[category] {
+		return "Uncategorized"
+	}
+
+	return category
 }

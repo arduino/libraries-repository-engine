@@ -139,6 +139,38 @@ depends=ArduinoHttpClient
 			},
 			errorAssertion: assert.NoError,
 		},
+		{
+			testName: "Invalid category",
+			propertiesData: []byte(`
+name=WebServer
+version=1.0.0
+author=Cristian Maglie <c.maglie@example.com>, Pippo Pluto <pippo@example.com>
+maintainer=Cristian Maglie <c.maglie@example.com>
+sentence=A library that makes coding a Webserver a breeze.
+paragraph=Supports HTTP1.1 and you can do GET and POST.
+category=foo
+url=http://example.com/
+architectures=avr
+includes=WebServer.h
+depends=ArduinoHttpClient
+			`),
+			libraryMetadataAssertion: &LibraryMetadata{
+				Name:          "WebServer",
+				Version:       "1.0.0",
+				Author:        "Cristian Maglie <c.maglie@example.com>, Pippo Pluto <pippo@example.com>",
+				Maintainer:    "Cristian Maglie <c.maglie@example.com>",
+				License:       "",
+				Sentence:      "A library that makes coding a Webserver a breeze.",
+				Paragraph:     "Supports HTTP1.1 and you can do GET and POST.",
+				URL:           "http://example.com/",
+				Architectures: "avr",
+				Category:      "Uncategorized",
+				Types:         nil,
+				Includes:      "WebServer.h",
+				Depends:       "ArduinoHttpClient",
+			},
+			errorAssertion: assert.NoError,
+		},
 	}
 
 	for _, testTable := range testTables {
