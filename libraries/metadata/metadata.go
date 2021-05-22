@@ -39,6 +39,7 @@ import (
 	"bytes"
 
 	ini "github.com/vaughan0/go-ini"
+	semver "go.bug.st/relaxed-semver"
 )
 
 // LibraryMetadata contains metadata for a library.properties file
@@ -88,5 +89,26 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 		Includes:      get("includes"),
 		Depends:       get("depends"),
 	}
+
+	library.normalize()
+
 	return library, nil
+}
+
+// normalize normalizes library metadata.
+func (library *LibraryMetadata) normalize() {
+	library.Version = normalizeVersion(library.Version)
+	library.Category = normalizeCategory(library.Category)
+}
+
+// normalizeVersion converts "relaxed semver" to semver-compliant versions.
+func normalizeVersion(version string) string {
+	versionObject, err := semver.Parse(version)
+	if err != nil {
+		// Enforcement is handled by Arduino Lint.
+		return version
+	}
+
+	versionObject.Normalize()
+	return versionObject.String()
 }

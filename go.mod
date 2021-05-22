@@ -9,4 +9,5 @@ require (
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
+	go.bug.st/relaxed-semver v0.0.0-20190922224835-391e10178d18
 )
