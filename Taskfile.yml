@@ -6,6 +6,25 @@ vars:
     sh: echo $(go list ./... | tr '\n' ' ')
 
 tasks:
+  build:
+    desc: Build the project
+    deps:
+      - task: go:build
+
+  check:
+    desc: Check for problems with the project
+    deps:
+      - task: general:check-spelling
+      - task: go:lint
+      - task: go:test
+      - task: go:vet
+
+  format:
+    desc: Correct the formatting of the project's files
+    deps:
+      - task: general:format-prettier
+      - task: go:format
+
   go:build:
     desc: Build the project
     cmds:
