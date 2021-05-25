@@ -70,7 +70,6 @@ var re = regexp.MustCompile("^([a-zA-Z0-9](?:[a-zA-Z0-9._\\- ]*[a-zA-Z0-9])?) *(
 
 // ExtractDependenciesList extracts dependencies from the "depends" field of library.properties
 func ExtractDependenciesList(depends string) ([]*Dependency, error) {
-	// TODO: merge this method with metadata.IsValidDependency
 	deps := []*Dependency{}
 	depends = strings.TrimSpace(depends)
 	if depends == "" {
