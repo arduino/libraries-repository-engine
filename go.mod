@@ -6,7 +6,7 @@ require (
 	github.com/arduino/arduino-cli v0.0.0-20210520100059-2666b6ec51e9
 	github.com/arduino/go-paths-helper v1.5.0
 	github.com/arduino/golang-concurrent-workers v0.0.0-20170202182617-6710cdc954bc
-	github.com/go-git/go-git/v5 v5.3.0
+	github.com/go-git/go-git/v5 v5.4.1
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
