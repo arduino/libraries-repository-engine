@@ -126,7 +126,7 @@ def check_logs(configuration, golden_logs_parent_path, logs_subpath):
     Keyword arguments:
     configuration -- dictionary defining the libraries-repository-engine configuration
     golden_logs_parent_path -- parent path for the golden master logs to compare the actual logs against
-    golden_logs_parent_path -- sub-path for both the actual and golden master logs
+    logs_subpath -- sub-path for both the actual and golden master logs
     """
     logs = pathlib.Path(configuration["LogsFolder"], logs_subpath).read_text(encoding="utf-8")
 
