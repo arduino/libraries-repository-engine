@@ -17,13 +17,16 @@ tasks:
       - task: general:check-spelling
       - task: go:lint
       - task: go:test
+      - task: go:test-integration
       - task: go:vet
+      - task: python:lint
 
   format:
     desc: Correct the formatting of the project's files
     deps:
       - task: general:format-prettier
       - task: go:format
+      - task: python:format
 
   go:build:
     desc: Build the project
@@ -34,6 +37,13 @@ tasks:
     desc: Run unit tests
     cmds:
       - go test -v -short -run '{{default ".*" .GO_TEST_REGEX}}' {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} -coverprofile=coverage_unit.txt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  go:test-integration:
+    desc: Run integration tests
+    cmds:
+      - task: go:build
+      - poetry install --no-root
+      - poetry run pytest test
 
   go:check:
     desc: Check for problems with Go code
@@ -70,6 +80,18 @@ tasks:
     desc: Format Go code
     cmds:
       - go fmt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+
+  python:lint:
+    desc: Lint Python code
+    cmds:
+      - poetry install --no-root
+      - poetry run flake8 --show-source
+
+  python:format:
+    desc: Automatically formats Python files
+    cmds:
+      - poetry install --no-root
+      - poetry run black .
 
   general:format-prettier:
     desc: Format all supported files with Prettier

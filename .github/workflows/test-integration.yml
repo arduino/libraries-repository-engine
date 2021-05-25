@@ -1,0 +1,70 @@
+name: Test Integration
+
+# See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
+on:
+  push:
+    paths:
+      - ".github/workflows/test-integration.yml"
+      - "Taskfile.yml"
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - "poetry.lock"
+      - "pyproject.toml"
+      - "test/**"
+  pull_request:
+    paths:
+      - ".github/workflows/test-integration.yml"
+      - "Taskfile.yml"
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - "poetry.lock"
+      - "pyproject.toml"
+      - "test/**"
+  workflow_dispatch:
+  repository_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.14"
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install Arduino Lint
+        run: |
+          ARDUINO_LINT_INSTALLATION_PATH="${{ runner.temp }}/arduino-lint"
+          mkdir --parents "$ARDUINO_LINT_INSTALLATION_PATH"
+          curl \
+            -fsSL \
+            https://raw.githubusercontent.com/arduino/arduino-lint/main/etc/install.sh \
+          | \
+          BINDIR="$ARDUINO_LINT_INSTALLATION_PATH" \
+          sh
+
+          # Add installation folder to path to path
+          echo "$ARDUINO_LINT_INSTALLATION_PATH" >> "$GITHUB_PATH"
+
+      - name: Install Taskfile
+        uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.x
+
+      - name: Run integration tests
+        run: task go:test-integration

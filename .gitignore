@@ -6,8 +6,9 @@ libraries-repository-engine.exe
 repository
 repository.exe
 test/arduino/cc/repository/libraries/testdata/test_db.json
-config.json
-repos.txt
+/config.json
+/repos.txt
+__pycache__/
 
 # Created by .gitignore support plugin (hsz.mobi)
 ### Go template

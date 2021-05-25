@@ -1,3 +1,6 @@
+[tool.black]
+line-length = 120
+
 [tool.poetry]
 name = "libraries-repository-engine"
 version = "0.0.0"
@@ -8,7 +11,12 @@ authors = ["Arduino <info@arduino.cc>"]
 python = "^3.9"
 
 [tool.poetry.dev-dependencies]
+black = "^21.5b1"
 codespell = "^2.0.0"
+flake8 = "^3.9.2"
+invoke = "^1.5.0"
+pep8-naming = "^0.11.1"
+pytest = "^6.2.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
