@@ -30,7 +30,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"arduino.cc/repository/libraries/file"
+	"arduino.cc/repository/internal/libraries/file"
 )
 
 // Directory creates a new zip archive that contains a copy of "rootFolder" into "zipFile".

@@ -28,7 +28,7 @@ import (
 	"regexp"
 	"strings"
 
-	"arduino.cc/repository/libraries/metadata"
+	"arduino.cc/repository/internal/libraries/metadata"
 )
 
 // FromLibraryToRelease extract a Release from LibraryMetadata. LibraryMetadata must be
