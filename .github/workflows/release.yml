@@ -1,0 +1,66 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment variables
+        run: |
+          # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+          echo "CHANGELOG_PATH=${{ runner.temp }}/CHANGELOG.md" >> "$GITHUB_ENV"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install Taskfile
+        uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.x
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.14"
+
+      - name: Build project
+        run: task build
+
+      - name: Create changelog
+        uses: arduino/create-changelog@v1
+        with:
+          tag-regex: '^[0-9]+\.[0-9]+\.[0-9]+.*$'
+          filter-regex: '^\[(skip|changelog)[ ,-](skip|changelog)\].*'
+          case-insensitive-regex: true
+          changelog-file-path: ${{ env.CHANGELOG_PATH }}
+
+      - name: Identify pre-releases
+        id: prerelease
+        env:
+          # See: https://github.com/fsaintjacques/semver-tool/releases/latest
+          TOOL_VERSION: 3.2.0
+        run: |
+          INSTALL_PATH="${{ runner.temp }}/semver-tool"
+          mkdir -p "$INSTALL_PATH"
+          wget --quiet --directory-prefix="$INSTALL_PATH" https://github.com/fsaintjacques/semver-tool/archive/${{ env.TOOL_VERSION }}.zip
+          unzip -p "${INSTALL_PATH}/${{ env.TOOL_VERSION }}.zip" semver-tool-${{ env.TOOL_VERSION }}/src/semver >"${INSTALL_PATH}/semver"
+          chmod +x "${INSTALL_PATH}/semver"
+          if [[ $("${INSTALL_PATH}/semver" get prerel "${GITHUB_REF/refs\/tags\//}") ]]; then
+            echo "::set-output name=is-pre::true";
+          fi
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          bodyFile: ${{ env.CHANGELOG_PATH }}
+          prerelease: ${{ steps.prerelease.outputs.is-pre }}
+          artifacts: libraries-repository-engine
