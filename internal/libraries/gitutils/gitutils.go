@@ -24,6 +24,7 @@
 package gitutils
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/go-git/go-git/v5"
@@ -187,6 +188,14 @@ func CheckoutTag(repository *git.Repository, tag *plumbing.Reference) error {
 	// See: https://github.com/go-git/go-git/issues/99
 	if err = repoTree.Reset(&git.ResetOptions{Mode: git.HardReset}); err != nil {
 		return err
+	}
+
+	repoStatus, err := repoTree.Status()
+	if err != nil {
+		return err
+	}
+	if !repoStatus.IsClean() {
+		return fmt.Errorf("failed to get repository to clean state")
 	}
 
 	return nil
