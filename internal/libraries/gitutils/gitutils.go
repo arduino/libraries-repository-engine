@@ -175,10 +175,26 @@ func CheckoutTag(repository *git.Repository, tag *plumbing.Reference) error {
 		return err
 	}
 
+	// Ensure the repository is checked out to a clean state.
+	// Because it might not succeed on the first attempt, a retry is allowed.
+	for range [2]int{} {
+		clean, err := cleanRepository(repoTree)
+		if err != nil {
+			return err
+		}
+		if clean {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("failed to get repository to clean state")
+}
+
+func cleanRepository(repoTree *git.Worktree) (bool, error) {
 	// Remove now-empty folders which are left behind after checkout. These would not be removed by the reset action.
 	// Remove untracked files. These would also be removed by the reset action.
-	if err = repoTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
-		return err
+	if err := repoTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
+		return false, err
 	}
 
 	// Remove untracked files and reset tracked files to clean state.
@@ -186,17 +202,21 @@ func CheckoutTag(repository *git.Repository, tag *plumbing.Reference) error {
 	// circumstances, go-git can fail to complete checkout, while not even returning an error. This results in an
 	// unexpected dirty repository state, which is corrected via a hard reset.
 	// See: https://github.com/go-git/go-git/issues/99
-	if err = repoTree.Reset(&git.ResetOptions{Mode: git.HardReset}); err != nil {
-		return err
+	if err := repoTree.Reset(&git.ResetOptions{Mode: git.HardReset}); err != nil {
+		return false, err
 	}
 
+	// Get status to detect some forms of failed cleaning.
 	repoStatus, err := repoTree.Status()
 	if err != nil {
-		return err
-	}
-	if !repoStatus.IsClean() {
-		return fmt.Errorf("failed to get repository to clean state")
+		return false, err
 	}
 
-	return nil
+	// IsClean() detects:
+	// - Untracked files
+	// - Modified tracked files
+	// This does not detect:
+	// - Empty directories
+	// - Ignored files
+	return repoStatus.IsClean(), nil
 }
