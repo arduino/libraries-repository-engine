@@ -24,6 +24,7 @@
 package gitutils
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/go-git/go-git/v5"
@@ -31,8 +32,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-// ResolveTag returns the commit hash associated with a tag.
-func ResolveTag(tag *plumbing.Reference, repository *git.Repository) (*plumbing.Hash, error) {
+// resolveTag returns the commit hash associated with a tag.
+func resolveTag(tag *plumbing.Reference, repository *git.Repository) (*plumbing.Hash, error) {
 	// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved to get the has for
 	// the associated commit.
 	// Tags may point to any Git object. Although not common, this can include tree and blob objects in addition to commits.
@@ -117,7 +118,7 @@ func SortedCommitTags(repository *git.Repository) ([]*plumbing.Reference, error)
 
 		// Annotated tags have their own hash, different from the commit hash, so tags must be resolved before
 		// cross-referencing against the commit hashes.
-		resolvedTag, err := ResolveTag(tag, repository)
+		resolvedTag, err := resolveTag(tag, repository)
 		if err != nil {
 			// Non-commit object tags are not included in the sorted list.
 			continue
@@ -155,4 +156,67 @@ func SortedCommitTags(repository *git.Repository) ([]*plumbing.Reference, error)
 	}
 
 	return sortedTags, nil
+}
+
+// CheckoutTag checks out the repository to the given tag.
+func CheckoutTag(repository *git.Repository, tag *plumbing.Reference) error {
+	repoTree, err := repository.Worktree()
+	if err != nil {
+		return err
+	}
+
+	// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved before checkout
+	resolvedTag, err := resolveTag(tag, repository)
+	if err != nil {
+		return err
+	}
+
+	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag, Force: true}); err != nil {
+		return err
+	}
+
+	// Ensure the repository is checked out to a clean state.
+	// Because it might not succeed on the first attempt, a retry is allowed.
+	for range [2]int{} {
+		clean, err := cleanRepository(repoTree)
+		if err != nil {
+			return err
+		}
+		if clean {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("failed to get repository to clean state")
+}
+
+func cleanRepository(repoTree *git.Worktree) (bool, error) {
+	// Remove now-empty folders which are left behind after checkout. These would not be removed by the reset action.
+	// Remove untracked files. These would also be removed by the reset action.
+	if err := repoTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
+		return false, err
+	}
+
+	// Remove untracked files and reset tracked files to clean state.
+	// Even though in theory it shouldn't ever be necessary to do a hard reset in this application, under certain
+	// circumstances, go-git can fail to complete checkout, while not even returning an error. This results in an
+	// unexpected dirty repository state, which is corrected via a hard reset.
+	// See: https://github.com/go-git/go-git/issues/99
+	if err := repoTree.Reset(&git.ResetOptions{Mode: git.HardReset}); err != nil {
+		return false, err
+	}
+
+	// Get status to detect some forms of failed cleaning.
+	repoStatus, err := repoTree.Status()
+	if err != nil {
+		return false, err
+	}
+
+	// IsClean() detects:
+	// - Untracked files
+	// - Modified tracked files
+	// This does not detect:
+	// - Empty directories
+	// - Ignored files
+	return repoStatus.IsClean(), nil
 }
