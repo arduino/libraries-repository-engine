@@ -58,7 +58,7 @@ def test_all(run_command, working_dir):
 
     libraries_repository_engine_command = [
         working_dir_path.joinpath("config.json"),
-        test_data_path.joinpath("repos.txt"),
+        test_data_path.joinpath("test_all", "repos.txt"),
     ]
 
     # Run the engine
@@ -69,12 +69,12 @@ def test_all(run_command, working_dir):
     check_libraries(configuration=configuration)
     check_logs(
         configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("golden", "logs", "generate"),
+        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "generate"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "ArduinoCloudThing", "index.html"),
     )
     check_logs(
         configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("golden", "logs", "generate"),
+        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "generate"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "SpacebrewYun", "index.html"),
     )
     check_index(configuration=configuration)
@@ -87,12 +87,12 @@ def test_all(run_command, working_dir):
     check_libraries(configuration=configuration)
     check_logs(
         configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("golden", "logs", "update"),
+        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "update"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "ArduinoCloudThing", "index.html"),
     )
     check_logs(
         configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("golden", "logs", "update"),
+        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "update"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "SpacebrewYun", "index.html"),
     )
     check_index(configuration=configuration)
@@ -160,7 +160,9 @@ def check_index(configuration):
         del release["checksum"]
 
     # Load golden index
-    golden_library_index_template = test_data_path.joinpath("golden", "library_index.json").read_text(encoding="utf-8")
+    golden_library_index_template = test_data_path.joinpath("test_all", "golden", "library_index.json").read_text(
+        encoding="utf-8"
+    )
     # Fill in mutable content
     golden_library_index_string = string.Template(template=golden_library_index_template).substitute(
         base_download_url=configuration["BaseDownloadUrl"]
@@ -171,6 +173,43 @@ def check_index(configuration):
     assert len(library_index["libraries"]) == len(golden_library_index["libraries"])
     for release in library_index["libraries"]:
         assert release in golden_library_index["libraries"]
+
+
+# The engine's Git code struggles to get a clean checkout of releases under some circumstances.
+def test_clean_checkout(run_command, working_dir):
+    working_dir_path = pathlib.Path(working_dir)
+    configuration = {
+        "BaseDownloadUrl": "http://www.example.com/libraries/",
+        "LibrariesFolder": working_dir_path.joinpath("libraries").as_posix(),
+        "LogsFolder": working_dir_path.joinpath("logs").as_posix(),
+        "LibrariesDB": working_dir_path.joinpath("libraries_db.json").as_posix(),
+        "LibrariesIndex": working_dir_path.joinpath("libraries", "library_index.json").as_posix(),
+        "GitClonesFolder": working_dir_path.joinpath("gitclones").as_posix(),
+        "DoNotRunClamav": True,
+        # Arduino Lint should be installed under PATH
+        "ArduinoLintPath": "",
+    }
+
+    # Generate configuration file
+    with working_dir_path.joinpath("config.json").open("w", encoding="utf-8") as configuration_file:
+        json.dump(obj=configuration, fp=configuration_file, indent=2)
+
+    libraries_repository_engine_command = [
+        working_dir_path.joinpath("config.json"),
+        test_data_path.joinpath("test_clean_checkout", "repos.txt"),
+    ]
+
+    # Run the engine
+    result = run_command(cmd=libraries_repository_engine_command)
+    assert result.ok
+
+    # Load generated index
+    with pathlib.Path(configuration["LibrariesIndex"]).open(mode="r", encoding="utf-8") as library_index_file:
+        library_index = json.load(fp=library_index_file)
+
+    for release in library_index["libraries"]:
+        # ssd1306@1.0.0 contains a .exe and so should fail validation.
+        assert not (release["name"] == "ssd1306" and release["version"] == "1.0.0")
 
 
 @pytest.fixture(scope="function")
