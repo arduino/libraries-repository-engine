@@ -37,7 +37,6 @@ import (
 	"arduino.cc/repository/internal/libraries/gitutils"
 	"arduino.cc/repository/internal/libraries/hash"
 	cc "github.com/arduino/golang-concurrent-workers"
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
@@ -249,25 +248,8 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 
 	// Checkout desired tag
 	logger.Printf("Checking out tag: %s", tag.Name().Short())
-
-	repoTree, err := repo.Repository.Worktree()
-	if err != nil {
-		return err
-	}
-
-	// Annotated tags have their own hash, different from the commit hash, so the tag must be resolved before checkout
-	resolvedTag, err := gitutils.ResolveTag(tag, repo.Repository)
-	if err != nil {
-		// All unresolvable tags were already removed by gitutils.SortedCommitTags(), so there will never be an error under normal conditions.
-		panic(err)
-	}
-
-	if err = repoTree.Checkout(&git.CheckoutOptions{Hash: *resolvedTag, Force: true}); err != nil {
+	if err := gitutils.CheckoutTag(repo.Repository, tag); err != nil {
 		return fmt.Errorf("Error checking out repo: %s", err)
-	}
-
-	if err = repoTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
-		return fmt.Errorf("Error cleaning repo: %s", err)
 	}
 
 	// Create library metadata from library.properties

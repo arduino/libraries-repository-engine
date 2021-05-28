@@ -84,7 +84,7 @@ func TestResolveTag(t *testing.T) {
 		} {
 			testName := fmt.Sprintf("%s, %s", testTable.objectTypeName, annotationConfig.descriptor)
 			tag := makeTag(t, repository, testName, testTable.objectHash, annotationConfig.annotated)
-			resolvedTag, err := ResolveTag(tag, repository)
+			resolvedTag, err := resolveTag(tag, repository)
 			testTable.errorAssertion(t, err, fmt.Sprintf("%s tag resolution error", testName))
 			if err == nil {
 				assert.Equal(t, testTable.objectHash, *resolvedTag, fmt.Sprintf("%s tag resolution", testName))
@@ -139,9 +139,69 @@ func TestSortedCommitTags(t *testing.T) {
 	assert.Equal(t, tags, sorted)
 }
 
+func TestCheckoutTag(t *testing.T) {
+	// Create a folder for the test repository.
+	repositoryPath, err := paths.TempDir().MkTempDir("gitutils-TestCheckoutTag-repo")
+	require.NoError(t, err)
+
+	// Create test repository.
+	repository, err := git.PlainInit(repositoryPath.String(), false)
+	require.NoError(t, err)
+
+	// Generate meaningless commit history, creating some tags along the way.
+	var tags []*plumbing.Reference
+	tags = append(tags, makeTag(t, repository, "1.0.0", makeCommit(t, repository, repositoryPath), true))
+	makeCommit(t, repository, repositoryPath)
+	makeCommit(t, repository, repositoryPath)
+	tags = append(tags, makeTag(t, repository, "1.0.1", makeCommit(t, repository, repositoryPath), true))
+	makeCommit(t, repository, repositoryPath)
+	makeTag(t, repository, "tree-tag", getTreeHash(t, repository), true)
+	tags = append(tags, makeTag(t, repository, "1.0.2", makeCommit(t, repository, repositoryPath), true))
+	makeTag(t, repository, "blob-tag", getBlobHash(t, repository), true)
+	trackedFilePath, _ := commitFile(t, repository, repositoryPath)
+
+	for _, tag := range tags {
+		// Put the repository into a dirty state.
+		// Add an untracked file.
+		_, err = paths.WriteToTempFile([]byte{}, repositoryPath, "gitutils-TestCheckoutTag-tempfile")
+		require.NoError(t, err)
+		// Modify a tracked file.
+		err = trackedFilePath.WriteFile([]byte{42})
+		require.NoError(t, err)
+		// Create empty folder.
+		emptyFolderPath, err := repositoryPath.MkTempDir("gitutils-TestCheckoutTag-emptyFolder")
+		require.NoError(t, err)
+
+		err = CheckoutTag(repository, tag)
+		assert.NoError(t, err, fmt.Sprintf("Checking out tag %s", tag))
+
+		expectedHash, err := resolveTag(tag, repository)
+		require.NoError(t, err)
+		headRef, err := repository.Head()
+		require.NoError(t, err)
+		assert.Equal(t, *expectedHash, headRef.Hash(), "HEAD is at tag")
+
+		// Check if cleanup was successful.
+		tree, err := repository.Worktree()
+		require.NoError(t, err)
+		status, err := tree.Status()
+		require.NoError(t, err)
+		assert.True(t, status.IsClean(), "Repository is clean")
+		emptyFolderExists, err := emptyFolderPath.ExistCheck()
+		require.NoError(t, err)
+		assert.False(t, emptyFolderExists, "Empty folder was removed")
+	}
+}
+
 // makeCommit creates a test commit in the given repository and returns its plumbing.Hash object.
 func makeCommit(t *testing.T, repository *git.Repository, repositoryPath *paths.Path) plumbing.Hash {
-	_, err := paths.WriteToTempFile([]byte{}, repositoryPath, "gitutils-makeCommit-tempfile")
+	_, hash := commitFile(t, repository, repositoryPath)
+	return hash
+}
+
+// commitFile commits a file in the given repository and returns its path and the commit's plumbing.Hash object.
+func commitFile(t *testing.T, repository *git.Repository, repositoryPath *paths.Path) (*paths.Path, plumbing.Hash) {
+	filePath, err := paths.WriteToTempFile([]byte{}, repositoryPath, "gitutils-makeCommit-tempfile")
 	require.Nil(t, err)
 
 	worktree, err := repository.Worktree()
@@ -163,7 +223,7 @@ func makeCommit(t *testing.T, repository *git.Repository, repositoryPath *paths.
 	)
 	require.Nil(t, err)
 
-	return commit
+	return filePath, commit
 }
 
 // getTreeHash returns the plumbing.Hash object for an arbitrary Git tree object.
