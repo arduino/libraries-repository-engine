@@ -13,6 +13,7 @@ jobs:
       - name: Set environment variables
         run: |
           # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+          echo "ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_Linux_64bit.tar.gz" >> "$GITHUB_ENV"
           echo "CHANGELOG_PATH=${{ runner.temp }}/CHANGELOG.md" >> "$GITHUB_ENV"
 
       - name: Checkout repository
@@ -33,6 +34,15 @@ jobs:
 
       - name: Build project
         run: task build
+
+      - name: Archive release binary
+        run: |
+          tar \
+            --create \
+            --add-file="./libraries-repository-engine" \
+            --add-file="./LICENSE.txt" \
+            --gzip \
+            --file="${{ env.ARCHIVE_PATH }}"
 
       - name: Create changelog
         uses: arduino/create-changelog@v1
@@ -63,4 +73,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           bodyFile: ${{ env.CHANGELOG_PATH }}
           prerelease: ${{ steps.prerelease.outputs.is-pre }}
-          artifacts: libraries-repository-engine
+          artifacts: ${{ env.ARCHIVE_PATH }}
