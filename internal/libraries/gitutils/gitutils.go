@@ -174,7 +174,18 @@ func CheckoutTag(repository *git.Repository, tag *plumbing.Reference) error {
 		return err
 	}
 
+	// Remove now-empty folders which are left behind after checkout. These would not be removed by the reset action.
+	// Remove untracked files. These would also be removed by the reset action.
 	if err = repoTree.Clean(&git.CleanOptions{Dir: true}); err != nil {
+		return err
+	}
+
+	// Remove untracked files and reset tracked files to clean state.
+	// Even though in theory it shouldn't ever be necessary to do a hard reset in this application, under certain
+	// circumstances, go-git can fail to complete checkout, while not even returning an error. This results in an
+	// unexpected dirty repository state, which is corrected via a hard reset.
+	// See: https://github.com/go-git/go-git/issues/99
+	if err = repoTree.Reset(&git.ResetOptions{Mode: git.HardReset}); err != nil {
 		return err
 	}
 
