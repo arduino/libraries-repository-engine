@@ -234,7 +234,7 @@ func (db *DB) Save(r io.Writer) error {
 }
 
 func (db *DB) save(r io.Writer) error {
-	buff, err := json.MarshalIndent(*db, "", "  ")
+	buff, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {
 		return err
 	}
