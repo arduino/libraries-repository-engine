@@ -29,11 +29,13 @@ import json
 import pathlib
 import platform
 import typing
+import math
 
 import invoke.context
 import pytest
 
 test_data_path = pathlib.Path(__file__).resolve().parent.joinpath("testdata")
+size_comparison_tolerance = 0.03  # Maximum allowed archive size difference ratio
 
 
 def test_all(run_command, working_dir):
@@ -174,7 +176,26 @@ def check_index(configuration):
     # Order of releases in the index is arbitrary so a simply equality assertion is not possible
     assert len(library_index["libraries"]) == len(golden_library_index["libraries"])
     for release in library_index["libraries"]:
-        assert release in golden_library_index["libraries"]
+        # Find the golden master for the release
+        golden_release = None
+        for golden_release_candidate in golden_library_index["libraries"]:
+            if (
+                golden_release_candidate["name"] == release["name"]
+                and golden_release_candidate["version"] == release["version"]
+            ):
+                golden_release = golden_release_candidate
+                break
+
+        assert golden_release is not None  # Matching golden release was found
+
+        # Small variation in size could result from compression algorithm changes, so we allow a tolerance
+        assert "size" in release
+        assert math.isclose(release["size"], golden_release["size"], rel_tol=size_comparison_tolerance)
+        # Remove size data so a direct comparison of the remaining data can be made against the golden master
+        del release["size"]
+        del golden_release["size"]
+
+        assert release == golden_release
 
 
 # The engine's Git code struggles to get a clean checkout of releases under some circumstances.
