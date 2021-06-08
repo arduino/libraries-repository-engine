@@ -151,13 +151,15 @@ def check_index(configuration):
     Keyword arguments:
     configuration -- dictionary defining the libraries-repository-engine configuration
     """
+    checksum_placeholder = "CHECKSUM_PLACEHOLDER"
+
     # Load generated index
     with pathlib.Path(configuration["LibrariesIndex"]).open(mode="r", encoding="utf-8") as library_index_file:
         library_index = json.load(fp=library_index_file)
     for release in library_index["libraries"]:
-        # The checksum values in the index will be different on every run, so it's necessary to remove them before
-        # comparing to the golden index
-        del release["checksum"]
+        # The checksum values in the index will be different on every run, so it's necessary to replace them with a
+        # placeholder before comparing to the golden index
+        release["checksum"] = checksum_placeholder
 
     # Load golden index
     golden_library_index_template = test_data_path.joinpath("test_all", "golden", "library_index.json").read_text(
@@ -165,7 +167,7 @@ def check_index(configuration):
     )
     # Fill in mutable content
     golden_library_index_string = string.Template(template=golden_library_index_template).substitute(
-        base_download_url=configuration["BaseDownloadUrl"]
+        base_download_url=configuration["BaseDownloadUrl"], checksum_placeholder=checksum_placeholder
     )
     golden_library_index = json.loads(golden_library_index_string)
 
