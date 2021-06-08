@@ -79,6 +79,7 @@ def test_all(run_command, working_dir):
         golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "generate"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "SpacebrewYun", "index.html"),
     )
+    check_db(configuration=configuration)
     check_index(configuration=configuration)
 
     # Run the engine again
@@ -97,6 +98,7 @@ def test_all(run_command, working_dir):
         golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "update"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "SpacebrewYun", "index.html"),
     )
+    check_db(configuration=configuration)
     check_index(configuration=configuration)
 
 
@@ -106,9 +108,9 @@ def check_libraries(configuration):
     Keyword arguments:
     configuration -- dictionary defining the libraries-repository-engine configuration
     """
+    # Check against the index
     with pathlib.Path(configuration["LibrariesIndex"]).open(mode="r", encoding="utf-8") as libraries_index_file:
         libraries_index = json.load(fp=libraries_index_file)
-
     for release in libraries_index["libraries"]:
         release_archive_path = pathlib.Path(
             configuration["LibrariesFolder"],
@@ -120,6 +122,21 @@ def check_libraries(configuration):
         assert release["size"] == release_archive_path.stat().st_size
 
         assert release["checksum"] == "SHA-256:" + hashlib.sha256(release_archive_path.read_bytes()).hexdigest()
+
+    # Check against the db
+    with pathlib.Path(configuration["LibrariesDB"]).open(mode="r", encoding="utf-8") as library_db_file:
+        library_db = json.load(fp=library_db_file)
+    for release in library_db["Releases"]:
+        release_archive_path = pathlib.Path(
+            configuration["LibrariesFolder"],
+            release["URL"].removeprefix(configuration["BaseDownloadUrl"]),
+        )
+
+        assert release_archive_path.exists()
+
+        assert release["Size"] == release_archive_path.stat().st_size
+
+        assert release["Checksum"] == "SHA-256:" + hashlib.sha256(release_archive_path.read_bytes()).hexdigest()
 
 
 def check_logs(configuration, golden_logs_parent_path, logs_subpath):
@@ -145,6 +162,62 @@ def check_logs(configuration, golden_logs_parent_path, logs_subpath):
     golden_logs = re.sub(pattern=timestamp_regex, repl=timestamp_placeholder, string=golden_logs)
 
     assert logs == golden_logs
+
+
+def check_db(configuration):
+    """Run tests to determine whether the generated library database is as expected.
+
+    Keyword arguments:
+    configuration -- dictionary defining the libraries-repository-engine configuration
+    """
+    checksum_placeholder = "CHECKSUM_PLACEHOLDER"
+
+    # Load generated db
+    with pathlib.Path(configuration["LibrariesDB"]).open(mode="r", encoding="utf-8") as db_file:
+        db = json.load(fp=db_file)
+    for release in db["Releases"]:
+        # The checksum values in the db will be different on every run, so it's necessary to replace them with a
+        # placeholder before comparing to the golden master
+        release["Checksum"] = checksum_placeholder
+
+    # Load golden index
+    golden_db_template = test_data_path.joinpath("test_all", "golden", "db.json").read_text(encoding="utf-8")
+    # Fill in mutable content
+    golden_db_string = string.Template(template=golden_db_template).substitute(
+        base_download_url=configuration["BaseDownloadUrl"],
+        checksum_placeholder=checksum_placeholder,
+        git_clones_folder=configuration["GitClonesFolder"],
+    )
+    golden_db = json.loads(golden_db_string)
+
+    # Compare db against golden master
+    # Order of entries in the db is arbitrary so a simply equality assertion is not possible
+    assert len(db["Libraries"]) == len(golden_db["Libraries"])
+    for library in db["Libraries"]:
+        assert library in golden_db["Libraries"]
+
+    assert len(db["Releases"]) == len(golden_db["Releases"])
+    for release in db["Releases"]:
+        # Find the golden master for the release
+        golden_release = None
+        for golden_release_candidate in golden_db["Releases"]:
+            if (
+                golden_release_candidate["LibraryName"] == release["LibraryName"]
+                and golden_release_candidate["Version"] == release["Version"]
+            ):
+                golden_release = golden_release_candidate
+                break
+
+        assert golden_release is not None  # Matching golden release was found
+
+        # Small variation in size could result from compression algorithm changes, so we allow a tolerance
+        assert "Size" in release
+        assert math.isclose(release["Size"], golden_release["Size"], rel_tol=size_comparison_tolerance)
+        # Remove size data so a direct comparison of the remaining data can be made against the golden master
+        del release["Size"]
+        del golden_release["Size"]
+
+        assert release == golden_release
 
 
 def check_index(configuration):
