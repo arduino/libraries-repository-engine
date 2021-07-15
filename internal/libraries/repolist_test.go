@@ -26,8 +26,87 @@ package libraries
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestLoadRepoListFromFile(t *testing.T) {
+	_, err := LoadRepoListFromFile("./testdata/nonexistent.txt")
+	assert.Error(t, err, "Attempt to load non-existent registry data file")
+
+	repos, err := LoadRepoListFromFile("./testdata/git_test_repos.txt")
+	require.NoError(t, err)
+
+	reposAssertion := []*Repo{
+		{
+			URL:         "https://github.com/arduino-libraries",
+			Types:       []string{"Arduino"},
+			LibraryName: "libraries",
+		},
+		{
+			URL:         "git@github.com:PaulStoffregen/Audio.git",
+			Types:       []string{"Contributed"},
+			LibraryName: "Audio",
+		},
+		{
+			URL:         "https://github.com/PaulStoffregen/OctoWS2811.git",
+			Types:       []string{"Arduino", "Contributed"},
+			LibraryName: "OctoWS2811",
+		},
+		{
+			URL:         "https://github.com/PaulStoffregen/AltSoftSerial.git",
+			Types:       []string{"Contributed"},
+			LibraryName: "AltSoftSerial",
+		},
+		{
+			URL:         "https://github.com/Cheong2K/ble-sdk-arduino.git",
+			Types:       []string{"Contributed"},
+			LibraryName: "ble-sdk-arduino",
+		},
+		{
+			URL:         "https://github.com/arduino-libraries/Bridge.git",
+			Types:       []string{"Contributed"},
+			LibraryName: "Bridge",
+		},
+		{
+			URL:         "https://github.com/adafruit/Adafruit_ADS1X15.git",
+			Types:       []string{"Recommended"},
+			LibraryName: "Adafruit_ADS1X15",
+		},
+		{
+			URL:         "https://github.com/adafruit/Adafruit_ADXL345.git",
+			Types:       []string{"Recommended"},
+			LibraryName: "Adafruit_ADXL345",
+		},
+		{
+			URL:         "https://github.com/adafruit/Adafruit_AHRS.git",
+			Types:       []string{"Recommended"},
+			LibraryName: "Adafruit_AHRS",
+		},
+		{
+			URL:         "https://github.com/adafruit/Adafruit_AM2315.git",
+			Types:       []string{"Recommended"},
+			LibraryName: "Adafruit_AM2315",
+		},
+		{
+			URL:         "https://github.com/arduino-libraries/Scheduler.git",
+			Types:       []string{"Arduino"},
+			LibraryName: "Scheduler",
+		},
+		{
+			URL:         "https://github.com/arduino-libraries/SD.git",
+			Types:       []string{"Arduino"},
+			LibraryName: "SD",
+		},
+		{
+			URL:         "https://github.com/arduino-libraries/Servo.git",
+			Types:       []string{"Arduino"},
+			LibraryName: "Servo",
+		},
+	}
+
+	assert.Equal(t, reposAssertion, repos)
+}
 
 func TestListRepos(t *testing.T) {
 	repos, err := ListRepos("./testdata/git_test_repos.txt")
