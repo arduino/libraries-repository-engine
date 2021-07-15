@@ -33,7 +33,8 @@ import (
 	"strings"
 )
 
-func loadRepoListFromFile(filename string) ([]*Repo, error) {
+// LoadRepoListFromFile returns an unfiltered list of library registry entries loaded from the given data file.
+func LoadRepoListFromFile(filename string) ([]*Repo, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -153,9 +154,9 @@ func toListOfUniqueRepos(repos []*Repo) []*Repo {
 	return finalRepos
 }
 
-// ListRepos loads a list from the given filename.
+// ListRepos returns a filtered list of library registry entries loaded from the given data file.
 func ListRepos(reposFilename string) ([]*Repo, error) {
-	repos, err := loadRepoListFromFile(reposFilename)
+	repos, err := LoadRepoListFromFile(reposFilename)
 	if err != nil {
 		return nil, err
 	}

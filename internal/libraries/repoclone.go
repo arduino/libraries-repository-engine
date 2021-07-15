@@ -28,11 +28,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"arduino.cc/repository/internal/libraries/db"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 
 	"fmt"
 
-	"arduino.cc/repository/internal/libraries/metadata"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
 	"github.com/go-git/go-git/v5"
 )
 

@@ -32,11 +32,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"arduino.cc/repository/internal/libraries"
-	"arduino.cc/repository/internal/libraries/db"
-	"arduino.cc/repository/internal/libraries/gitutils"
-	"arduino.cc/repository/internal/libraries/hash"
 	cc "github.com/arduino/golang-concurrent-workers"
+	"github.com/arduino/libraries-repository-engine/internal/libraries"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/hash"
 	"github.com/go-git/go-git/v5/plumbing"
 )
 

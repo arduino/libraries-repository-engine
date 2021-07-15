@@ -29,8 +29,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"arduino.cc/repository/internal/libraries/db"
-	"arduino.cc/repository/internal/libraries/gitutils"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
 	"github.com/stretchr/testify/require"
 )
 

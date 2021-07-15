@@ -24,19 +24,18 @@
 package libraries
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
+	"github.com/arduino/libraries-repository-engine/internal/libraries"
 )
 
-func TestRepoFolderPathDetermination(t *testing.T) {
-	repo := &Repo{URL: "https://github.com/arduino-libraries/Servo.git"}
-	f, err := repo.AsFolder()
-	require.NoError(t, err)
-	require.Equal(t, "github.com/arduino-libraries/Servo", f)
+// LoadRepoListFromFile returns an unfiltered list of library registry entries loaded from the given data file.
+func LoadRepoListFromFile(filename string) ([]*Repo, error) {
+	return libraries.LoadRepoListFromFile(filename)
+}
 
-	repo = &Repo{URL: "https://bitbucket.org/bjoern/arduino_osc"}
-	f, err = repo.AsFolder()
-	require.NoError(t, err)
-	require.Equal(t, "bitbucket.org/bjoern/arduino_osc", f)
+// Repo is the type for the library repository data.
+type Repo = libraries.Repo
+
+// ListRepos returns a filtered list of library registry entries loaded from the given data file.
+func ListRepos(reposFilename string) ([]*Repo, error) {
+	return libraries.ListRepos(reposFilename)
 }
