@@ -1,4 +1,4 @@
-module arduino.cc/repository
+module github.com/arduino/libraries-repository-engine
 
 go 1.14
 

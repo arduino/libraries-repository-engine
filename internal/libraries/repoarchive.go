@@ -28,8 +28,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"arduino.cc/repository/internal/libraries/metadata"
-	"arduino.cc/repository/internal/libraries/zip"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/zip"
 )
 
 // ZipRepo creates a ZIP archive of the repo folder and returns its path.

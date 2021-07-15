@@ -24,7 +24,7 @@
 package libraries
 
 import (
-	"arduino.cc/repository/internal/libraries"
+	"github.com/arduino/libraries-repository-engine/internal/libraries"
 )
 
 // LoadRepoListFromFile returns an unfiltered list of library registry entries loaded from the given data file.

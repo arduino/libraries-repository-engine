@@ -26,7 +26,7 @@ package libraries
 import (
 	"testing"
 
-	"arduino.cc/repository/internal/libraries"
+	"github.com/arduino/libraries-repository-engine/internal/libraries"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
