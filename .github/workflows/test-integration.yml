@@ -22,6 +22,9 @@ on:
       - "poetry.lock"
       - "pyproject.toml"
       - "test/**"
+  schedule:
+    # Run daily at 8 AM UTC to catch breakage resulting from changes to Arduino Lint.
+    - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       arduino-lint-ref:
