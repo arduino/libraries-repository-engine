@@ -57,7 +57,7 @@ jobs:
           BINDIR="$ARDUINO_LINT_INSTALLATION_PATH" \
           sh
 
-          # Add installation folder to path to path
+          # Add installation folder to path
           echo "$ARDUINO_LINT_INSTALLATION_PATH" >> "$GITHUB_PATH"
 
       - name: Install Taskfile
