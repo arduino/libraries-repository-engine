@@ -148,8 +148,12 @@ def check_logs(configuration, golden_logs_parent_path, logs_subpath):
     logs_subpath -- sub-path for both the actual and golden master logs
     """
     logs = pathlib.Path(configuration["LogsFolder"], logs_subpath).read_text(encoding="utf-8")
+    # The table package used to format Arduino Lint output fills out the full column width with trailing whitespace.
+    # This might not match the golden master logs after the template substitution.
+    logs = "\n".join([line.rstrip() for line in logs.splitlines()])
 
     golden_logs_template = golden_logs_parent_path.joinpath(logs_subpath).read_text(encoding="utf-8")
+    golden_logs_template = "\n".join([line.rstrip() for line in golden_logs_template.splitlines()])
     # Fill template with mutable content
     golden_logs = string.Template(template=golden_logs_template).substitute(
         git_clones_folder=configuration["GitClonesFolder"]
@@ -179,8 +183,11 @@ def check_db(configuration):
         # The checksum values in the db will be different on every run, so it's necessary to replace them with a
         # placeholder before comparing to the golden master
         release["Checksum"] = checksum_placeholder
+        # The table package used to format Arduino Lint output fills out the full column width with trailing whitespace.
+        # This might not match the golden master release's "Log" field after the template substitution.
+        release["Log"] = "\n".join([line.rstrip() for line in release["Log"].splitlines()])
 
-    # Load golden index
+    # Load golden db
     golden_db_template = test_data_path.joinpath("test_all", "golden", "db.json").read_text(encoding="utf-8")
     # Fill in mutable content
     golden_db_string = string.Template(template=golden_db_template).substitute(
@@ -189,6 +196,8 @@ def check_db(configuration):
         git_clones_folder=configuration["GitClonesFolder"],
     )
     golden_db = json.loads(golden_db_string)
+    for release in golden_db["Releases"]:
+        release["Log"] = "\n".join([line.rstrip() for line in release["Log"].splitlines()])
 
     # Compare db against golden master
     # Order of entries in the db is arbitrary so a simply equality assertion is not possible
