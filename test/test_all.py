@@ -187,7 +187,7 @@ def check_db(configuration):
         # This might not match the golden master release's "Log" field after the template substitution.
         release["Log"] = "\n".join([line.rstrip() for line in release["Log"].splitlines()])
 
-    # Load golden index
+    # Load golden db
     golden_db_template = test_data_path.joinpath("test_all", "golden", "db.json").read_text(encoding="utf-8")
     # Fill in mutable content
     golden_db_string = string.Template(template=golden_db_template).substitute(
