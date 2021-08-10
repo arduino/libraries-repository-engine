@@ -23,11 +23,18 @@ on:
       - "pyproject.toml"
       - "test/**"
   workflow_dispatch:
+    inputs:
+      arduino-lint-ref:
+        description: Arduino Lint ref (leave empty for latest release)
+        default: ""
   repository_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    env:
+      ARDUINO_LINT_SOURCE_PATH: arduino-lint
 
     steps:
       - name: Checkout repository
@@ -46,7 +53,14 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
-      - name: Install Arduino Lint
+      - name: Install Taskfile
+        uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.x
+
+      - name: Install latest release of Arduino Lint
+        if: github.event.inputs.arduino-lint-ref == ''
         run: |
           ARDUINO_LINT_INSTALLATION_PATH="${{ runner.temp }}/arduino-lint"
           mkdir --parents "$ARDUINO_LINT_INSTALLATION_PATH"
@@ -60,11 +74,21 @@ jobs:
           # Add installation folder to path
           echo "$ARDUINO_LINT_INSTALLATION_PATH" >> "$GITHUB_PATH"
 
-      - name: Install Taskfile
-        uses: arduino/setup-task@v1
+      - name: Checkout Arduino Lint repository
+        if: github.event.inputs.arduino-lint-ref != ''
+        uses: actions/checkout@v2
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          version: 3.x
+          repository: arduino/arduino-lint
+          ref: ${{ github.event.inputs.arduino-lint-ref }}
+          path: ${{ env.ARDUINO_LINT_SOURCE_PATH }}
+
+      - name: Build Arduino Lint
+        if: github.event.inputs.arduino-lint-ref != ''
+        working-directory: ${{ env.ARDUINO_LINT_SOURCE_PATH }}
+        run: |
+          task build
+          # Add installation folder to path
+          echo "$PWD" >> "$GITHUB_PATH"
 
       - name: Run integration tests
         run: task go:test-integration
