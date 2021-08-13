@@ -30,7 +30,7 @@ tasks:
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/go-task/Taskfile.yml
   go:build:
-    desc: Build the project
+    desc: Build the Go code
     cmds:
       - go build -v -o libraries-repository-engine{{exeExt}}
 
@@ -97,7 +97,7 @@ tasks:
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-python-task/Taskfile.yml
   python:format:
-    desc: Automatically formats Python files
+    desc: Format Python files
     cmds:
       - poetry install --no-root
       - poetry run black .
