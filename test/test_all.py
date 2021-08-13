@@ -1,5 +1,5 @@
-# This file is part of libraries-repository-engine.
-#
+# Source:
+# https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-integration/test_all.py
 # Copyright 2021 ARDUINO SA (http://www.arduino.cc/)
 #
 # This program is free software: you can redistribute it and/or modify

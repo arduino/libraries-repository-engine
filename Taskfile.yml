@@ -28,16 +28,19 @@ tasks:
       - task: go:format
       - task: python:format
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/go-task/Taskfile.yml
   go:build:
     desc: Build the project
     cmds:
       - go build -v -o libraries-repository-engine{{exeExt}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-task/Taskfile.yml
   go:test:
     desc: Run unit tests
     cmds:
       - go test -v -short -run '{{default ".*" .GO_TEST_REGEX}}' {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} -coverprofile=coverage_unit.txt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-integration-task/Taskfile.yml
   go:test-integration:
     desc: Run integration tests
     cmds:
@@ -51,16 +54,19 @@ tasks:
       - task: go:vet
       - task: go:lint
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
   go:vet:
     desc: Check for errors in Go code
     cmds:
       - go vet {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
   go:fix:
     desc: Modernize usages of outdated APIs
     cmds:
       - go fix {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
   go:lint:
     desc: Lint Go code
     cmds:
@@ -76,34 +82,40 @@ tasks:
           {{default "-min_confidence 0.8 -set_exit_status" .GO_LINT_FLAGS}} \
           {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-task/Taskfile.yml
   go:format:
     desc: Format Go code
     cmds:
       - go fmt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-python-task/Taskfile.yml
   python:lint:
     desc: Lint Python code
     cmds:
       - poetry install --no-root
       - poetry run flake8 --show-source
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-python-task/Taskfile.yml
   python:format:
     desc: Automatically formats Python files
     cmds:
       - poetry install --no-root
       - poetry run black .
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-prettier-formatting-task/Taskfile.yml
   general:format-prettier:
     desc: Format all supported files with Prettier
     cmds:
       - npx prettier --write .
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/spell-check-task/Taskfile.yml
   general:check-spelling:
     desc: Check for commonly misspelled words
     cmds:
       - poetry install --no-root
       - poetry run codespell
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/spell-check-task/Taskfile.yml
   general:correct-spelling:
     desc: Correct commonly misspelled words where possible
     cmds:
