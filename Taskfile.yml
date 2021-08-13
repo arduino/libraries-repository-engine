@@ -43,9 +43,10 @@ tasks:
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-integration-task/Taskfile.yml
   go:test-integration:
     desc: Run integration tests
-    cmds:
+    deps:
       - task: go:build
-      - poetry install --no-root
+      - task: poetry:install-deps
+    cmds:
       - poetry run pytest test
 
   go:check:
@@ -88,18 +89,26 @@ tasks:
     cmds:
       - go fmt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/poetry-task/Taskfile.yml
+  poetry:install-deps:
+    desc: Install dependencies managed by Poetry
+    cmds:
+      - poetry install --no-root
+
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-python-task/Taskfile.yml
   python:lint:
     desc: Lint Python code
+    deps:
+      - task: poetry:install-deps
     cmds:
-      - poetry install --no-root
       - poetry run flake8 --show-source
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-python-task/Taskfile.yml
   python:format:
     desc: Format Python files
+    deps:
+      - task: poetry:install-deps
     cmds:
-      - poetry install --no-root
       - poetry run black .
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-prettier-formatting-task/Taskfile.yml
@@ -111,13 +120,15 @@ tasks:
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/spell-check-task/Taskfile.yml
   general:check-spelling:
     desc: Check for commonly misspelled words
+    deps:
+      - task: poetry:install-deps
     cmds:
-      - poetry install --no-root
       - poetry run codespell
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/spell-check-task/Taskfile.yml
   general:correct-spelling:
     desc: Correct commonly misspelled words where possible
+    deps:
+      - task: poetry:install-deps
     cmds:
-      - poetry install --no-root
       - poetry run codespell --write-changes
