@@ -38,7 +38,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Install Taskfile
+      - name: Install Task
         uses: arduino/setup-task@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -80,7 +80,7 @@ jobs:
           # Add installation folder to path to path
           echo "$ARDUINO_LINT_INSTALLATION_PATH" >> "$GITHUB_PATH"
 
-      - name: Install Taskfile
+      - name: Install Task
         uses: arduino/setup-task@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
