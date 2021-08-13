@@ -4,14 +4,14 @@ name: Check Go
 on:
   push:
     paths:
-      - ".github/workflows/check-go.yml"
+      - ".github/workflows/check-go-task.yml"
       - "Taskfile.yml"
       - "go.mod"
       - "go.sum"
       - "**.go"
   pull_request:
     paths:
-      - ".github/workflows/check-go.yml"
+      - ".github/workflows/check-go-task.yml"
       - "Taskfile.yml"
       - "go.mod"
       - "go.sum"

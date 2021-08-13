@@ -4,7 +4,7 @@ name: Test Go
 on:
   push:
     paths:
-      - ".github/workflows/test-go.yml"
+      - ".github/workflows/test-go-task.yml"
       - "go.mod"
       - "go.sum"
       - "Taskfile.yml"
@@ -12,7 +12,7 @@ on:
       - "**.go"
   pull_request:
     paths:
-      - ".github/workflows/test-go.yml"
+      - ".github/workflows/test-go-task.yml"
       - "go.mod"
       - "go.sum"
       - "Taskfile.yml"

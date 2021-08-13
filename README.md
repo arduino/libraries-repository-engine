@@ -1,8 +1,8 @@
 # libraries-repository-engine
 
-[![Test Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go.yml)
-[![Integration Test status](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-integration.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-integration.yml)
-[![Check Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go.yml)
+[![Test Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-task.yml)
+[![Integration Test status](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-integration-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-integration-task.yml)
+[![Check Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-task.yml)
 [![Check Prettier Formatting status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml)
 [![Check Taskfiles status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-taskfiles.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-taskfiles.yml)
 [![Spell Check status](https://github.com/arduino/libraries-repository-engine/actions/workflows/spell-check-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/spell-check-task.yml)
