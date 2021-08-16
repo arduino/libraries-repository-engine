@@ -27,7 +27,7 @@ jobs:
 
       matrix:
         file:
-          - ./Taskfile.yml
+          - ./**/Taskfile.yml
 
     steps:
       - name: Checkout repository
