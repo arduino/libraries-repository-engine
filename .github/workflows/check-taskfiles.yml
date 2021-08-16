@@ -40,7 +40,6 @@ jobs:
           # See: https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/taskfile.json
           file-url: https://json.schemastore.org/taskfile.json
           location: ${{ runner.temp }}/taskfile-schema
-          file-name: taskfile.json
 
       - name: Install JSON schema validator
         run: sudo npm install --global ajv-cli
