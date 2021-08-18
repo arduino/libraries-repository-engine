@@ -27,7 +27,7 @@ jobs:
 
       matrix:
         file:
-          - ./Taskfile.yml
+          - ./**/Taskfile.yml
 
     steps:
       - name: Checkout repository
@@ -40,15 +40,20 @@ jobs:
           # See: https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/taskfile.json
           file-url: https://json.schemastore.org/taskfile.json
           location: ${{ runner.temp }}/taskfile-schema
-          file-name: taskfile.json
 
       - name: Install JSON schema validator
-        run: sudo npm install --global ajv-cli
+        run: |
+          sudo npm install \
+            --global \
+            ajv-cli \
+            ajv-formats
 
       - name: Validate ${{ matrix.file }}
         run: |
           # See: https://github.com/ajv-validator/ajv-cli#readme
           ajv validate \
+            --all-errors \
             --strict=false \
+            -c ajv-formats \
             -s "${{ steps.download-schema.outputs.file-path }}" \
             -d "${{ matrix.file }}"
