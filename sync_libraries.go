@@ -33,6 +33,7 @@ import (
 	"path/filepath"
 
 	cc "github.com/arduino/golang-concurrent-workers"
+	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/arduino/libraries-repository-engine/internal/libraries"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
@@ -50,14 +51,6 @@ type Config struct {
 	GitClonesFolder string
 	DoNotRunClamav  bool
 	ArduinoLintPath string
-}
-
-func logError(err error) bool {
-	if err != nil {
-		log.Println(err)
-		return true
-	}
-	return false
 }
 
 var config *Config
@@ -86,13 +79,13 @@ func main() {
 
 func syncLibraries(reposFile string) {
 	if _, err := os.Stat(reposFile); os.IsNotExist(err) {
-		logError(err)
+		feedback.LogError(err)
 		os.Exit(1)
 	}
 
 	log.Println("Synchronizing libraries...")
 	repos, err := libraries.ListRepos(reposFile)
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 
@@ -142,11 +135,11 @@ func syncLibraries(reposFile string) {
 	}()
 
 	for err := range pool.Errors {
-		logError(err)
+		feedback.LogError(err)
 	}
 
 	libraryIndex, err := libraryDb.OutputLibraryIndex()
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 
@@ -157,36 +150,36 @@ func syncLibraries(reposFile string) {
 
 func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
 	file, err := os.Create(libraryIndexFile)
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 	defer file.Close()
 
 	b, err := json.MarshalIndent(libraryIndex, "", "  ")
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 
 	_, err = file.Write(b)
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 }
 
 func readConf(configFile string) *Config {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		logError(err)
+		feedback.LogError(err)
 		os.Exit(1)
 	}
 
 	file, err := os.Open(configFile)
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 	decoder := json.NewDecoder(file)
 	config := Config{}
 	err = decoder.Decode(&config)
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 	return &config
@@ -194,11 +187,11 @@ func readConf(configFile string) *Config {
 
 func setup(config *Config) {
 	err := os.MkdirAll(config.GitClonesFolder, os.FileMode(0777))
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 	err = os.MkdirAll(config.LibrariesFolder, os.FileMode(0777))
-	if logError(err) {
+	if feedback.LogError(err) {
 		os.Exit(1)
 	}
 }
