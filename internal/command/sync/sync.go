@@ -40,7 +40,6 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/libraries/archive"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
-	"github.com/arduino/libraries-repository-engine/internal/libraries/hash"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/spf13/cobra"
 )
@@ -277,7 +276,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		return fmt.Errorf("Error while zipping library: %s", err)
 	}
 
-	size, checksum, err := getSizeAndCalculateChecksum(zipFilePath)
+	size, checksum, err := archive.GetSizeAndCalculateChecksum(zipFilePath)
 	if err != nil {
 		return fmt.Errorf("Error while calculating checksums: %s", err)
 	}
@@ -293,22 +292,6 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	}
 
 	return nil
-}
-
-func getSizeAndCalculateChecksum(filePath string) (int64, string, error) {
-	info, err := os.Stat(filePath)
-	if err != nil {
-		return -1, "", err
-	}
-
-	size := info.Size()
-
-	checksum, err := hash.Checksum(filePath)
-	if err != nil {
-		return -1, "", err
-	}
-
-	return size, checksum, nil
 }
 
 func outputLogFile(logger *log.Logger, repoMetadata *libraries.Repo, buffer *bytes.Buffer) error {

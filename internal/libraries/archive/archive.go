@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/arduino/libraries-repository-engine/internal/libraries/hash"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/zip"
 )
@@ -52,4 +53,21 @@ func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string
 func ZipFolderName(library *metadata.LibraryMetadata) string {
 	pattern := regexp.MustCompile("[^a-zA-Z0-9]")
 	return pattern.ReplaceAllString(library.Name, "_") + "-" + library.Version
+}
+
+// GetSizeAndCalculateChecksum returns the size and SHA-256 checksum for the given file.
+func GetSizeAndCalculateChecksum(filePath string) (int64, string, error) {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return -1, "", err
+	}
+
+	size := info.Size()
+
+	checksum, err := hash.Checksum(filePath)
+	if err != nil {
+		return -1, "", err
+	}
+
+	return size, checksum, nil
 }
