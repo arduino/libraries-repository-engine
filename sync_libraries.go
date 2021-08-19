@@ -33,6 +33,7 @@ import (
 	"path/filepath"
 
 	cc "github.com/arduino/golang-concurrent-workers"
+	"github.com/arduino/libraries-repository-engine/internal/configuration"
 	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/arduino/libraries-repository-engine/internal/libraries"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
@@ -41,19 +42,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
-// Config is the type of the engine configuration.
-type Config struct {
-	BaseDownloadURL string
-	LibrariesFolder string
-	LogsFolder      string
-	LibrariesDB     string
-	LibrariesIndex  string
-	GitClonesFolder string
-	DoNotRunClamav  bool
-	ArduinoLintPath string
-}
-
-var config *Config
+var config *configuration.Config
 
 func main() {
 	var configFile string
@@ -63,7 +52,7 @@ func main() {
 		configFile = "./config.json"
 	}
 
-	config = readConf(configFile)
+	config = configuration.ReadConf(configFile)
 
 	setup(config)
 
@@ -166,7 +155,7 @@ func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
 	}
 }
 
-func readConf(configFile string) *Config {
+func readConf(configFile string) *configuration.Config {
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
 		feedback.LogError(err)
 		os.Exit(1)
@@ -177,7 +166,7 @@ func readConf(configFile string) *Config {
 		os.Exit(1)
 	}
 	decoder := json.NewDecoder(file)
-	config := Config{}
+	config := configuration.Config{}
 	err = decoder.Decode(&config)
 	if feedback.LogError(err) {
 		os.Exit(1)
@@ -185,7 +174,7 @@ func readConf(configFile string) *Config {
 	return &config
 }
 
-func setup(config *Config) {
+func setup(config *configuration.Config) {
 	err := os.MkdirAll(config.GitClonesFolder, os.FileMode(0777))
 	if feedback.LogError(err) {
 		os.Exit(1)
