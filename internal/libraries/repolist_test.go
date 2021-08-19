@@ -24,10 +24,29 @@
 package libraries
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRepoURLValid(t *testing.T) {
+	testTables := []struct {
+		url       string
+		assertion assert.BoolAssertionFunc
+	}{
+		{"example.com", assert.False},
+		{"example.com/foo.git", assert.False},
+		{"http://example.com/foo.git", assert.False},
+		{"https://example.com/foo", assert.False},
+		{"https://example/com/foo.git", assert.True},
+	}
+
+	for _, testTable := range testTables {
+		testTable.assertion(t, RepoURLValid(testTable.url), fmt.Sprintf("URL: %s", testTable.url))
+	}
+}
 
 func TestRepoFolderPathDetermination(t *testing.T) {
 	repo := &Repo{URL: "https://github.com/arduino-libraries/Servo.git"}
