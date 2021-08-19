@@ -21,50 +21,29 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-// Package configuration handles the tool configuration.
-package configuration
+package cli
 
 import (
-	"encoding/json"
-	"os"
-
-	"github.com/arduino/libraries-repository-engine/internal/feedback"
-	"github.com/spf13/pflag"
+	"github.com/arduino/libraries-repository-engine/internal/command/sync"
+	"github.com/spf13/cobra"
 )
 
-// Config is the type of the engine configuration.
-type Config struct {
-	BaseDownloadURL string
-	LibrariesFolder string
-	LogsFolder      string
-	LibrariesDB     string
-	LibrariesIndex  string
-	GitClonesFolder string
-	DoNotRunClamav  bool
-	ArduinoLintPath string
+// syncCmd defines the `sync` CLI subcommand.
+var syncCmd = &cobra.Command{
+	Short:                 "Update Library Manager content",
+	Long:                  "Update the Library Manager content",
+	DisableFlagsInUseLine: true,
+	Use: `sync [FLAG]... [REGISTRY_FILE_PATH]
+
+For each of the library registrations in the file at REGISTRY_FILE_PATH:
+
+- check their repository for tags not already in the database
+- check whether the new tag meets the requirements for addition to the index
+- add library release to the database and store archive for the compliant tag
+- generate the Library Manager index file`,
+	Run: sync.Run,
 }
 
-// ReadConf reads the configuration file and returns the data.
-func ReadConf(flags *pflag.FlagSet) *Config {
-	configFile, err := flags.GetString("config-file")
-	if err != nil {
-		panic(err)
-	}
-
-	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		feedback.LogError(err)
-		os.Exit(1)
-	}
-
-	file, err := os.Open(configFile)
-	if feedback.LogError(err) {
-		os.Exit(1)
-	}
-	decoder := json.NewDecoder(file)
-	config := Config{}
-	err = decoder.Decode(&config)
-	if feedback.LogError(err) {
-		os.Exit(1)
-	}
-	return &config
+func init() {
+	rootCmd.AddCommand(syncCmd)
 }
