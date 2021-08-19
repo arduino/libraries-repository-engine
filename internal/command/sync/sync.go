@@ -37,6 +37,7 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/configuration"
 	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/arduino/libraries-repository-engine/internal/libraries"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/archive"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/hash"
@@ -268,10 +269,10 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		releaseLog += formattedReport
 	}
 
-	zipName := libraries.ZipFolderName(library)
+	zipName := archive.ZipFolderName(library)
 	lib := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
 	host := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..", "..")))
-	zipFilePath, err := libraries.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, host, lib), zipName)
+	zipFilePath, err := archive.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, host, lib), zipName)
 	if err != nil {
 		return fmt.Errorf("Error while zipping library: %s", err)
 	}

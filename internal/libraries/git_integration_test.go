@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/arduino/libraries-repository-engine/internal/libraries/archive"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
 	"github.com/stretchr/testify/require"
@@ -68,11 +69,11 @@ func TestUpdateLibraryJson(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, library)
 
-		zipFolderName := ZipFolderName(library)
+		zipFolderName := archive.ZipFolderName(library)
 
 		release := db.FromLibraryToRelease(library)
 
-		zipFilePath, err := ZipRepo(r.FolderPath, librariesRepo, zipFolderName)
+		zipFilePath, err := archive.ZipRepo(r.FolderPath, librariesRepo, zipFolderName)
 		require.NoError(t, err)
 		require.NotEmpty(t, zipFilePath)
 
