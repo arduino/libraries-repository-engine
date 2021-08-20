@@ -25,38 +25,83 @@
 package archive
 
 import (
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
 
+	"github.com/arduino/libraries-repository-engine/internal/configuration"
+	"github.com/arduino/libraries-repository-engine/internal/libraries"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/hash"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/zip"
 )
 
-// ZipRepo creates a ZIP archive of the repo folder and returns its path.
-func ZipRepo(repoFolder string, baseFolder string, zipFolderName string) (string, error) {
-	err := os.MkdirAll(baseFolder, os.FileMode(0755))
-	if err != nil {
-		return "", err
-	}
-	absoluteFileName := filepath.Join(baseFolder, zipFolderName+".zip")
-	if err := zip.Directory(repoFolder, zipFolderName, absoluteFileName); err != nil {
-		os.Remove(absoluteFileName)
-		return "", err
-	}
-
-	return absoluteFileName, nil
+// Archive is the type for library release archive data.
+type Archive struct {
+	SourcePath string
+	RootName   string // Name of the root folder inside the archive.
+	FileName   string
+	Path       string // Full path of the archive.
+	URL        string // URL the archive will have on the download server.
+	Size       int64
+	Checksum   string
 }
 
-// ZipFolderName returns the name to use for the folder.
-func ZipFolderName(library *metadata.LibraryMetadata) string {
+// New initializes and returns an Archive object.
+func New(repository *libraries.Repository, libraryMetadata *metadata.LibraryMetadata, config *configuration.Config) (*Archive, error) {
+	repositoryURLData, err := url.Parse(repository.URL)
+	if err != nil {
+		return nil, err
+	}
+	// e.g., https://github.com/arduino-libraries/Servo.git -> github.com
+	repositoryHost := repositoryURLData.Host
+	// e.g., https://github.com/arduino-libraries/Servo.git -> arduino-libraries
+	repositoryParent := filepath.Base(filepath.Dir(repositoryURLData.Path))
+
+	// Unlike the other path components, the filename is based on library name, not repository name URL.
+	fileName := zipFolderName(libraryMetadata) + ".zip"
+
+	return &Archive{
+		SourcePath: repository.FolderPath,
+		RootName:   zipFolderName(libraryMetadata),
+		FileName:   fileName,
+		Path:       filepath.Join(config.LibrariesFolder, repositoryHost, repositoryParent, fileName),
+		URL:        config.BaseDownloadURL + repositoryHost + "/" + repositoryParent + "/" + fileName,
+	}, nil
+}
+
+// Create makes an archive file according to the data of the Archive object and updates the object with the size and
+// checksum for the resulting file.
+func (archive *Archive) Create() error {
+	err := os.MkdirAll(filepath.Dir(archive.Path), os.FileMode(0755))
+	if err != nil {
+		return err
+	}
+
+	if err := zip.Directory(archive.SourcePath, archive.RootName, archive.Path); err != nil {
+		os.Remove(archive.Path)
+		return err
+	}
+
+	size, checksum, err := getSizeAndCalculateChecksum(archive.Path)
+	if err != nil {
+		return err
+	}
+	archive.Size = size
+	archive.Checksum = checksum
+
+	return nil
+}
+
+// zipFolderName returns the name to use for the folder.
+func zipFolderName(library *metadata.LibraryMetadata) string {
 	pattern := regexp.MustCompile("[^a-zA-Z0-9]")
 	return pattern.ReplaceAllString(library.Name, "_") + "-" + library.Version
 }
 
-// GetSizeAndCalculateChecksum returns the size and SHA-256 checksum for the given file.
-func GetSizeAndCalculateChecksum(filePath string) (int64, string, error) {
+// getSizeAndCalculateChecksum returns the size and SHA-256 checksum for the given file.
+func getSizeAndCalculateChecksum(filePath string) (int64, string, error) {
 	info, err := os.Stat(filePath)
 	if err != nil {
 		return -1, "", err

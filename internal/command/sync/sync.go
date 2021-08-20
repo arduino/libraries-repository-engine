@@ -268,23 +268,19 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		releaseLog += formattedReport
 	}
 
-	zipName := archive.ZipFolderName(library)
-	lib := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
-	host := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..", "..")))
-	zipFilePath, err := archive.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, host, lib), zipName)
+	archiveData, err := archive.New(repo, library, config)
 	if err != nil {
+		return fmt.Errorf("Error while configuring library release archive: %s", err)
+	}
+	if err := archiveData.Create(); err != nil {
 		return fmt.Errorf("Error while zipping library: %s", err)
 	}
 
-	size, checksum, err := archive.GetSizeAndCalculateChecksum(zipFilePath)
-	if err != nil {
-		return fmt.Errorf("Error while calculating checksums: %s", err)
-	}
 	release := db.FromLibraryToRelease(library)
-	release.URL = config.BaseDownloadURL + host + "/" + lib + "/" + zipName + ".zip"
-	release.ArchiveFileName = zipName + ".zip"
-	release.Size = size
-	release.Checksum = checksum
+	release.URL = archiveData.URL
+	release.ArchiveFileName = archiveData.FileName
+	release.Size = archiveData.Size
+	release.Checksum = archiveData.Checksum
 	release.Log = releaseLog
 
 	if err := libraries.UpdateLibrary(release, repo.URL, libraryDb); err != nil {
