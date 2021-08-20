@@ -1,6 +1,6 @@
 module github.com/arduino/libraries-repository-engine
 
-go 1.14
+go 1.16
 
 require (
 	github.com/arduino/arduino-cli v0.0.0-20210520100059-2666b6ec51e9
