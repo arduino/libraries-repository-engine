@@ -29,6 +29,46 @@ import invoke.context
 import json
 
 
+@pytest.fixture
+def configuration(working_dir):
+    """Create a libraries-repository-engine configuration file and return an object containing its data and path."""
+    working_dir_path = pathlib.Path(working_dir)
+
+    # This is based on the `Librariesv2` production job's config.
+    data = {
+        "BaseDownloadUrl": "https://downloads.arduino.cc/libraries/",
+        "LibrariesFolder": working_dir_path.joinpath("libraries").as_posix(),
+        "LogsFolder": working_dir_path.joinpath("ci-logs", "libraries", "logs").as_posix(),
+        "LibrariesDB": working_dir_path.joinpath("db.json").as_posix(),
+        "LibrariesIndex": working_dir_path.joinpath("libraries", "library_index.json").as_posix(),
+        "GitClonesFolder": working_dir_path.joinpath("gitclones").as_posix(),
+        # I was unable to get clamdscan working in the GitHub Actions runner, but the tests should pass with this set to
+        # False when run on a machine with ClamAV installed.
+        "DoNotRunClamav": True,
+        # Arduino Lint should be installed under PATH
+        "ArduinoLintPath": "",
+    }
+
+    # Generate configuration file
+    path = working_dir_path.joinpath("config.json")
+    with path.open("w", encoding="utf-8") as configuration_file:
+        json.dump(obj=data, fp=configuration_file, indent=2)
+
+    class Object:
+        """Container for libraries-repository-engine configuration data.
+
+        Keyword arguments:
+        data -- dictionary of configuration data
+        path -- path of the configuration file
+        """
+
+        def __init__(self, data, path):
+            self.data = data
+            self.path = path
+
+    return Object(data=data, path=path)
+
+
 @pytest.fixture(scope="function")
 def run_command(pytestconfig, working_dir) -> typing.Callable[..., invoke.runners.Result]:
     """Provide a wrapper around invoke's `run` API so that every test will work in the same temporary folder.
