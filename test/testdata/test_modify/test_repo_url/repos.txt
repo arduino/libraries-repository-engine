@@ -1,0 +1,3 @@
+https://github.com/arduino-libraries/ArduinoIoTCloudBearSSL.git|Partner|ArduinoIoTCloudBearSSL
+https://github.com/arduino-libraries/SpacebrewYun.git|Contributed|SpacebrewYun
+https://github.com/arduino-libraries/UnoWiFi-Developer-Edition-Lib.git|Arduino,Retired|Arduino Uno WiFi Dev Ed Library
