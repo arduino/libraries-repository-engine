@@ -10,16 +10,16 @@ on:
   push:
     paths:
       - ".github/workflows/test-go-task.ya?ml"
-      - "go.mod"
-      - "go.sum"
+      - "**/go.mod"
+      - "**/go.sum"
       - "Taskfile.ya?ml"
       - "**/testdata/**"
       - "**.go"
   pull_request:
     paths:
       - ".github/workflows/test-go-task.ya?ml"
-      - "go.mod"
-      - "go.sum"
+      - "**/go.mod"
+      - "**/go.sum"
       - "Taskfile.ya?ml"
       - "**/testdata/**"
       - "**.go"
@@ -56,7 +56,18 @@ jobs:
           name: libraries-repository-engine
 
   test:
-    runs-on: ubuntu-latest
+    name: test (${{ matrix.module.path }} - ${{ matrix.operating-system }})
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        operating-system:
+          - ubuntu-latest
+        module:
+          - path: ./
+
+    runs-on: ${{ matrix.operating-system }}
 
     steps:
       - name: Checkout repository
@@ -88,4 +99,6 @@ jobs:
           version: 3.x
 
       - name: Run tests
+        env:
+          GO_MODULE_PATH: ${{ matrix.module.path }}
         run: task go:test
