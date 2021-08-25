@@ -21,18 +21,42 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-package main
+// Package feedback provides feedback to the user.
+package feedback
 
 import (
+	"fmt"
+	"log"
 	"os"
-
-	"github.com/arduino/libraries-repository-engine/internal/cli"
-	"github.com/arduino/libraries-repository-engine/internal/feedback"
 )
 
-func main() {
-	err := cli.Execute()
-	if feedback.LogError(err) {
-		os.Exit(1)
+// LogError logs non-nil errors and returns whether the error was nil.
+func LogError(err error) bool {
+	if err != nil {
+		log.Println(err)
+		return true
 	}
+	return false
+}
+
+// Warningf behaves like fmt.Printf but adds a prefix and newline.
+func Warningf(format string, v ...interface{}) {
+	Warning(fmt.Sprintf(format, v...))
+}
+
+// Warning behaves like fmt.Println but adds a prefix.
+func Warning(v ...interface{}) {
+	fmt.Fprint(os.Stderr, "warning: ")
+	fmt.Fprintln(os.Stderr, v...)
+}
+
+// Errorf behaves like fmt.Printf but adds a prefix and newline.
+func Errorf(format string, v ...interface{}) {
+	Error(fmt.Sprintf(format, v...))
+}
+
+// Error behaves like fmt.Println but adds a prefix.
+func Error(v ...interface{}) {
+	fmt.Fprint(os.Stderr, "error: ")
+	fmt.Fprintln(os.Stderr, v...)
 }

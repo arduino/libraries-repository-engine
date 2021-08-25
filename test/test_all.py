@@ -59,6 +59,8 @@ def test_all(run_command, working_dir):
         json.dump(obj=configuration, fp=configuration_file, indent=2)
 
     libraries_repository_engine_command = [
+        "sync",
+        "--config-file",
         working_dir_path.joinpath("config.json"),
         test_data_path.joinpath("test_all", "repos.txt"),
     ]
@@ -300,6 +302,8 @@ def test_clean_checkout(run_command, working_dir):
         json.dump(obj=configuration, fp=configuration_file, indent=2)
 
     libraries_repository_engine_command = [
+        "sync",
+        "--config-file",
         working_dir_path.joinpath("config.json"),
         test_data_path.joinpath("test_clean_checkout", "repos.txt"),
     ]

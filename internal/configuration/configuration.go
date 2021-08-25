@@ -21,18 +21,50 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-package main
+// Package configuration handles the tool configuration.
+package configuration
 
 import (
+	"encoding/json"
 	"os"
 
-	"github.com/arduino/libraries-repository-engine/internal/cli"
 	"github.com/arduino/libraries-repository-engine/internal/feedback"
+	"github.com/spf13/pflag"
 )
 
-func main() {
-	err := cli.Execute()
+// Config is the type of the engine configuration.
+type Config struct {
+	BaseDownloadURL string
+	LibrariesFolder string
+	LogsFolder      string
+	LibrariesDB     string
+	LibrariesIndex  string
+	GitClonesFolder string
+	DoNotRunClamav  bool
+	ArduinoLintPath string
+}
+
+// ReadConf reads the configuration file and returns the data.
+func ReadConf(flags *pflag.FlagSet) *Config {
+	configFile, err := flags.GetString("config-file")
+	if err != nil {
+		panic(err)
+	}
+
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		feedback.LogError(err)
+		os.Exit(1)
+	}
+
+	file, err := os.Open(configFile)
 	if feedback.LogError(err) {
 		os.Exit(1)
 	}
+	decoder := json.NewDecoder(file)
+	config := Config{}
+	err = decoder.Decode(&config)
+	if feedback.LogError(err) {
+		os.Exit(1)
+	}
+	return &config
 }

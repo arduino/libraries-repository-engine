@@ -21,18 +21,29 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-package main
+package cli
 
 import (
-	"os"
-
-	"github.com/arduino/libraries-repository-engine/internal/cli"
-	"github.com/arduino/libraries-repository-engine/internal/feedback"
+	"github.com/arduino/libraries-repository-engine/internal/command/sync"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	err := cli.Execute()
-	if feedback.LogError(err) {
-		os.Exit(1)
-	}
+// syncCmd defines the `sync` CLI subcommand.
+var syncCmd = &cobra.Command{
+	Short:                 "Update Library Manager content",
+	Long:                  "Update the Library Manager content",
+	DisableFlagsInUseLine: true,
+	Use: `sync [FLAG]... [REGISTRY_FILE_PATH]
+
+For each of the library registrations in the file at REGISTRY_FILE_PATH:
+
+- check their repository for tags not already in the database
+- check whether the new tag meets the requirements for addition to the index
+- add library release to the database and store archive for the compliant tag
+- generate the Library Manager index file`,
+	Run: sync.Run,
+}
+
+func init() {
+	rootCmd.AddCommand(syncCmd)
 }
