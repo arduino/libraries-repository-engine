@@ -15,8 +15,8 @@ on:
       - "**/go.mod"
       - "**/go.sum"
       - "Taskfile.ya?ml"
-      - "**/testdata/**"
       - "**.go"
+      - "**/testdata/**"
   pull_request:
     paths:
       - ".github/workflows/test-go-task.ya?ml"
@@ -24,8 +24,8 @@ on:
       - "**/go.mod"
       - "**/go.sum"
       - "Taskfile.ya?ml"
-      - "**/testdata/**"
       - "**.go"
+      - "**/testdata/**"
   workflow_dispatch:
   repository_dispatch:
 
