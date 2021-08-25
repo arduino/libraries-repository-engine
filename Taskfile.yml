@@ -44,7 +44,14 @@ tasks:
     desc: Run unit tests
     dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
     cmds:
-      - go test -v -short -run '{{default ".*" .GO_TEST_REGEX}}' {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} -coverprofile=coverage_unit.txt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+      - |
+        go test \
+          -v \
+          -short \
+          -run '{{default ".*" .GO_TEST_REGEX}}' \
+          {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} \
+          -coverprofile=coverage_unit.txt \
+          {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-integration-task/Taskfile.yml
   go:test-integration:
