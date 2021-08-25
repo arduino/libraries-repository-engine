@@ -11,6 +11,7 @@ on:
   push:
     paths:
       - ".github/workflows/test-go-task.ya?ml"
+      - "codecov.ya?ml"
       - "**/go.mod"
       - "**/go.sum"
       - "Taskfile.ya?ml"
@@ -19,6 +20,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/test-go-task.ya?ml"
+      - "codecov.ya?ml"
       - "**/go.mod"
       - "**/go.sum"
       - "Taskfile.ya?ml"
@@ -94,6 +96,7 @@ jobs:
           - ubuntu-latest
         module:
           - path: ./
+            codecov-flags: unit
 
     runs-on: ${{ matrix.operating-system }}
 
@@ -130,3 +133,11 @@ jobs:
         env:
           GO_MODULE_PATH: ${{ matrix.module.path }}
         run: task go:test
+
+      - name: Send unit tests coverage to Codecov
+        if: runner.os == 'Linux'
+        uses: codecov/codecov-action@v2
+        with:
+          file: ${{ matrix.module.path }}coverage_unit.txt
+          flags: ${{ matrix.module.codecov-flags }}
+          fail_ci_if_error: ${{ github.repository == 'REPO_OWNER/REPO_NAME' }}
