@@ -67,7 +67,13 @@ jobs:
   test:
     needs: run-determination
     if: needs.run-determination.outputs.result == 'true'
-    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        operating-system:
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.operating-system }}
 
     env:
       ARDUINO_LINT_SOURCE_PATH: arduino-lint
