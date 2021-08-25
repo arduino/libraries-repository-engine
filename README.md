@@ -35,7 +35,11 @@ task go:test
 
 Create a `config.json` file (or edit example one). Same thing for `repos.txt` file.
 
-Run with `go run sync_libraries.go` or `task go:build` and then `./libraries-repository-engine`
+Run the following command to list the available command line interfaces:
+
+```
+./libraries-repository-engine help
+```
 
 ## Security
 
