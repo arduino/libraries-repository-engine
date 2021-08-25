@@ -9,15 +9,15 @@ on:
   create:
   push:
     paths:
-      - ".github/workflows/check-go-task.yml"
-      - "Taskfile.yml"
+      - ".github/workflows/check-go-task.ya?ml"
+      - "Taskfile.ya?ml"
       - "**/go.mod"
       - "**/go.sum"
       - "**.go"
   pull_request:
     paths:
-      - ".github/workflows/check-go-task.yml"
-      - "Taskfile.yml"
+      - ".github/workflows/check-go-task.ya?ml"
+      - "Taskfile.ya?ml"
       - "**/go.mod"
       - "**/go.sum"
       - "**.go"
