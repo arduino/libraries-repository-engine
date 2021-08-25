@@ -37,9 +37,9 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/configuration"
 	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/arduino/libraries-repository-engine/internal/libraries"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/archive"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
-	"github.com/arduino/libraries-repository-engine/internal/libraries/hash"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/spf13/cobra"
 )
@@ -268,23 +268,19 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 		releaseLog += formattedReport
 	}
 
-	zipName := libraries.ZipFolderName(library)
-	lib := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..")))
-	host := filepath.Base(filepath.Clean(filepath.Join(repo.FolderPath, "..", "..")))
-	zipFilePath, err := libraries.ZipRepo(repo.FolderPath, filepath.Join(config.LibrariesFolder, host, lib), zipName)
+	archiveData, err := archive.New(repo, library, config)
 	if err != nil {
+		return fmt.Errorf("Error while configuring library release archive: %s", err)
+	}
+	if err := archiveData.Create(); err != nil {
 		return fmt.Errorf("Error while zipping library: %s", err)
 	}
 
-	size, checksum, err := getSizeAndCalculateChecksum(zipFilePath)
-	if err != nil {
-		return fmt.Errorf("Error while calculating checksums: %s", err)
-	}
 	release := db.FromLibraryToRelease(library)
-	release.URL = config.BaseDownloadURL + host + "/" + lib + "/" + zipName + ".zip"
-	release.ArchiveFileName = zipName + ".zip"
-	release.Size = size
-	release.Checksum = checksum
+	release.URL = archiveData.URL
+	release.ArchiveFileName = archiveData.FileName
+	release.Size = archiveData.Size
+	release.Checksum = archiveData.Checksum
 	release.Log = releaseLog
 
 	if err := libraries.UpdateLibrary(release, repo.URL, libraryDb); err != nil {
@@ -292,22 +288,6 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	}
 
 	return nil
-}
-
-func getSizeAndCalculateChecksum(filePath string) (int64, string, error) {
-	info, err := os.Stat(filePath)
-	if err != nil {
-		return -1, "", err
-	}
-
-	size := info.Size()
-
-	checksum, err := hash.Checksum(filePath)
-	if err != nil {
-		return -1, "", err
-	}
-
-	return size, checksum, nil
 }
 
 func outputLogFile(logger *log.Logger, repoMetadata *libraries.Repo, buffer *bytes.Buffer) error {

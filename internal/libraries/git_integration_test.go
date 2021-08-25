@@ -21,7 +21,7 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-package libraries
+package libraries_test
 
 import (
 	"io/ioutil"
@@ -29,13 +29,16 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/arduino/libraries-repository-engine/internal/configuration"
+	"github.com/arduino/libraries-repository-engine/internal/libraries"
+	"github.com/arduino/libraries-repository-engine/internal/libraries/archive"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
 	"github.com/stretchr/testify/require"
 )
 
 func TestUpdateLibraryJson(t *testing.T) {
-	repos, err := ListRepos("./testdata/git_test_repo.txt")
+	repos, err := libraries.ListRepos("./testdata/git_test_repo.txt")
 
 	require.NoError(t, err)
 	require.NotNil(t, repos)
@@ -51,7 +54,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 		subfolder, err := repo.AsFolder()
 		require.NoError(t, err)
 
-		r, err := CloneOrFetch(repo, filepath.Join("/tmp", subfolder))
+		r, err := libraries.CloneOrFetch(repo, filepath.Join("/tmp", subfolder))
 		require.NoError(t, err)
 		require.NotNil(t, r)
 
@@ -64,19 +67,21 @@ func TestUpdateLibraryJson(t *testing.T) {
 
 		err = gitutils.CheckoutTag(r.Repository, tag)
 
-		library, err := GenerateLibraryFromRepo(r)
+		library, err := libraries.GenerateLibraryFromRepo(r)
 		require.NoError(t, err)
 		require.NotNil(t, library)
 
-		zipFolderName := ZipFolderName(library)
+		config := configuration.Config{LibrariesFolder: librariesRepo}
+		archiveData, err := archive.New(r, library, &config)
+		require.NoError(t, err)
 
 		release := db.FromLibraryToRelease(library)
 
-		zipFilePath, err := ZipRepo(r.FolderPath, librariesRepo, zipFolderName)
+		err = archiveData.Create()
 		require.NoError(t, err)
-		require.NotEmpty(t, zipFilePath)
+		require.NotEmpty(t, archiveData.Path)
 
-		err = UpdateLibrary(release, r.URL, libraryDb)
+		err = libraries.UpdateLibrary(release, r.URL, libraryDb)
 		require.NoError(t, err)
 
 	}
