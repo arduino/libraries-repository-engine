@@ -53,36 +53,6 @@ jobs:
 
           echo "::set-output name=result::$RESULT"
 
-  build:
-    needs: run-determination
-    if: needs.run-determination.outputs.result == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Install Task
-        uses: arduino/setup-task@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          version: 3.x
-
-      - name: Build application
-        run: task go:build
-
-      - name: Save binary as workflow artifact
-        uses: actions/upload-artifact@v2
-        with:
-          if-no-files-found: error
-          path: libraries-repository-engine
-          name: libraries-repository-engine
-
   test:
     name: test (${{ matrix.module.path }} - ${{ matrix.operating-system }})
     needs: run-determination
