@@ -94,10 +94,11 @@ func (archive *Archive) Create() error {
 	return nil
 }
 
+var zipFolderNamePattern = regexp.MustCompile("[^a-zA-Z0-9]")
+
 // zipFolderName returns the name to use for the folder.
 func zipFolderName(library *metadata.LibraryMetadata) string {
-	pattern := regexp.MustCompile("[^a-zA-Z0-9]")
-	return pattern.ReplaceAllString(library.Name, "_") + "-" + library.Version
+	return zipFolderNamePattern.ReplaceAllString(library.Name, "_") + "-" + library.Version
 }
 
 // getSizeAndCalculateChecksum returns the size and SHA-256 checksum for the given file.
