@@ -96,6 +96,30 @@ func (db *DB) AddLibrary(library *Library) error {
 	return nil
 }
 
+// RemoveLibrary removes a library and all its releases from the database.
+func (db *DB) RemoveLibrary(libraryName string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.removeLibrary(libraryName)
+}
+
+func (db *DB) removeLibrary(libraryName string) error {
+	found := false
+	for i := range db.Libraries {
+		for i < len(db.Libraries) && db.Libraries[i].Name == libraryName {
+			found = true
+			db.Libraries = append(db.Libraries[:i], db.Libraries[i+1:]...)
+		}
+	}
+	if !found {
+		return errors.New("library not found")
+	}
+
+	db.removeReleases(libraryName) // It's OK if no releases were found.
+
+	return nil
+}
+
 // HasLibrary returns whether the database already contains the given library.
 func (db *DB) HasLibrary(libraryName string) bool {
 	db.mutex.Lock()
@@ -145,6 +169,28 @@ func (db *DB) AddRelease(release *Release, repoURL string) error {
 		return err
 	}
 	lib.LatestCategory = last.Category
+
+	return nil
+}
+
+// RemoveReleaseByNameVersion removes the given library release from the database.
+func (db *DB) RemoveReleaseByNameVersion(libraryName string, libraryVersion string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.removeReleaseByNameVersion(libraryName, libraryVersion)
+}
+
+func (db *DB) removeReleaseByNameVersion(libraryName string, libraryVersion string) error {
+	found := false
+	for i, release := range db.Releases {
+		if release.LibraryName == libraryName && release.Version.String() == libraryVersion {
+			found = true
+			db.Releases = append(db.Releases[:i], db.Releases[i+1:]...)
+		}
+	}
+	if !found {
+		return errors.New("release not found")
+	}
 
 	return nil
 }
@@ -274,6 +320,28 @@ func (db *DB) findReleasesOfLibrary(lib *Library) []*Release {
 		releases = append(releases, rel)
 	}
 	return releases
+}
+
+// RemoveReleases removes all releases of a library from the database.
+func (db *DB) RemoveReleases(libraryName string) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+	return db.removeReleases(libraryName)
+}
+
+func (db *DB) removeReleases(libraryName string) error {
+	found := false
+	for i := range db.Releases {
+		for i < len(db.Releases) && db.Releases[i].LibraryName == libraryName {
+			found = true
+			db.Releases = append(db.Releases[:i], db.Releases[i+1:]...)
+		}
+	}
+	if !found {
+		return errors.New("releases not found")
+	}
+
+	return nil
 }
 
 // Commit saves the database to disk.

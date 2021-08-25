@@ -1,5 +1,3 @@
-# Source:
-# https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-integration/test_all.py
 # Copyright 2021 ARDUINO SA (http://www.arduino.cc/)
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,42 +25,18 @@ import re
 import hashlib
 import json
 import pathlib
-import platform
-import typing
 import math
-
-import invoke.context
-import pytest
 
 test_data_path = pathlib.Path(__file__).resolve().parent.joinpath("testdata")
 size_comparison_tolerance = 0.03  # Maximum allowed archive size difference ratio
 
 
-def test_all(run_command, working_dir):
-    working_dir_path = pathlib.Path(working_dir)
-    configuration = {
-        "BaseDownloadUrl": "http://www.example.com/libraries/",
-        "LibrariesFolder": working_dir_path.joinpath("libraries").as_posix(),
-        "LogsFolder": working_dir_path.joinpath("logs").as_posix(),
-        "LibrariesDB": working_dir_path.joinpath("libraries_db.json").as_posix(),
-        "LibrariesIndex": working_dir_path.joinpath("libraries", "library_index.json").as_posix(),
-        "GitClonesFolder": working_dir_path.joinpath("gitclones").as_posix(),
-        # I was unable to get clamdscan working in the GitHub Actions runner, but the tests should pass with this set to
-        # False when run on a machine with ClamAV installed.
-        "DoNotRunClamav": True,
-        # Arduino Lint should be installed under PATH
-        "ArduinoLintPath": "",
-    }
-
-    # Generate configuration file
-    with working_dir_path.joinpath("config.json").open("w", encoding="utf-8") as configuration_file:
-        json.dump(obj=configuration, fp=configuration_file, indent=2)
-
+def test_sync(configuration, run_command):
     libraries_repository_engine_command = [
         "sync",
         "--config-file",
-        working_dir_path.joinpath("config.json"),
-        test_data_path.joinpath("test_all", "repos.txt"),
+        configuration.path,
+        test_data_path.joinpath("test_sync", "repos.txt"),
     ]
 
     # Run the engine
@@ -70,38 +44,38 @@ def test_all(run_command, working_dir):
     assert result.ok
 
     # Test fresh output
-    check_libraries(configuration=configuration)
+    check_libraries(configuration=configuration.data)
     check_logs(
-        configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "generate"),
+        configuration=configuration.data,
+        golden_logs_parent_path=test_data_path.joinpath("test_sync", "golden", "logs", "generate"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "ArduinoCloudThing", "index.html"),
     )
     check_logs(
-        configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "generate"),
+        configuration=configuration.data,
+        golden_logs_parent_path=test_data_path.joinpath("test_sync", "golden", "logs", "generate"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "SpacebrewYun", "index.html"),
     )
-    check_db(configuration=configuration)
-    check_index(configuration=configuration)
+    check_db(configuration=configuration.data)
+    check_index(configuration=configuration.data)
 
     # Run the engine again
     result = run_command(cmd=libraries_repository_engine_command)
     assert result.ok
 
     # Test the updated output
-    check_libraries(configuration=configuration)
+    check_libraries(configuration=configuration.data)
     check_logs(
-        configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "update"),
+        configuration=configuration.data,
+        golden_logs_parent_path=test_data_path.joinpath("test_sync", "golden", "logs", "update"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "ArduinoCloudThing", "index.html"),
     )
     check_logs(
-        configuration=configuration,
-        golden_logs_parent_path=test_data_path.joinpath("test_all", "golden", "logs", "update"),
+        configuration=configuration.data,
+        golden_logs_parent_path=test_data_path.joinpath("test_sync", "golden", "logs", "update"),
         logs_subpath=pathlib.Path("github.com", "arduino-libraries", "SpacebrewYun", "index.html"),
     )
-    check_db(configuration=configuration)
-    check_index(configuration=configuration)
+    check_db(configuration=configuration.data)
+    check_index(configuration=configuration.data)
 
 
 def check_libraries(configuration):
@@ -190,7 +164,7 @@ def check_db(configuration):
         release["Log"] = "\n".join([line.rstrip() for line in release["Log"].splitlines()])
 
     # Load golden db
-    golden_db_template = test_data_path.joinpath("test_all", "golden", "db.json").read_text(encoding="utf-8")
+    golden_db_template = test_data_path.joinpath("test_sync", "golden", "db.json").read_text(encoding="utf-8")
     # Fill in mutable content
     golden_db_string = string.Template(template=golden_db_template).substitute(
         base_download_url=configuration["BaseDownloadUrl"],
@@ -248,7 +222,7 @@ def check_index(configuration):
         release["checksum"] = checksum_placeholder
 
     # Load golden index
-    golden_library_index_template = test_data_path.joinpath("test_all", "golden", "library_index.json").read_text(
+    golden_library_index_template = test_data_path.joinpath("test_sync", "golden", "library_index.json").read_text(
         encoding="utf-8"
     )
     # Fill in mutable content
@@ -283,28 +257,11 @@ def check_index(configuration):
 
 
 # The engine's Git code struggles to get a clean checkout of releases under some circumstances.
-def test_clean_checkout(run_command, working_dir):
-    working_dir_path = pathlib.Path(working_dir)
-    configuration = {
-        "BaseDownloadUrl": "http://www.example.com/libraries/",
-        "LibrariesFolder": working_dir_path.joinpath("libraries").as_posix(),
-        "LogsFolder": working_dir_path.joinpath("logs").as_posix(),
-        "LibrariesDB": working_dir_path.joinpath("libraries_db.json").as_posix(),
-        "LibrariesIndex": working_dir_path.joinpath("libraries", "library_index.json").as_posix(),
-        "GitClonesFolder": working_dir_path.joinpath("gitclones").as_posix(),
-        "DoNotRunClamav": True,
-        # Arduino Lint should be installed under PATH
-        "ArduinoLintPath": "",
-    }
-
-    # Generate configuration file
-    with working_dir_path.joinpath("config.json").open("w", encoding="utf-8") as configuration_file:
-        json.dump(obj=configuration, fp=configuration_file, indent=2)
-
+def test_clean_checkout(configuration, run_command):
     libraries_repository_engine_command = [
         "sync",
         "--config-file",
-        working_dir_path.joinpath("config.json"),
+        configuration.path,
         test_data_path.joinpath("test_clean_checkout", "repos.txt"),
     ]
 
@@ -313,63 +270,9 @@ def test_clean_checkout(run_command, working_dir):
     assert result.ok
 
     # Load generated index
-    with pathlib.Path(configuration["LibrariesIndex"]).open(mode="r", encoding="utf-8") as library_index_file:
+    with pathlib.Path(configuration.data["LibrariesIndex"]).open(mode="r", encoding="utf-8") as library_index_file:
         library_index = json.load(fp=library_index_file)
 
     for release in library_index["libraries"]:
         # ssd1306@1.0.0 contains a .exe and so should fail validation.
         assert not (release["name"] == "ssd1306" and release["version"] == "1.0.0")
-
-
-@pytest.fixture(scope="function")
-def run_command(pytestconfig, working_dir) -> typing.Callable[..., invoke.runners.Result]:
-    """Provide a wrapper around invoke's `run` API so that every test will work in the same temporary folder.
-
-    Useful reference:
-        http://docs.pyinvoke.org/en/1.4/api/runners.html#invoke.runners.Result
-    """
-
-    executable_path = pathlib.Path(pytestconfig.rootdir).parent / "libraries-repository-engine"
-
-    def _run(
-        cmd: list,
-        custom_working_dir: typing.Optional[str] = None,
-        custom_env: typing.Optional[dict] = None,
-    ) -> invoke.runners.Result:
-        if cmd is None:
-            cmd = []
-        if not custom_working_dir:
-            custom_working_dir = working_dir
-        quoted_cmd = []
-        for token in cmd:
-            quoted_cmd.append(f'"{token}"')
-        cli_full_line = '"{}" {}'.format(executable_path, " ".join(quoted_cmd))
-        run_context = invoke.context.Context()
-        # It might happen that we need to change directories between drives on Windows,
-        # in that case the "/d" flag must be used otherwise directory wouldn't change
-        cd_command = "cd"
-        if platform.system() == "Windows":
-            cd_command += " /d"
-        # Context.cd() is not used since it doesn't work correctly on Windows.
-        # It escapes spaces in the path using "\ " but it doesn't always work,
-        # wrapping the path in quotation marks is the safest approach
-        with run_context.prefix(f'{cd_command} "{custom_working_dir}"'):
-            return run_context.run(
-                command=cli_full_line,
-                echo=False,
-                hide=True,
-                warn=True,
-                env=custom_env,
-                encoding="utf-8",
-            )
-
-    return _run
-
-
-@pytest.fixture(scope="function")
-def working_dir(tmpdir_factory) -> str:
-    """Create a temporary folder for the test to run in. It will be created before running each test and deleted at the
-    end. This way all the tests work in isolation.
-    """
-    work_dir = tmpdir_factory.mktemp(basename="TestWorkingDir")
-    yield str(work_dir)
