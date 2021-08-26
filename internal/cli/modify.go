@@ -21,41 +21,27 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-package libraries
+package cli
 
 import (
-	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/arduino/libraries-repository-engine/internal/command/modify"
+	"github.com/spf13/cobra"
 )
 
-func TestRepoURLValid(t *testing.T) {
-	testTables := []struct {
-		url       string
-		assertion assert.BoolAssertionFunc
-	}{
-		{"example.com", assert.False},
-		{"example.com/foo.git", assert.False},
-		{"http://example.com/foo.git", assert.False},
-		{"https://example.com/foo", assert.False},
-		{"https://example/com/foo.git", assert.True},
-	}
+// modifyCmd defines the `modify` CLI subcommand.
+var modifyCmd = &cobra.Command{
+	Short:                 "Modify library data",
+	Long:                  "Modify a library's registration data",
+	DisableFlagsInUseLine: true,
+	Use: `modify FLAG... LIBRARY_NAME
 
-	for _, testTable := range testTables {
-		testTable.assertion(t, RepoURLValid(testTable.url), fmt.Sprintf("URL: %s", testTable.url))
-	}
+Modify the registration data of library name LIBRARY_NAME according to the FLAGs.`,
+	Args: cobra.ExactArgs(1),
+	Run:  modify.Run,
 }
 
-func TestRepoFolderPathDetermination(t *testing.T) {
-	repo := &Repo{URL: "https://github.com/arduino-libraries/Servo.git"}
-	f, err := repo.AsFolder()
-	require.NoError(t, err)
-	require.Equal(t, "github.com/arduino-libraries/Servo", f)
+func init() {
+	modifyCmd.Flags().String("repo-url", "", "New library repository URL")
 
-	repo = &Repo{URL: "https://bitbucket.org/bjoern/arduino_osc"}
-	f, err = repo.AsFolder()
-	require.NoError(t, err)
-	require.Equal(t, "bitbucket.org/bjoern/arduino_osc", f)
+	rootCmd.AddCommand(modifyCmd)
 }

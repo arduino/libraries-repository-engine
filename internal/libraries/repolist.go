@@ -74,6 +74,11 @@ func (repoMatcherIfDotGit) Match(url string) bool {
 	return strings.Index(url, "https://") == 0 && strings.LastIndex(url, ".git") == len(url)-len(".git")
 }
 
+// RepoURLValid returns whether the given URL has a valid format.
+func RepoURLValid(url string) bool {
+	return repoMatcherIfDotGit{}.Match(url)
+}
+
 // GitURLsError is the type for the unknown or unsupported repositories data.
 type GitURLsError struct {
 	Repos []*Repo
