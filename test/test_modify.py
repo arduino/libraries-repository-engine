@@ -333,3 +333,65 @@ def test_repo_url(
         )
     assert canary_release_archive_path.exists()
     assert get_release_archive_url(name=canary_name, version=canary_release) == canary_release_archive_url
+
+
+def test_types(configuration, run_command):
+    """Test the `--types` modification flag in action."""
+    name = "SpacebrewYun"
+    raw_old_types = "Arduino"
+    raw_new_types = "Arduino, Retired"
+    canary_name = "Arduino Uno WiFi Dev Ed Library"
+    raw_canary_types = "Partner"
+    # Run the sync command to generate test data
+    engine_command = [
+        "sync",
+        "--config-file",
+        configuration.path,
+        test_data_path.joinpath("test_modify", "test_types", "repos.txt"),
+    ]
+    result = run_command(cmd=engine_command)
+    assert result.ok
+    assert pathlib.Path(configuration.data["LibrariesDB"]).exists()
+
+    def assert_types(name, raw_types):
+        with pathlib.Path(configuration.data["LibrariesDB"]).open(mode="r", encoding="utf-8") as library_db_file:
+            library_db = json.load(fp=library_db_file)
+        for release in library_db["Releases"]:
+            if release["LibraryName"] == name and release["Types"] != [
+                raw_type.strip() for raw_type in raw_types.split(sep=",")
+            ]:
+                return False
+        return True
+
+    # Verify the pre-command DB is as expected
+    assert assert_types(name=name, raw_types=raw_old_types)
+    assert assert_types(name=canary_name, raw_types=raw_canary_types)
+
+    # Run the modification command with existing types
+    engine_command = [
+        "modify",
+        "--config-file",
+        configuration.path,
+        "--types",
+        raw_old_types,
+        name,
+    ]
+    result = run_command(cmd=engine_command)
+    assert not result.ok
+    assert f"{name} already has types {raw_old_types}" in result.stderr
+
+    # Run the modification command with existing types
+    engine_command = [
+        "modify",
+        "--config-file",
+        configuration.path,
+        "--types",
+        raw_new_types,
+        name,
+    ]
+    result = run_command(cmd=engine_command)
+    assert result.ok
+
+    # Verify the effect of the command was as expected
+    assert assert_types(name=name, raw_types=raw_new_types)
+    assert assert_types(name=canary_name, raw_types=raw_canary_types)

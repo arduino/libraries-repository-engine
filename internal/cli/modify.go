@@ -42,6 +42,7 @@ Modify the registration data of library name LIBRARY_NAME according to the FLAGs
 
 func init() {
 	modifyCmd.Flags().String("repo-url", "", "New library repository URL")
+	modifyCmd.Flags().String("types", "", "New types list for the library's releases (comma separated)")
 
 	rootCmd.AddCommand(modifyCmd)
 }
