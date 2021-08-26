@@ -27,6 +27,7 @@ package modify
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/arduino/go-paths-helper"
 	"github.com/arduino/libraries-repository-engine/internal/backup"
@@ -121,10 +122,22 @@ func modifications(flags *pflag.FlagSet) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	newTypes, err := flags.GetString("types")
+	if err != nil {
+		return false, err
+	}
 
 	if newRepositoryURL != "" {
 		if err := modifyRepositoryURL(newRepositoryURL); err != nil {
 			return true, err
+		}
+
+		didModify = true
+	}
+
+	if newTypes != "" {
+		if err := modifyTypes(newTypes); err != nil {
+			return false, err
 		}
 
 		didModify = true
@@ -211,6 +224,51 @@ func modifyRepositoryURL(newRepositoryURL string) error {
 
 		// Update the release download URL in the database.
 		releaseData.URL = newArchiveObject.URL
+	}
+
+	return nil
+}
+
+func modifyTypes(rawTypes string) error {
+	newTypes := strings.Split(rawTypes, ",")
+	for i := range newTypes {
+		newTypes[i] = strings.TrimSpace(newTypes[i])
+	}
+
+	sameTypes := func(oldTypes []string) bool {
+		if len(oldTypes) != len(newTypes) {
+			return false
+		}
+
+		for _, oldType := range oldTypes {
+			found := false
+			for _, newType := range newTypes {
+				if oldType == newType {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	typesChanged := false
+
+	for _, releaseData := range releasesData {
+		if !typesChanged {
+			// Compare old and new types for this release
+			typesChanged = !sameTypes(releaseData.Types)
+		}
+
+		releaseData.Types = newTypes
+	}
+
+	if !typesChanged {
+		return fmt.Errorf("Library %s already has types %s", libraryName, rawTypes)
 	}
 
 	return nil
