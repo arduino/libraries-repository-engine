@@ -48,8 +48,6 @@ type indexLibrary struct {
 	ArchiveFileName  string             `json:"archiveFileName"`
 	Size             int64              `json:"size"`
 	Checksum         string             `json:"checksum"`
-
-	SupportLevel string `json:"supportLevel,omitempty"`
 }
 
 type indexDependency struct {
@@ -96,7 +94,6 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 				URL:              libraryRelease.URL,
 				Size:             libraryRelease.Size,
 				Checksum:         libraryRelease.Checksum,
-				SupportLevel:     lib.SupportLevel,
 				Repository:       lib.Repository,
 				ProvidesIncludes: libraryRelease.Includes,
 				Dependencies:     deps,

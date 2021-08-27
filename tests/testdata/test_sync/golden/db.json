@@ -3,13 +3,11 @@
     {
       "Name": "SpacebrewYun",
       "Repository": "https://github.com/arduino-libraries/SpacebrewYun.git",
-      "SupportLevel": "",
       "LatestCategory": "Communication"
     },
     {
       "Name": "ArduinoCloudThing",
       "Repository": "https://github.com/arduino-libraries/ArduinoCloudThing.git",
-      "SupportLevel": "",
       "LatestCategory": "Communication"
     }
   ],
