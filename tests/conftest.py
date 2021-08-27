@@ -21,12 +21,13 @@
 # Arduino software without disclosing the source code of your own applications.
 # To purchase a commercial license, send an email to license@arduino.cc.
 #
-import pytest
+import json
 import pathlib
 import platform
 import typing
+
 import invoke.context
-import json
+import pytest
 
 
 @pytest.fixture
