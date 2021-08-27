@@ -5,7 +5,7 @@ libraries-repository-engine
 libraries-repository-engine.exe
 repository
 repository.exe
-test/arduino/cc/repository/libraries/testdata/test_db.json
+tests/arduino/cc/repository/libraries/testdata/test_db.json
 /config.json
 /repos.txt
 __pycache__/
