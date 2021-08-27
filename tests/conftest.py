@@ -25,6 +25,7 @@ import json
 import os
 import pathlib
 import platform
+import shutil
 import typing
 
 import invoke.context
@@ -123,3 +124,4 @@ def working_dir(tmpdir_factory) -> str:
     """
     work_dir = tmpdir_factory.mktemp(basename="TestWorkingDir")
     yield os.path.realpath(work_dir)
+    shutil.rmtree(work_dir, ignore_errors=True)
