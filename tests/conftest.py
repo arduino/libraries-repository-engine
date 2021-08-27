@@ -22,6 +22,7 @@
 # To purchase a commercial license, send an email to license@arduino.cc.
 #
 import json
+import os
 import pathlib
 import platform
 import typing
@@ -121,4 +122,4 @@ def working_dir(tmpdir_factory) -> str:
     end. This way all the tests work in isolation.
     """
     work_dir = tmpdir_factory.mktemp(basename="TestWorkingDir")
-    yield str(work_dir)
+    yield os.path.realpath(work_dir)
