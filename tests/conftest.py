@@ -122,6 +122,6 @@ def working_dir(tmpdir_factory) -> str:
     """Create a temporary folder for the test to run in. It will be created before running each test and deleted at the
     end. This way all the tests work in isolation.
     """
-    work_dir = tmpdir_factory.mktemp(basename="TestWorkingDir")
+    work_dir = tmpdir_factory.mktemp(basename="IntegrationTestWorkingDir")
     yield os.path.realpath(work_dir)
     shutil.rmtree(work_dir, ignore_errors=True)
