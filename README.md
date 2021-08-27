@@ -1,6 +1,7 @@
 # libraries-repository-engine
 
 [![Test Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-task.yml)
+[![Codecov](https://codecov.io/gh/arduino/libraries-repository-engine/branch/main/graph/badge.svg)](https://codecov.io/gh/arduino/libraries-repository-engine)
 [![Integration Test status](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-integration-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/test-go-integration-task.yml)
 [![Check Go status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-task.yml)
 [![Check Prettier Formatting status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml)

@@ -21,12 +21,15 @@
 # Arduino software without disclosing the source code of your own applications.
 # To purchase a commercial license, send an email to license@arduino.cc.
 #
-import pytest
+import json
+import os
 import pathlib
 import platform
+import shutil
 import typing
+
 import invoke.context
-import json
+import pytest
 
 
 @pytest.fixture
@@ -119,5 +122,6 @@ def working_dir(tmpdir_factory) -> str:
     """Create a temporary folder for the test to run in. It will be created before running each test and deleted at the
     end. This way all the tests work in isolation.
     """
-    work_dir = tmpdir_factory.mktemp(basename="TestWorkingDir")
-    yield str(work_dir)
+    work_dir = tmpdir_factory.mktemp(basename="IntegrationTestWorkingDir")
+    yield os.path.realpath(work_dir)
+    shutil.rmtree(work_dir, ignore_errors=True)

@@ -20,12 +20,12 @@
 # To purchase a commercial license, send an email to license@arduino.cc.
 #
 
-import string
-import re
 import hashlib
 import json
-import pathlib
 import math
+import pathlib
+import re
+import string
 
 test_data_path = pathlib.Path(__file__).resolve().parent.joinpath("testdata")
 size_comparison_tolerance = 0.03  # Maximum allowed archive size difference ratio

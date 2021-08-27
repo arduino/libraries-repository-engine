@@ -7,6 +7,7 @@ vars:
   DEFAULT_GO_PACKAGES:
     sh: |
       echo $(cd {{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}} && go list ./... | tr '\n' ' ' || echo '"ERROR: Unable to discover Go packages"')
+  LDFLAGS:
 
 tasks:
   build:
@@ -36,14 +37,21 @@ tasks:
     desc: Build the Go code
     dir: "{{.DEFAULT_GO_MODULE_PATH}}"
     cmds:
-      - go build -v -o libraries-repository-engine{{exeExt}}
+      - go build -v -o libraries-repository-engine{{exeExt}} {{.LDFLAGS}}
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-task/Taskfile.yml
   go:test:
     desc: Run unit tests
     dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
     cmds:
-      - go test -v -short -run '{{default ".*" .GO_TEST_REGEX}}' {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} -coverprofile=coverage_unit.txt {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
+      - |
+        go test \
+          -v \
+          -short \
+          -run '{{default ".*" .GO_TEST_REGEX}}' \
+          {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} \
+          -coverprofile=coverage_unit.txt \
+          {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-integration-task/Taskfile.yml
   go:test-integration:
@@ -52,7 +60,7 @@ tasks:
       - task: go:build
       - task: poetry:install-deps
     cmds:
-      - poetry run pytest test
+      - poetry run pytest tests
 
   go:check:
     desc: Check for problems with Go code
