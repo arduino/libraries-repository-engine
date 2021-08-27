@@ -34,19 +34,16 @@ func testerDB() *DB {
 	tDB := DB{
 		Libraries: []*Library{
 			{
-				Name:         "FooLib",
-				Repository:   "https://github.com/Bar/FooLib.git",
-				SupportLevel: "",
+				Name:       "FooLib",
+				Repository: "https://github.com/Bar/FooLib.git",
 			},
 			{
-				Name:         "BazLib",
-				Repository:   "https://github.com/Bar/BazLib.git",
-				SupportLevel: "",
+				Name:       "BazLib",
+				Repository: "https://github.com/Bar/BazLib.git",
 			},
 			{
-				Name:         "QuxLib",
-				Repository:   "https://github.com/Zeb/QuxLib.git",
-				SupportLevel: "",
+				Name:       "QuxLib",
+				Repository: "https://github.com/Zeb/QuxLib.git",
 			},
 		},
 		Releases: []*Release{

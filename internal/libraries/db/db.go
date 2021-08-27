@@ -43,9 +43,8 @@ type DB struct {
 
 // Library is an Arduino library
 type Library struct {
-	Name         string
-	Repository   string
-	SupportLevel string
+	Name       string
+	Repository string
 
 	// Category of the latest release of the library
 	LatestCategory string
