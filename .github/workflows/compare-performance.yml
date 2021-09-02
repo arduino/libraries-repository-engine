@@ -1,0 +1,283 @@
+name: Compare Performance
+
+env:
+  # See: https://github.com/actions/setup-go/tree/v2#readme
+  GO_VERSION: "1.16"
+  REPORTS_ARTIFACT_NAME: reports
+
+# See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
+on:
+  push:
+    paths:
+      - ".github/workflows/compare-performance.ya?ml"
+      - "**/go.mod"
+      - "**/go.sum"
+      - "Taskfile.ya?ml"
+      - "**.go"
+  pull_request:
+    paths:
+      - ".github/workflows/compare-performance.ya?ml"
+      - "**/go.mod"
+      - "**/go.sum"
+      - "Taskfile.ya?ml"
+      - "**.go"
+  workflow_dispatch:
+    inputs:
+      comparison-ref:
+        description: Comparison ref
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+
+    outputs:
+      base-ref: ${{ steps.base-ref.outputs.ref }}
+
+    steps:
+      - name: Determine comparison ref
+        id: base-ref
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "::set-output name=ref::${{ github.event.inputs.comparison-ref }}"
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "::set-output name=ref::${{ github.base_ref }}"
+          else
+            echo "::set-output name=ref::${{ github.event.before }}"
+          fi
+
+  run:
+    name: Run at ${{ matrix.data.ref }} (${{ matrix.data.description }})
+    needs: init
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        data:
+          # Use two copies of each job to catch job-specific anomalous durations.
+          - ref: ${{ github.ref }} # The tip of the branch selected in the workflow dispatch dialog's "Use workflow from" menu
+            description: tip run 1
+            position: after
+          - ref: ${{ github.ref }}
+            description: tip run 2
+            position: after
+          - ref: ${{ needs.init.outputs.base-ref }}
+            description: comparison run 1
+            position: before
+          - ref: ${{ needs.init.outputs.base-ref }}
+            description: comparison run 2
+            position: before
+
+    steps:
+      - name: Set environment variables
+        run: |
+          # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+          ENGINE_DATA_PATH="${{ runner.temp }}/engine"
+          mkdir --parents "$ENGINE_DATA_PATH"
+          echo "ENGINE_DATA_PATH=${ENGINE_DATA_PATH}" >> "$GITHUB_ENV"
+          echo "GIT_CLONES_PATH=${ENGINE_DATA_PATH}/gitclones" >> "$GITHUB_ENV"
+          echo "LIBRARY_ARCHIVES_PATH=${ENGINE_DATA_PATH}/libraries" >> "$GITHUB_ENV"
+          echo "LOGS_PATH=${ENGINE_DATA_PATH}/logs" >> "$GITHUB_ENV"
+          echo "CONFIG_PATH=${ENGINE_DATA_PATH}/config.json" >> "$GITHUB_ENV"
+          echo "REGISTRY_PATH=${ENGINE_DATA_PATH}/registry.txt" >> "$GITHUB_ENV"
+          echo "REPORTS_PATH=${ENGINE_DATA_PATH}/reports" >> "$GITHUB_ENV"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.data.ref }}
+
+      - name: Determine appropriate Go version
+        id: go-version
+        run: |
+          if [[ -f "go.mod" ]]; then
+            USE_GO_VERSION="${{ env.GO_VERSION }}"
+          else
+            # Dependency installation for old engine versions fails when not in GOPATH mode. Go <1.16 uses
+            # GO111MODULE=auto by default, meaning it will use GOPATH mode. Old Go versions were used by the old engine
+            # anyway.
+            USE_GO_VERSION="1.14"
+          fi
+          echo "::set-output name=version::$USE_GO_VERSION"
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ steps.go-version.outputs.version }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.x
+
+      - name: Install latest release of Arduino Lint
+        run: |
+          ARDUINO_LINT_INSTALLATION_PATH="${{ runner.temp }}/arduino-lint"
+          mkdir --parents "$ARDUINO_LINT_INSTALLATION_PATH"
+          curl \
+            -fsSL \
+            https://raw.githubusercontent.com/arduino/arduino-lint/main/etc/install.sh \
+          | \
+          BINDIR="$ARDUINO_LINT_INSTALLATION_PATH" \
+          sh
+
+          # Add installation folder to path
+          echo "$ARDUINO_LINT_INSTALLATION_PATH" >> "$GITHUB_PATH"
+
+      - name: Configure Git for `go get` access to private repo
+        run: |
+          if ! [[ -f "go.mod" ]]; then
+            # engine versions prior to 7dd8f69282232919955c82c143fefb14e50d0889 had a dependency that is hosted in a
+            # private repo. The `go.mod` file was added at the same time the dependency was removed, so its presence can
+            # be used as the indicator.
+            git config \
+              --global url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          fi
+
+      - name: Build engine
+        run: |
+          task go:build
+
+      - name: Generate configuration file
+        run: |
+          cat > "${{ env.CONFIG_PATH }}" << EOF
+          {
+            "BaseDownloadUrl": "https://downloads.arduino.cc/libraries/",
+            "LibrariesFolder": "${{ env.LIBRARY_ARCHIVES_PATH }}",
+            "LibrariesIndex": "${{ env.ENGINE_DATA_PATH }}/library_index.json",
+            "LogsFolder": "${{ env.ENGINE_DATA_PATH }}/logs",
+            "LibrariesDB": "${{ env.ENGINE_DATA_PATH }}/db.json",
+            "GitClonesFolder": "${{ env.GIT_CLONES_PATH }}",
+            "DoNotRunClamav": true
+          }
+          EOF
+
+      - name: Generate registry file
+        run: |
+          FULL_REGISTRY_PATH="${{ runner.temp }}/registry.txt"
+          curl \
+            --output "$FULL_REGISTRY_PATH" \
+            https://raw.githubusercontent.com/arduino/library-registry/1c3f73b279d2845ff139883c78e733e2954437b8/registry.txt
+
+          # Only use the first part of the file for the test
+          head \
+            -300 \
+            "$FULL_REGISTRY_PATH" > \
+                "${{ env.REGISTRY_PATH }}"
+
+      - name: Run sync on empty environment
+        id: fresh
+        run: |
+          SECONDS=0
+          ./libraries-repository-engine "${{ env.CONFIG_PATH }}" "${{ env.REGISTRY_PATH }}"
+
+          # Define step outputs with the performance data
+          echo "::set-output name=Type::fresh"
+          echo "::set-output name=Duration::$SECONDS"
+          echo "::set-output name=GitClonesSize::$(du --apparent-size --bytes --summarize "${{ env.GIT_CLONES_PATH }}" | cut --fields=1)"
+          echo "::set-output name=LibraryArchivesSize::$(du --apparent-size --bytes --summarize "${{ env.LIBRARY_ARCHIVES_PATH }}" | cut --fields=1)"
+          echo "::set-output name=LogsSize::$(du --apparent-size --bytes --summarize "${{ env.LOGS_PATH }}" | cut --fields=1)"
+
+      - name: Run sync on populated database
+        id: populated
+        run: |
+          SECONDS=0
+          ./libraries-repository-engine "${{ env.CONFIG_PATH }}" "${{ env.REGISTRY_PATH }}"
+
+          # Define step outputs with the performance data
+          echo "::set-output name=Type::populated"
+          echo "::set-output name=Duration::$SECONDS"
+          echo "::set-output name=GitClonesSize::$(du --apparent-size --bytes --summarize "${{ env.GIT_CLONES_PATH }}" | cut --fields=1)"
+          echo "::set-output name=LibraryArchivesSize::$(du --apparent-size --bytes --summarize "${{ env.LIBRARY_ARCHIVES_PATH }}" | cut --fields=1)"
+          echo "::set-output name=LogsSize::$(du --apparent-size --bytes --summarize "${{ env.LOGS_PATH }}" | cut --fields=1)"
+
+      - name: Create report
+        run: |
+          mkdir --parents "${{ env.REPORTS_PATH }}"
+          cat > "${{ env.REPORTS_PATH }}/$RANDOM.json" << EOF
+          {
+            "Ref": "${{ matrix.data.ref }}",
+            "Description": "${{ matrix.data.description }}",
+            "Position": "${{ matrix.data.position }}",
+            "Results": [
+                ${{ toJSON(steps.fresh.outputs) }},
+                ${{ toJSON(steps.populated.outputs) }}
+            ]
+          }
+          EOF
+
+      - name: Upload report to a workflow artifact
+        uses: actions/upload-artifact@v2
+        with:
+          if-no-files-found: error
+          path: ${{ env.REPORTS_PATH }}
+          name: ${{ env.REPORTS_ARTIFACT_NAME }}
+
+  results:
+    needs: run
+    runs-on: ubuntu-latest
+
+    env:
+      REPORTS_PATH: reports
+
+    steps:
+      - name: Download reports
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.REPORTS_ARTIFACT_NAME }}
+          path: ${{ env.REPORTS_PATH }}
+
+      - name: Print results
+        shell: python
+        run: |
+          import json
+          import pathlib
+
+          reports_path = pathlib.Path("${{ env.REPORTS_PATH }}")
+          reports = []
+          for report_path in reports_path.iterdir():
+              with report_path.open() as report_file:
+                  reports.append(json.load(fp=report_file))
+
+          sample_size = 0
+          summary_data = {
+              "Duration": [],
+              "GitClonesSize": [],
+              "LibraryArchivesSize": [],
+              "LogsSize": [],
+          }
+          for report in reports:
+              if report["Position"] == "before":
+                  sample_size += 1
+              for result in report["Results"]:
+                  for key in list(summary_data):
+                      type_index = None
+                      for index, summary_item in enumerate(summary_data[key]):
+                          if summary_item["type"] == result["Type"]:
+                              type_index = index
+                              break
+                      if type_index is None:
+                          summary_data[key].append(
+                              {"type": result["Type"], "before": 0, "after": 0}
+                          )
+                          type_index = len(summary_data[key]) - 1
+                      summary_data[key][type_index][report["Position"]] += int(result[key])
+
+          print("% change:")
+          for key in list(summary_data):
+              for type_data in summary_data[key]:
+                  print(
+                      "{key} ({type}): {value}".format(
+                          key=key,
+                          type=type_data["type"],
+                          value=round(
+                              100
+                              * (type_data["after"] - type_data["before"])
+                              / type_data["before"]
+                          ),
+                      )
+                  )
+
+          print("::group::Full results")
+          print(json.dumps(obj=reports, indent=2))
+          print("::endgroup::")
