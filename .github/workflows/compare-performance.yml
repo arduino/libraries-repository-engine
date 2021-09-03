@@ -34,6 +34,11 @@ jobs:
       base-ref: ${{ steps.base-ref.outputs.ref }}
 
     steps:
+      # Repo is required to get the previous tag ref that is the base of the comparison on tag push triggered run.
+      - name: Checkout repository
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/checkout@v2
+
       - name: Determine comparison ref
         id: base-ref
         run: |
@@ -41,6 +46,20 @@ jobs:
             echo "::set-output name=ref::${{ github.event.inputs.comparison-ref }}"
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "::set-output name=ref::${{ github.base_ref }}"
+          elif [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
+            PREV_TAG="$( \
+              git ls-remote \
+              --quiet \
+              --tags \
+              --refs \
+              --sort=version:refname | \
+                cut \
+                  --delimiter='/' \
+                  --fields=3 | \
+                    tail -2 | \
+                      head -1
+            )"
+            echo "::set-output name=ref::$PREV_TAG"
           else
             echo "::set-output name=ref::${{ github.event.before }}"
           fi
