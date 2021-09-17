@@ -1,10 +1,12 @@
 token
 
 coverage_*.txt
-libraries-repository-engine
-libraries-repository-engine.exe
-repository
-repository.exe
+/libraries-repository-engine
+!/libraries-repository-engine/
+/libraries-repository-engine.exe
+/repository
+!/repository/
+/repository.exe
 tests/arduino/cc/repository/libraries/testdata/test_db.json
 /config.json
 /repos.txt
