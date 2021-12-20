@@ -36,8 +36,11 @@ jobs:
     steps:
       # Repo is required to get the previous tag ref that is the base of the comparison on tag push triggered run.
       - name: Checkout repository
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        if: github.event_name == 'push'
         uses: actions/checkout@v2
+        with:
+          # Parent commit is needed for determining the base ref on commit push trigg.
+          fetch-depth: 2
 
       - name: Determine comparison ref
         id: base-ref
@@ -60,7 +63,7 @@ jobs:
                       head -1
             )"
           else
-            COMPARISON_REF="${{ github.event.before }}"
+            COMPARISON_REF="$(git rev-parse ${{ github.sha }}^)"
           fi
 
           if [[ "$COMPARISON_REF" == "" ]]; then
