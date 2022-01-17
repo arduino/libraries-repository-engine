@@ -32,8 +32,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
 
-	cc "github.com/arduino/golang-concurrent-workers"
 	"github.com/arduino/libraries-repository-engine/internal/configuration"
 	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/arduino/libraries-repository-engine/internal/libraries"
@@ -79,54 +80,40 @@ func syncLibraries(reposFile string) {
 		os.Exit(1)
 	}
 
-	type jobContext struct {
-		id           int
-		repoMetadata *libraries.Repo
-	}
-
 	libraryDb := db.Init(config.LibrariesDB)
 
-	jobQueue := make(chan *jobContext)
-
-	pool := cc.New(4)
-	worker := func() {
-		log.Println("Started worker...")
-		for job := range jobQueue {
-			buffer := &bytes.Buffer{}
-			logger := log.New(buffer, "", log.LstdFlags|log.LUTC)
-			syncLibrary(logger, job.repoMetadata, libraryDb)
-
-			// Output log to file
-			if err := outputLogFile(logger, job.repoMetadata, buffer); err != nil {
-				logger.Printf("Error writing log file: %s", err.Error())
-			}
-
-			// Output log to stdout
-			fmt.Println(buffer.String())
-		}
-		log.Println("Completed worker!")
-	}
-	pool.Run(worker)
-	pool.Run(worker)
-	pool.Run(worker)
-	pool.Run(worker)
-	pool.Wait()
-
+	reposChan := make(chan *libraries.Repo)
 	go func() {
-		id := 0
 		for _, repo := range repos {
-			jobQueue <- &jobContext{
-				id:           id,
-				repoMetadata: repo,
-			}
-			id++
+			reposChan <- repo
 		}
-		close(jobQueue)
+		close(reposChan)
 	}()
 
-	for err := range pool.Errors {
-		feedback.LogError(err)
+	// Run workers in parallel to consume repositories list
+	var wg sync.WaitGroup
+	for workersCount := 0; workersCount < runtime.NumCPU(); workersCount++ {
+		wg.Add(1)
+		go func() {
+			log.Println("Started worker...")
+			for repo := range reposChan {
+				buffer := &bytes.Buffer{}
+				logger := log.New(buffer, "", log.LstdFlags|log.LUTC)
+				syncLibrary(logger, repo, libraryDb)
+
+				// Output log to file
+				if err := outputLogFile(logger, repo, buffer); err != nil {
+					logger.Printf("Error writing log file: %s", err.Error())
+				}
+
+				// Output log to stdout
+				fmt.Println(buffer.String())
+			}
+			wg.Done()
+			log.Println("Completed worker!")
+		}()
 	}
+	wg.Wait()
 
 	libraryIndex, err := libraryDb.OutputLibraryIndex()
 	if feedback.LogError(err) {
