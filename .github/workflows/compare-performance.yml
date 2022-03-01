@@ -37,7 +37,7 @@ jobs:
       # Repo is required to get the previous tag ref that is the base of the comparison on tag push triggered run.
       - name: Checkout repository
         if: github.event_name == 'push'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # Parent commit is needed for determining the base ref on commit push trigg.
           fetch-depth: 2
@@ -110,7 +110,7 @@ jobs:
           echo "REPORTS_PATH=${ENGINE_DATA_PATH}/reports" >> "$GITHUB_ENV"
 
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ matrix.data.ref }}
 
