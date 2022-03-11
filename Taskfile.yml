@@ -27,6 +27,7 @@ tasks:
       - task: markdown:lint
       - task: markdown:check-links
       - task: python:lint
+      - task: yaml:lint
 
   format:
     desc: Correct the formatting of the project's files
@@ -260,3 +261,11 @@ tasks:
       - task: poetry:install-deps
     cmds:
       - poetry run codespell --write-changes
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-yaml-task/Taskfile.yml
+  yaml:lint:
+    desc: Check for problems with YAML files
+    deps:
+      - task: poetry:install-deps
+    cmds:
+      - poetry run yamllint --format {{default "colored" .YAMLLINT_FORMAT}} .

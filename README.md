@@ -12,6 +12,7 @@
 [![Check Markdown status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-markdown-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-markdown-task.yml)
 [![Check License status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-license.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-license.yml)
 [![Check Go Dependencies status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-dependencies-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-dependencies-task.yml)
+[![Check YAML status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-yaml-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-yaml-task.yml)
 
 This is the tool that generates [the Arduino Library Manager index](http://downloads.arduino.cc/libraries/library_index.json).
 
