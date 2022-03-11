@@ -18,6 +18,7 @@ tasks:
   check:
     desc: Check for problems with the project
     deps:
+      - task: general:check-formatting
       - task: general:check-spelling
       - task: go:lint
       - task: go:test
@@ -39,6 +40,17 @@ tasks:
     desc: Create all generated documentation content
     # This is an "umbrella" task used to call any documentation generation processes the project has.
     # It can be left empty if there are none.
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-general-formatting-task/Taskfile.yml
+  general:check-formatting:
+    desc: Check basic formatting style of all files
+    cmds:
+      - |
+        if ! which ec &>/dev/null; then
+          echo "ec not found or not in PATH. Please install: https://github.com/editorconfig-checker/editorconfig-checker#installation"
+          exit 1
+        fi
+      - ec
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/go-task/Taskfile.yml
   go:build:
