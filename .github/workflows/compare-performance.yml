@@ -1,8 +1,6 @@
 name: Compare Performance
 
 env:
-  # See: https://github.com/actions/setup-go/tree/v2#readme
-  GO_VERSION: "1.16"
   REPORTS_ARTIFACT_NAME: reports
 
 # See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
@@ -118,7 +116,8 @@ jobs:
         id: go-version
         run: |
           if [[ -f "go.mod" ]]; then
-            USE_GO_VERSION="${{ env.GO_VERSION }}"
+            # This will use the runner's pre-installed Go
+            USE_GO_VERSION="$(go mod edit -json | jq --raw-output '.Go')"
           else
             # Dependency installation for old engine versions fails when not in GOPATH mode. Go <1.16 uses
             # GO111MODULE=auto by default, meaning it will use GOPATH mode. Old Go versions were used by the old engine
