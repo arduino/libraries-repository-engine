@@ -8,6 +8,7 @@
 [![Check Prettier Formatting status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-prettier-formatting-task.yml)
 [![Check Taskfiles status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-taskfiles.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-taskfiles.yml)
 [![Spell Check status](https://github.com/arduino/libraries-repository-engine/actions/workflows/spell-check-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/spell-check-task.yml)
+[![Check Markdown status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-markdown-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-markdown-task.yml)
 [![Check License status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-license.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-license.yml)
 [![Check Go Dependencies status](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-dependencies-task.yml/badge.svg)](https://github.com/arduino/libraries-repository-engine/actions/workflows/check-go-dependencies-task.yml)
 
