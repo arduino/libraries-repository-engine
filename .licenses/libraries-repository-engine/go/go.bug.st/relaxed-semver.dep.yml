@@ -1,6 +1,6 @@
 ---
 name: go.bug.st/relaxed-semver
-version: v0.0.0-20190922224835-391e10178d18
+version: v0.9.0
 type: go
 summary: 
 homepage: https://pkg.go.dev/go.bug.st/relaxed-semver
