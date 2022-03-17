@@ -227,9 +227,6 @@ def test_repo_url(
     new_library_release_archives_folder = pathlib.Path(configuration.data["LibrariesFolder"]).joinpath(
         new_host, new_owner
     )
-    new_git_clone_path = pathlib.Path(configuration.data["GitClonesFolder"]).joinpath(
-        new_host, new_owner, new_repo_name
-    )
     # The "canary" library is not modified and so all its content should remain unchanged after running the command
     canary_name = "ArduinoIoTCloudBearSSL"
     sanitized_canary_name = "ArduinoIoTCloudBearSSL"
@@ -281,7 +278,6 @@ def test_repo_url(
         raise
 
     assert old_git_clone_path.exists()
-    assert not new_git_clone_path.exists()
     assert canary_git_clone_path.exists()
     assert get_library_repo_url(name=name) != new_repo_url
     assert get_library_repo_url(name=canary_name) == canary_repo_url
@@ -314,7 +310,6 @@ def test_repo_url(
 
     # Verify the effect of the command was as expected
     assert not old_git_clone_path.exists()
-    assert new_git_clone_path.exists()
     assert canary_release_archive_path.exists()
     assert canary_git_clone_path.exists()
     assert get_library_repo_url(name=name) == new_repo_url
