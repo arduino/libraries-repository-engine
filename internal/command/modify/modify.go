@@ -163,32 +163,18 @@ func modifyRepositoryURL(newRepositoryURL string) error {
 
 	fmt.Printf("Changing URL of library %s from %s to %s\n", libraryName, oldRepositoryURL, newRepositoryURL)
 
-	// Move the library Git clone to the new path.
-	gitClonePath := func(url string) (*paths.Path, error) {
-		libraryRegistration := libraries.Repo{URL: url}
-		gitCloneSubfolder, err := libraryRegistration.AsFolder()
-		if err != nil {
-			return nil, err
-		}
-
-		return paths.New(config.GitClonesFolder, gitCloneSubfolder), nil
-	}
-	oldGitClonePath, err := gitClonePath(oldRepositoryURL)
+	// Remove the library Git clone folder. It will be cloned from the new URL on the next sync.
+	libraryRegistration := libraries.Repo{URL: libraryData.Repository}
+	gitCloneSubfolder, err := libraryRegistration.AsFolder()
 	if err != nil {
 		return err
 	}
-	newGitClonePath, err := gitClonePath(newRepositoryURL)
-	if err != nil {
-		return err
-	}
-	if err := newGitClonePath.Parent().MkdirAll(); err != nil {
-		return fmt.Errorf("While creating new library Git clone path: %w", err)
-	}
-	if err := backup.Backup(oldGitClonePath); err != nil {
+	gitClonePath := paths.New(config.GitClonesFolder, gitCloneSubfolder)
+	if err := backup.Backup(gitClonePath); err != nil {
 		return fmt.Errorf("While backing up library's Git clone: %w", err)
 	}
-	if err := oldGitClonePath.Rename(newGitClonePath); err != nil {
-		return fmt.Errorf("While moving library's Git clone: %w", err)
+	if err := gitClonePath.RemoveAll(); err != nil {
+		return fmt.Errorf("While removing library's Git clone: %w", err)
 	}
 
 	// Update the library repository URL in the database.
