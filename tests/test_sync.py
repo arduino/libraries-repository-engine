@@ -276,3 +276,35 @@ def test_clean_checkout(configuration, run_command):
     for release in library_index["libraries"]:
         # ssd1306@1.0.0 contains a .exe and so should fail validation.
         assert not (release["name"] == "ssd1306" and release["version"] == "1.0.0")
+
+
+# A Git "thin pack" may reference objects outside the pack.
+def test_thin_pack(configuration, run_command):
+    libraries_repository_engine_command = [
+        "sync",
+        "--config-file",
+        configuration.path,
+        test_data_path.joinpath("test_thin_pack", "repos.txt"),
+    ]
+
+    # Run the engine
+    result = run_command(cmd=libraries_repository_engine_command)
+    assert result.ok
+
+    # Load generated index
+    with pathlib.Path(configuration.data["LibrariesIndex"]).open(mode="r", encoding="utf-8") as library_index_file:
+        library_index = json.load(fp=library_index_file)
+
+    def index_has_release(library_name, version):
+        for release in library_index["libraries"]:
+            if release["name"] == library_name and release["version"] == version:
+                return True
+
+        return False
+
+    # These libraries had repositories that were not compatible with the "thin pack" handling code of
+    # `github.com/go-git/go-git/v5@v5.4.2` (https://github.com/arduino/libraries-repository-engine/issues/109).
+    # I am not confident they will continue to serve as effective test data indefinitely, but also don't know how to
+    # do the generation of test data that would serve as a reliable replacement for them.
+    assert index_has_release(library_name="RAKwireless LED Matrix", version="1.0.0")
+    assert index_has_release(library_name="RAKwireless-RAK12021-TCS37725", version="1.0.0")
