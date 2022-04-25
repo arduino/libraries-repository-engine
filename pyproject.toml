@@ -16,7 +16,7 @@ codespell = "^2.1.0"
 flake8 = "^4.0.1"
 invoke = "^1.7.0"
 pep8-naming = "^0.12.1"
-pytest = "^7.1.1"
+pytest = "^7.1.2"
 yamllint = "^1.26.3"
 
 [build-system]
