@@ -45,8 +45,6 @@ func TestDependencyExtract(t *testing.T) {
 		require.Nil(t, dep)
 		require.Error(t, err)
 	}
-	invalid("-invalidname")
-	invalid("_invalidname")
 	check("ciao", []string{"ciao"}, []string{""})
 	check("MyLib (>1.2.3)", []string{"MyLib"}, []string{">1.2.3"})
 	check("MyLib (>=1.2.3)", []string{"MyLib"}, []string{">=1.2.3"})
@@ -60,8 +58,8 @@ func TestDependencyExtract(t *testing.T) {
 	check("MyLib (>=1.2.3),AnotherLib, YetAnotherLib (=1.0.0)",
 		[]string{"MyLib", "AnotherLib", "YetAnotherLib"},
 		[]string{">=1.2.3", "", "=1.0.0"})
-	invalid("MyLib (>=1.2.3),_aaaa")
 	invalid("MyLib,,AnotherLib")
+	invalid("(MyLib)")
 	invalid("MyLib(=1.2.3)")
 	check("Arduino Uno WiFi Dev Ed Library, LoRa Node (^2.1.2)",
 		[]string{"Arduino Uno WiFi Dev Ed Library", "LoRa Node"},

@@ -66,7 +66,7 @@ func extractStringList(value string) []string {
 	return res
 }
 
-var re = regexp.MustCompile("^([a-zA-Z0-9](?:[a-zA-Z0-9._\\- ]*[a-zA-Z0-9])?) *(?: \\((.*)\\))?$")
+var re = regexp.MustCompile("^([^()]+?) *(?: \\((.*)\\))?$")
 
 // ExtractDependenciesList extracts dependencies from the "depends" field of library.properties
 func ExtractDependenciesList(depends string) ([]*Dependency, error) {
