@@ -65,7 +65,7 @@ func TestBackupAndDeleteGitClone(t *testing.T) {
 		URL: "https://github.com/Foo/Bar.git",
 	}
 
-	assert.Error(t, BackupAndDeleteGitClone(&config, &repoMeta), "Error if library clone folder did not exist.")
+	assert.Nil(t, BackupAndDeleteGitClone(&config, &repoMeta), "Return nil if library clone folder did not exist.")
 
 	gitCloneSubfolder, err := repoMeta.AsFolder()
 	require.NoError(t, err)

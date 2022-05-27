@@ -31,6 +31,7 @@ import (
 	"github.com/arduino/go-paths-helper"
 	"github.com/arduino/libraries-repository-engine/internal/backup"
 	"github.com/arduino/libraries-repository-engine/internal/configuration"
+	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 
 	"fmt"
@@ -145,12 +146,21 @@ func BackupAndDeleteGitClone(config *configuration.Config, repoMeta *Repo) error
 		return err
 	}
 	gitClonePath := paths.New(config.GitClonesFolder, gitCloneSubfolder)
-
-	if err := backup.Backup(gitClonePath); err != nil {
-		return fmt.Errorf("While backing up library's Git clone: %w", err)
+	// The library's clone folder may be removed by the sync process under expected circumstances.
+	// So its absence does not necessarily imply a problem.
+	gitClonePathExists, err := gitClonePath.ExistCheck()
+	if err != nil {
+		return err
 	}
-	if err := gitClonePath.RemoveAll(); err != nil {
-		return fmt.Errorf("While removing library Git clone: %s", err)
+	if gitClonePathExists {
+		if err := backup.Backup(gitClonePath); err != nil {
+			return fmt.Errorf("While backing up library's Git clone: %w", err)
+		}
+		if err := gitClonePath.RemoveAll(); err != nil {
+			return fmt.Errorf("While removing library Git clone: %s", err)
+		}
+	} else {
+		feedback.Warningf("Library Git clone folder %s not present", gitClonePath)
 	}
 
 	return nil
