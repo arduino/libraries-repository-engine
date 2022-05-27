@@ -28,6 +28,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/arduino/go-paths-helper"
+	"github.com/arduino/libraries-repository-engine/internal/backup"
+	"github.com/arduino/libraries-repository-engine/internal/configuration"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,4 +51,39 @@ func TestCloneRepos(t *testing.T) {
 
 	_, err = os.Stat(repo.FolderPath)
 	require.NoError(t, err)
+}
+
+func TestBackupAndDeleteGitClone(t *testing.T) {
+	var err error
+
+	gitClonesFolder, err := paths.MkTempDir("", "libraries-test-testbackupanddeletegitclone")
+	require.NoError(t, err)
+	config := configuration.Config{
+		GitClonesFolder: gitClonesFolder.String(),
+	}
+	repoMeta := Repo{
+		URL: "https://github.com/Foo/Bar.git",
+	}
+
+	assert.Nil(t, BackupAndDeleteGitClone(&config, &repoMeta), "Return nil if library clone folder did not exist.")
+
+	gitCloneSubfolder, err := repoMeta.AsFolder()
+	require.NoError(t, err)
+	gitClonePath := paths.New(config.GitClonesFolder, gitCloneSubfolder)
+	err = gitClonePath.MkdirAll()
+	require.NoError(t, err)
+
+	assert.Nil(t, BackupAndDeleteGitClone(&config, &repoMeta), "Return nil if library clone folder did exist.")
+
+	exist, err := gitClonePath.ExistCheck()
+	require.NoError(t, err)
+
+	assert.False(t, exist, "Library clone folder was deleted.")
+
+	err = backup.Restore()
+	require.NoError(t, err)
+	exist, err = gitClonePath.ExistCheck()
+	require.NoError(t, err)
+
+	assert.True(t, exist, "Library clone folder was backed up.")
 }
