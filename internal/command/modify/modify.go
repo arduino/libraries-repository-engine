@@ -164,17 +164,8 @@ func modifyRepositoryURL(newRepositoryURL string) error {
 	fmt.Printf("Changing URL of library %s from %s to %s\n", libraryName, oldRepositoryURL, newRepositoryURL)
 
 	// Remove the library Git clone folder. It will be cloned from the new URL on the next sync.
-	libraryRegistration := libraries.Repo{URL: libraryData.Repository}
-	gitCloneSubfolder, err := libraryRegistration.AsFolder()
-	if err != nil {
+	if err := libraries.BackupAndDeleteGitClone(config, &libraries.Repo{URL: libraryData.Repository}); err != nil {
 		return err
-	}
-	gitClonePath := paths.New(config.GitClonesFolder, gitCloneSubfolder)
-	if err := backup.Backup(gitClonePath); err != nil {
-		return fmt.Errorf("While backing up library's Git clone: %w", err)
-	}
-	if err := gitClonePath.RemoveAll(); err != nil {
-		return fmt.Errorf("While removing library's Git clone: %w", err)
 	}
 
 	// Update the library repository URL in the database.

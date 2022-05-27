@@ -28,6 +28,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/arduino/go-paths-helper"
+	"github.com/arduino/libraries-repository-engine/internal/backup"
+	"github.com/arduino/libraries-repository-engine/internal/configuration"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 
 	"fmt"
@@ -130,6 +133,24 @@ func UpdateLibrary(release *db.Release, repoURL string, libraryDb *db.DB) error 
 	err = libraryDb.Commit()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// BackupAndDeleteGitClone backs up and then deletes the library's Git clone folder.
+func BackupAndDeleteGitClone(config *configuration.Config, repoMeta *Repo) error {
+	gitCloneSubfolder, err := repoMeta.AsFolder()
+	if err != nil {
+		return err
+	}
+	gitClonePath := paths.New(config.GitClonesFolder, gitCloneSubfolder)
+
+	if err := backup.Backup(gitClonePath); err != nil {
+		return fmt.Errorf("While backing up library's Git clone: %w", err)
+	}
+	if err := gitClonePath.RemoveAll(); err != nil {
+		return fmt.Errorf("While removing library Git clone: %s", err)
 	}
 
 	return nil

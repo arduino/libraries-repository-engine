@@ -160,17 +160,8 @@ func removeLibrary(libraryName string) error {
 	}
 
 	// Remove the library Git clone folder.
-	libraryRegistration := libraries.Repo{URL: libraryData.Repository}
-	gitCloneSubfolder, err := libraryRegistration.AsFolder()
-	if err != nil {
+	if err := libraries.BackupAndDeleteGitClone(config, &libraries.Repo{URL: libraryData.Repository}); err != nil {
 		return err
-	}
-	gitClonePath := paths.New(config.GitClonesFolder, gitCloneSubfolder)
-	if err := backup.Backup(gitClonePath); err != nil {
-		return fmt.Errorf("While backing up library's Git clone: %w", err)
-	}
-	if err := gitClonePath.RemoveAll(); err != nil {
-		return fmt.Errorf("While removing library Git clone: %s", err)
 	}
 
 	return nil
