@@ -45,17 +45,22 @@ func TestDependencyExtract(t *testing.T) {
 		require.Nil(t, dep)
 		require.Error(t, err)
 	}
-	invalid("-invalidname")
-	invalid("_invalidname")
 	check("ciao", []string{"ciao"}, []string{""})
+	check("MyLib (>1.2.3)", []string{"MyLib"}, []string{">1.2.3"})
 	check("MyLib (>=1.2.3)", []string{"MyLib"}, []string{">=1.2.3"})
+	check("MyLib (<1.2.3)", []string{"MyLib"}, []string{"<1.2.3"})
+	check("MyLib (<=1.2.3)", []string{"MyLib"}, []string{"<=1.2.3"})
+	check("MyLib (!=1.2.3)", []string{"MyLib"}, []string{"!=1.2.3"})
+	check("MyLib (>1.0.0 && <2.1.0)", []string{"MyLib"}, []string{">1.0.0 && <2.1.0"})
+	check("MyLib (<1.0.0 || >2.0.0)", []string{"MyLib"}, []string{"<1.0.0 || >2.0.0"})
+	check("MyLib ((>0.1.0 && <2.0.0) || >2.1.0)", []string{"MyLib"}, []string{"(>0.1.0 && <2.0.0) || >2.1.0"})
+	check("MyLib ()", []string{"MyLib"}, []string{""})
 	check("MyLib (>=1.2.3),AnotherLib, YetAnotherLib (=1.0.0)",
 		[]string{"MyLib", "AnotherLib", "YetAnotherLib"},
 		[]string{">=1.2.3", "", "=1.0.0"})
-	invalid("MyLib (>=1.2.3)()")
-	invalid("MyLib (>=1.2.3),_aaaa")
 	invalid("MyLib,,AnotherLib")
-	invalid("MyLib (>=1.2.3)(),AnotherLib, YetAnotherLib (=1.0.0)")
+	invalid("(MyLib)")
+	invalid("MyLib(=1.2.3)")
 	check("Arduino Uno WiFi Dev Ed Library, LoRa Node (^2.1.2)",
 		[]string{"Arduino Uno WiFi Dev Ed Library", "LoRa Node"},
 		[]string{"", "^2.1.2"})
