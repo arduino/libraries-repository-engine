@@ -12,7 +12,7 @@ python = "^3.9"
 
 [tool.poetry.dev-dependencies]
 black = "^22.10"
-codespell = "^2.2.1"
+codespell = "^2.2.2"
 flake8 = "^5.0.4"
 invoke = "^1.7.3"
 pep8-naming = "^0.13.2"
