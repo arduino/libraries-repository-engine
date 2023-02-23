@@ -29,8 +29,8 @@ tasks:
       - task: python:lint
       - task: yaml:lint
 
-  format:
-    desc: Correct the formatting of the project's files
+  fix:
+    desc: Make automated corrections to the project's files
     deps:
       - task: general:format-prettier
       - task: go:format
