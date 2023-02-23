@@ -34,6 +34,7 @@ tasks:
     deps:
       - task: general:format-prettier
       - task: go:format
+      - task: go:tidy
       - task: markdown:fix
       - task: python:format
 
@@ -82,6 +83,14 @@ tasks:
       - task: poetry:install-deps
     cmds:
       - poetry run pytest tests
+
+  go:tidy:
+    desc: Refresh dependency metadata
+    dir: "{{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}}"
+    vars:
+      GO_VERSION: 1.17
+    cmds:
+      - go mod tidy -compat={{.GO_VERSION}}
 
   go:check:
     desc: Check for problems with Go code
