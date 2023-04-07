@@ -10,7 +10,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.2
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
-	go.bug.st/relaxed-semver v0.10.0
+	go.bug.st/relaxed-semver v0.10.1
 )
 
 require (
