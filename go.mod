@@ -6,7 +6,7 @@ require (
 	github.com/arduino/arduino-cli v0.0.0-20210520100059-2666b6ec51e9
 	github.com/arduino/go-paths-helper v1.9.1
 	github.com/go-git/go-git/v5 v5.6.1
-	github.com/spf13/cobra v1.6.1
+	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.2
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
@@ -27,7 +27,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/h2non/filetype v1.0.8 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/juju/errors v0.0.0-20181118221551-089d3ea4e4d5 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
