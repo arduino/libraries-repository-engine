@@ -27,6 +27,7 @@ on:
 jobs:
   init:
     runs-on: ubuntu-latest
+    permissions: {}
 
     outputs:
       base-ref: ${{ steps.base-ref.outputs.ref }}
@@ -75,6 +76,7 @@ jobs:
     name: Run at ${{ matrix.data.ref }} (${{ matrix.data.description }})
     needs: init
     runs-on: ubuntu-latest
+    permissions: {}
 
     strategy:
       matrix:
@@ -243,6 +245,7 @@ jobs:
   results:
     needs: run
     runs-on: ubuntu-latest
+    permissions: {}
 
     env:
       REPORTS_PATH: reports

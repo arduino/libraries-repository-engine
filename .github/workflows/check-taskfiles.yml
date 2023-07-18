@@ -21,6 +21,8 @@ jobs:
   validate:
     name: Validate ${{ matrix.file }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       fail-fast: false
