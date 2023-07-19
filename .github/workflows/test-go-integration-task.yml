@@ -31,8 +31,8 @@ on:
       - "pyproject.toml"
       - "tests/**"
   schedule:
-    # Run daily at 8 AM UTC to catch breakage resulting from changes to Arduino Lint.
-    - cron: "0 8 * * *"
+    # Run periodically to catch breakage caused by external changes.
+    - cron: "0 10 * * WED"
   workflow_dispatch:
     inputs:
       arduino-lint-ref:
