@@ -70,7 +70,7 @@ jobs:
             exit 1
           fi
 
-          echo "::set-output name=ref::$COMPARISON_REF"
+          echo "ref=$COMPARISON_REF" >> $GITHUB_OUTPUT
 
   run:
     name: Run at ${{ matrix.data.ref }} (${{ matrix.data.description }})
@@ -126,7 +126,7 @@ jobs:
             # anyway.
             USE_GO_VERSION="1.14"
           fi
-          echo "::set-output name=version::$USE_GO_VERSION"
+          echo "version=$USE_GO_VERSION" >> $GITHUB_OUTPUT
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -201,11 +201,38 @@ jobs:
           ./libraries-repository-engine "${{ env.CONFIG_PATH }}" "${{ env.REGISTRY_PATH }}"
 
           # Define step outputs with the performance data
-          echo "::set-output name=Type::fresh"
-          echo "::set-output name=Duration::$SECONDS"
-          echo "::set-output name=GitClonesSize::$(du --apparent-size --bytes --summarize "${{ env.GIT_CLONES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LibraryArchivesSize::$(du --apparent-size --bytes --summarize "${{ env.LIBRARY_ARCHIVES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LogsSize::$(du --apparent-size --bytes --summarize "${{ env.LOGS_PATH }}" | cut --fields=1)"
+          echo "Type=fresh" >> $GITHUB_OUTPUT
+          echo "Duration=$SECONDS" >> $GITHUB_OUTPUT
+          echo "GitClonesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.GIT_CLONES_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LibraryArchivesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LIBRARY_ARCHIVES_PATH }}" \
+            | \
+            cut \
+            --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LogsSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LOGS_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
 
       - name: Run sync on populated database
         id: populated
@@ -214,11 +241,38 @@ jobs:
           ./libraries-repository-engine "${{ env.CONFIG_PATH }}" "${{ env.REGISTRY_PATH }}"
 
           # Define step outputs with the performance data
-          echo "::set-output name=Type::populated"
-          echo "::set-output name=Duration::$SECONDS"
-          echo "::set-output name=GitClonesSize::$(du --apparent-size --bytes --summarize "${{ env.GIT_CLONES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LibraryArchivesSize::$(du --apparent-size --bytes --summarize "${{ env.LIBRARY_ARCHIVES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LogsSize::$(du --apparent-size --bytes --summarize "${{ env.LOGS_PATH }}" | cut --fields=1)"
+          echo "Type=populated" >> $GITHUB_OUTPUT
+          echo "Duration=$SECONDS" >> $GITHUB_OUTPUT
+          echo "GitClonesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.GIT_CLONES_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LibraryArchivesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LIBRARY_ARCHIVES_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LogsSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LOGS_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
 
       - name: Create report
         run: |
