@@ -63,7 +63,8 @@ jobs:
       - name: Set environment variables
         run: |
           # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-          echo "BUILD_ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${{ github.sha }}_Linux_64bit.zip" >> "$GITHUB_ENV"
+          echo "BUILD_ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${{ github.sha }}_Linux_64bit.zip" \
+            >> "$GITHUB_ENV"
 
       - name: Checkout repository
         uses: actions/checkout@v3

@@ -163,7 +163,8 @@ jobs:
             # private repo. The `go.mod` file was added at the same time the dependency was removed, so its presence can
             # be used as the indicator.
             git config \
-              --global url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+              --global \
+              url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
           fi
 
       - name: Build engine

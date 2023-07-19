@@ -25,7 +25,8 @@ jobs:
           # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
           TAG_SHORT_NAME="${GITHUB_REF/refs\/tags\//}"
           echo "TAG_SHORT_NAME=$TAG_SHORT_NAME" >> "$GITHUB_ENV"
-          echo "ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${TAG_SHORT_NAME}_Linux_64bit.tar.gz" >> "$GITHUB_ENV"
+          echo "ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${TAG_SHORT_NAME}_Linux_64bit.tar.gz" \
+            >> "$GITHUB_ENV"
           echo "CHANGELOG_PATH=${{ runner.temp }}/CHANGELOG.md" >> "$GITHUB_ENV"
           echo "SEMVER_TOOL_PATH=${{ runner.temp }}/semver" >> "$GITHUB_ENV"
 
