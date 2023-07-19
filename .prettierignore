@@ -2,3 +2,4 @@
 
 /.licenses/
 /tests/testdata/test_sync/golden/logs/
+node_modules/
