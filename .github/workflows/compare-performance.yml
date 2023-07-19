@@ -19,6 +19,9 @@ on:
       - "**/go.sum"
       - "Taskfile.ya?ml"
       - "**.go"
+  schedule:
+    # Run periodically to catch breakage caused by external changes.
+    - cron: "0 9 * * THU"
   workflow_dispatch:
     inputs:
       comparison-ref:
