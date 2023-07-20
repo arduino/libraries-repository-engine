@@ -2,3 +2,5 @@
 
 /.licenses/
 /tests/testdata/test_sync/golden/logs/
+__pycache__/
+node_modules/

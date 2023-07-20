@@ -19,6 +19,9 @@ on:
       - "**/go.sum"
       - "Taskfile.ya?ml"
       - "**.go"
+  schedule:
+    # Run periodically to catch breakage caused by external changes.
+    - cron: "0 9 * * THU"
   workflow_dispatch:
     inputs:
       comparison-ref:
@@ -27,6 +30,7 @@ on:
 jobs:
   init:
     runs-on: ubuntu-latest
+    permissions: {}
 
     outputs:
       base-ref: ${{ steps.base-ref.outputs.ref }}
@@ -69,12 +73,13 @@ jobs:
             exit 1
           fi
 
-          echo "::set-output name=ref::$COMPARISON_REF"
+          echo "ref=$COMPARISON_REF" >> $GITHUB_OUTPUT
 
   run:
     name: Run at ${{ matrix.data.ref }} (${{ matrix.data.description }})
     needs: init
     runs-on: ubuntu-latest
+    permissions: {}
 
     strategy:
       matrix:
@@ -124,7 +129,7 @@ jobs:
             # anyway.
             USE_GO_VERSION="1.14"
           fi
-          echo "::set-output name=version::$USE_GO_VERSION"
+          echo "version=$USE_GO_VERSION" >> $GITHUB_OUTPUT
 
       - name: Install Go
         uses: actions/setup-go@v4
@@ -158,7 +163,8 @@ jobs:
             # private repo. The `go.mod` file was added at the same time the dependency was removed, so its presence can
             # be used as the indicator.
             git config \
-              --global url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+              --global \
+              url."https://${{ secrets.REPO_SCOPE_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
           fi
 
       - name: Build engine
@@ -199,11 +205,38 @@ jobs:
           ./libraries-repository-engine "${{ env.CONFIG_PATH }}" "${{ env.REGISTRY_PATH }}"
 
           # Define step outputs with the performance data
-          echo "::set-output name=Type::fresh"
-          echo "::set-output name=Duration::$SECONDS"
-          echo "::set-output name=GitClonesSize::$(du --apparent-size --bytes --summarize "${{ env.GIT_CLONES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LibraryArchivesSize::$(du --apparent-size --bytes --summarize "${{ env.LIBRARY_ARCHIVES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LogsSize::$(du --apparent-size --bytes --summarize "${{ env.LOGS_PATH }}" | cut --fields=1)"
+          echo "Type=fresh" >> $GITHUB_OUTPUT
+          echo "Duration=$SECONDS" >> $GITHUB_OUTPUT
+          echo "GitClonesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.GIT_CLONES_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LibraryArchivesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LIBRARY_ARCHIVES_PATH }}" \
+            | \
+            cut \
+            --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LogsSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LOGS_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
 
       - name: Run sync on populated database
         id: populated
@@ -212,11 +245,38 @@ jobs:
           ./libraries-repository-engine "${{ env.CONFIG_PATH }}" "${{ env.REGISTRY_PATH }}"
 
           # Define step outputs with the performance data
-          echo "::set-output name=Type::populated"
-          echo "::set-output name=Duration::$SECONDS"
-          echo "::set-output name=GitClonesSize::$(du --apparent-size --bytes --summarize "${{ env.GIT_CLONES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LibraryArchivesSize::$(du --apparent-size --bytes --summarize "${{ env.LIBRARY_ARCHIVES_PATH }}" | cut --fields=1)"
-          echo "::set-output name=LogsSize::$(du --apparent-size --bytes --summarize "${{ env.LOGS_PATH }}" | cut --fields=1)"
+          echo "Type=populated" >> $GITHUB_OUTPUT
+          echo "Duration=$SECONDS" >> $GITHUB_OUTPUT
+          echo "GitClonesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.GIT_CLONES_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LibraryArchivesSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LIBRARY_ARCHIVES_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
+          echo "LogsSize=$( \
+            du \
+              --apparent-size \
+              --bytes \
+              --summarize \
+              "${{ env.LOGS_PATH }}" \
+            | \
+            cut \
+              --fields=1 \
+          )" >> $GITHUB_OUTPUT
 
       - name: Create report
         run: |
@@ -243,6 +303,7 @@ jobs:
   results:
     needs: run
     runs-on: ubuntu-latest
+    permissions: {}
 
     env:
       REPORTS_PATH: reports

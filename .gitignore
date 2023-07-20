@@ -4,6 +4,7 @@ coverage_*.txt
 /libraries-repository-engine
 !/libraries-repository-engine/
 /libraries-repository-engine.exe
+/node_modules/
 /repository
 !/repository/
 /repository.exe

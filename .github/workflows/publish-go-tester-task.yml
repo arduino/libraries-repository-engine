@@ -5,7 +5,7 @@ env:
   # See: https://github.com/actions/setup-go/tree/main#supported-version-syntax
   GO_VERSION: "1.17"
 
-# See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
+# See: https://docs.github.com/actions/using-workflows/events-that-trigger-workflows
 on:
   create:
   push:
@@ -30,15 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.determination.outputs.result }}
+    permissions: {}
     steps:
       - name: Determine if the rest of the workflow should run
         id: determination
         run: |
           RELEASE_BRANCH_REGEX="refs/heads/[0-9]+.[0-9]+.x"
+          TAG_REGEX="refs/tags/.*"
           # The `create` event trigger doesn't support `branches` filters, so it's necessary to use Bash instead.
-          if [[ \
-            "${{ github.event_name }}" != "create" || \
-            "${{ github.ref }}" =~ $RELEASE_BRANCH_REGEX \
+          if [[
+            ("${{ github.event_name }}" != "create" ||
+            "${{ github.ref }}" =~ $RELEASE_BRANCH_REGEX) &&
+            ! "${{ github.ref }}" =~ $TAG_REGEX
           ]]; then
             # Run the other jobs.
             RESULT="true"
@@ -47,18 +50,21 @@ jobs:
             RESULT="false"
           fi
 
-          echo "::set-output name=result::$RESULT"
+          echo "result=$RESULT" >> $GITHUB_OUTPUT
 
   build:
     needs: run-determination
     if: needs.run-determination.outputs.result == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Set environment variables
         run: |
           # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-          echo "BUILD_ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${{ github.sha }}_Linux_64bit.zip" >> "$GITHUB_ENV"
+          echo "BUILD_ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${{ github.sha }}_Linux_64bit.zip" \
+            >> "$GITHUB_ENV"
 
       - name: Checkout repository
         uses: actions/checkout@v3

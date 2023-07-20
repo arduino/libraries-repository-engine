@@ -6,8 +6,15 @@ vars:
   DEFAULT_GO_MODULE_PATH: ./
   DEFAULT_GO_PACKAGES:
     sh: |
-      echo $(cd {{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}} && go list ./... | tr '\n' ' ' || echo '"ERROR: Unable to discover Go packages"')
+      echo $(
+        cd {{default .DEFAULT_GO_MODULE_PATH .GO_MODULE_PATH}} &&
+        go list ./... | tr '\n' ' ' ||
+        echo '"ERROR: Unable to discover Go packages"'
+      )
+  # `-ldflags` flag to use for `go build` command
   LDFLAGS:
+  # `-ldflags` flag to use for `go test` command
+  TEST_LDFLAGS:
 
 tasks:
   build:
@@ -49,7 +56,8 @@ tasks:
     cmds:
       - |
         if ! which ec &>/dev/null; then
-          echo "ec not found or not in PATH. Please install: https://github.com/editorconfig-checker/editorconfig-checker#installation"
+          echo "ec not found or not in PATH."
+          echo "Please install: https://github.com/editorconfig-checker/editorconfig-checker#installation"
           exit 1
         fi
       - ec
@@ -73,6 +81,7 @@ tasks:
           -run '{{default ".*" .GO_TEST_REGEX}}' \
           {{default "-timeout 10m -coverpkg=./... -covermode=atomic" .GO_TEST_FLAGS}} \
           -coverprofile=coverage_unit.txt \
+          {{.TEST_LDFLAGS}} \
           {{default .DEFAULT_GO_PACKAGES .GO_PACKAGES}}
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/test-go-integration-task/Taskfile.yml
@@ -139,13 +148,15 @@ tasks:
     desc: Check for broken links
     deps:
       - task: docs:generate
+      - task: npm:install-deps
     cmds:
       - |
         if [[ "{{.OS}}" == "Windows_NT" ]]; then
           # npx --call uses the native shell, which makes it too difficult to use npx for this application on Windows,
           # so the Windows user is required to have markdown-link-check installed and in PATH.
           if ! which markdown-link-check &>/dev/null; then
-            echo "markdown-link-check not found or not in PATH. Please install: https://github.com/tcort/markdown-link-check#readme"
+            echo "markdown-link-check not found or not in PATH."
+            echo "Please install: https://github.com/tcort/markdown-link-check#readme"
             exit 1
           fi
           # Default behavior of the task on Windows is to exit the task when the first broken link causes a non-zero
@@ -194,14 +205,24 @@ tasks:
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-markdown-task/Taskfile.yml
   markdown:fix:
     desc: Automatically correct linting violations in Markdown files where possible
+    deps:
+      - task: npm:install-deps
     cmds:
       - npx markdownlint-cli --fix "**/*.md"
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-markdown-task/Taskfile.yml
   markdown:lint:
     desc: Check for problems in Markdown files
+    deps:
+      - task: npm:install-deps
     cmds:
       - npx markdownlint-cli "**/*.md"
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/npm-task/Taskfile.yml
+  npm:install-deps:
+    desc: Install dependencies managed by npm
+    cmds:
+      - npm install
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/poetry-task/Taskfile.yml
   poetry:install-deps:
@@ -228,12 +249,16 @@ tasks:
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-prettier-formatting-task/Taskfile.yml
   general:format-prettier:
     desc: Format all supported files with Prettier
+    deps:
+      - task: npm:install-deps
     cmds:
       - npx prettier --write .
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-dependencies-task/Taskfile.yml
   general:cache-dep-licenses:
     desc: Cache dependency license metadata
+    deps:
+      - task: general:prepare-deps
     cmds:
       - |
         if ! which licensed &>/dev/null; then
@@ -241,7 +266,8 @@ tasks:
             echo "Licensed does not have Windows support."
             echo "Please use Linux/macOS or download the dependencies cache from the GitHub Actions workflow artifact."
           else
-            echo "licensed not found or not in PATH. Please install: https://github.com/github/licensed#as-an-executable"
+            echo "licensed not found or not in PATH."
+            echo "Please install: https://github.com/github/licensed#as-an-executable"
           fi
           exit 1
         fi
@@ -270,6 +296,11 @@ tasks:
       - task: poetry:install-deps
     cmds:
       - poetry run codespell --write-changes
+
+  # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-go-dependencies-task/Taskfile.yml
+  general:prepare-deps:
+    desc: Prepare project dependencies for license check
+    # No preparation is needed for Go module-based projects.
 
   # Source: https://github.com/arduino/tooling-project-assets/blob/main/workflow-templates/assets/check-yaml-task/Taskfile.yml
   yaml:lint:

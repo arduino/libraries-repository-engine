@@ -12,6 +12,8 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     env:
       # See: https://github.com/fsaintjacques/semver-tool/releases
@@ -23,7 +25,8 @@ jobs:
           # See: https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
           TAG_SHORT_NAME="${GITHUB_REF/refs\/tags\//}"
           echo "TAG_SHORT_NAME=$TAG_SHORT_NAME" >> "$GITHUB_ENV"
-          echo "ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${TAG_SHORT_NAME}_Linux_64bit.tar.gz" >> "$GITHUB_ENV"
+          echo "ARCHIVE_PATH=${{ runner.temp }}/libraries-repository-engine_${TAG_SHORT_NAME}_Linux_64bit.tar.gz" \
+            >> "$GITHUB_ENV"
           echo "CHANGELOG_PATH=${{ runner.temp }}/CHANGELOG.md" >> "$GITHUB_ENV"
           echo "SEMVER_TOOL_PATH=${{ runner.temp }}/semver" >> "$GITHUB_ENV"
 
@@ -82,7 +85,9 @@ jobs:
       - name: Identify Prerelease
         id: prerelease
         run: |
-          if [[ "$("${{ env.SEMVER_TOOL_PATH }}" get prerel "${GITHUB_REF/refs\/tags\//}")" ]]; then echo "::set-output name=IS_PRE::true"; fi
+          if [[ "$("${{ env.SEMVER_TOOL_PATH }}" get prerel "${GITHUB_REF/refs\/tags\//}")" ]]; then
+            echo "IS_PRE=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create Release
         uses: ncipollo/release-action@v1
