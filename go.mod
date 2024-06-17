@@ -6,7 +6,7 @@ require (
 	github.com/arduino/arduino-cli v0.0.0-20210520100059-2666b6ec51e9
 	github.com/arduino/go-paths-helper v1.12.1
 	github.com/go-git/go-git/v5 v5.6.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
