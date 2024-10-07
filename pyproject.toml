@@ -11,7 +11,7 @@ authors = ["Arduino <info@arduino.cc>"]
 python = "^3.9"
 
 [tool.poetry.dev-dependencies]
-black = "^24.8"
+black = "^24.10"
 codespell = "^2.3.0"
 flake8 = "^7.1.1"
 invoke = "^2.2.0"
