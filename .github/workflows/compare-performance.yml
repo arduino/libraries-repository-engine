@@ -1,7 +1,7 @@
 name: Compare Performance
 
 env:
-  REPORTS_ARTIFACT_NAME: reports
+  REPORTS_ARTIFACT_PREFIX: reports-
 
 # See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
 on:
@@ -85,16 +85,20 @@ jobs:
       matrix:
         data:
           # Use two copies of each job to catch job-specific anomalous durations.
-          - ref: ${{ github.ref }} # The tip of the branch selected in the workflow dispatch dialog's "Use workflow from" menu
+          - artifact-suffix: tip-run-1
+            ref: ${{ github.ref }} # The tip of the branch selected in the workflow dispatch dialog's "Use workflow from" menu
             description: tip run 1
             position: after
-          - ref: ${{ github.ref }}
+          - artifact-suffix: tip-run-2
+            ref: ${{ github.ref }}
             description: tip run 2
             position: after
-          - ref: ${{ needs.init.outputs.base-ref }}
+          - artifact-suffix: comparison-run-1
+            ref: ${{ needs.init.outputs.base-ref }}
             description: comparison run 1
             position: before
-          - ref: ${{ needs.init.outputs.base-ref }}
+          - artifact-suffix: comparison-run-2
+            ref: ${{ needs.init.outputs.base-ref }}
             description: comparison run 2
             position: before
 
@@ -298,7 +302,7 @@ jobs:
         with:
           if-no-files-found: error
           path: ${{ env.REPORTS_PATH }}
-          name: ${{ env.REPORTS_ARTIFACT_NAME }}
+          name: ${{ env.REPORTS_ARTIFACT_PREFIX }}${{ matrix.data.artifact-suffix }}
 
   results:
     needs: run
@@ -312,8 +316,9 @@ jobs:
       - name: Download reports
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.REPORTS_ARTIFACT_NAME }}
+          merge-multiple: true
           path: ${{ env.REPORTS_PATH }}
+          pattern: ${{ env.REPORTS_ARTIFACT_PREFIX }}*
 
       - name: Print results
         shell: python
