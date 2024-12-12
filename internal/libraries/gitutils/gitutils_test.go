@@ -77,11 +77,11 @@ func TestResolveTag(t *testing.T) {
 func TestSortedCommitTags(t *testing.T) {
 	// Create a folder for the test repository.
 	repositoryPath, err := paths.TempDir().MkTempDir("gitutils-TestSortedTags-repo")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	// Create test repository.
 	repository, err := git.PlainInit(repositoryPath.String(), false)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	var tags []*plumbing.Reference
 	tags = append(tags, makeTag(t, repository, "1.0.0", makeCommit(t, repository, repositoryPath), true))
@@ -90,24 +90,15 @@ func TestSortedCommitTags(t *testing.T) {
 	tags = append(tags, makeTag(t, repository, "1.0.1", makeCommit(t, repository, repositoryPath), false))
 
 	worktree, err := repository.Worktree()
-	require.Nil(t, err)
-	worktree.Checkout(
-		&git.CheckoutOptions{
-			Branch: "development-branch",
-			Create: true,
-		},
-	)
+	require.NoError(t, err)
+	require.NoError(t, worktree.Checkout(&git.CheckoutOptions{Branch: "development-branch", Create: true}))
+
 	var branchTags []*plumbing.Reference
 	branchTags = append(branchTags, makeTag(t, repository, "1.0.2-rc1", makeCommit(t, repository, repositoryPath), true))
 	branchTags = append(branchTags, makeTag(t, repository, "1.0.2-rc2", makeCommit(t, repository, repositoryPath), true))
 	config, err := repository.Config()
-	require.Nil(t, err)
-	worktree.Checkout(
-		&git.CheckoutOptions{
-			Branch: plumbing.ReferenceName(config.Init.DefaultBranch),
-			Create: false,
-		},
-	)
+	require.NoError(t, err)
+	require.NoError(t, worktree.Checkout(&git.CheckoutOptions{Branch: plumbing.ReferenceName(config.Init.DefaultBranch), Create: false}))
 
 	tags = append(tags, makeTag(t, repository, "1.0.2", makeCommit(t, repository, repositoryPath), true))
 	// Throw a blob tag into the mix. This should not have any effect.
