@@ -45,51 +45,32 @@ func TestResolveTag(t *testing.T) {
 	repository, err := git.PlainInit(repositoryPath.String(), false)
 	require.Nil(t, err)
 
-	testTables := []struct {
-		objectTypeName string
-		objectHash     plumbing.Hash
-		annotated      bool
-		errorAssertion assert.ErrorAssertionFunc
+	commitHash := makeCommit(t, repository, repositoryPath)
+	treeHash := getTreeHash(t, repository)
+	blobHash := getBlobHash(t, repository)
+	testTable := []struct {
+		name      string
+		hash      plumbing.Hash
+		annotated bool
+		assertion assert.ErrorAssertionFunc
 	}{
-		{
-			objectTypeName: "Commit",
-			objectHash:     makeCommit(t, repository, repositoryPath),
-			errorAssertion: assert.NoError,
-		},
-		{
-			objectTypeName: "Tree",
-			objectHash:     getTreeHash(t, repository),
-			errorAssertion: assert.Error,
-		},
-		{
-			objectTypeName: "Blob",
-			objectHash:     getBlobHash(t, repository),
-			errorAssertion: assert.Error,
-		},
+		{name: "Commit", hash: commitHash, assertion: assert.NoError},
+		{name: "Tree", hash: treeHash, assertion: assert.Error},
+		{name: "Blob", hash: blobHash, assertion: assert.Error},
+		{name: "AnnotatedCommit", hash: commitHash, assertion: assert.NoError, annotated: true},
+		{name: "AnnotatedTree", hash: treeHash, assertion: assert.Error, annotated: true},
+		{name: "AnnotatedBlob", hash: blobHash, assertion: assert.Error, annotated: true},
 	}
 
-	for _, testTable := range testTables {
-		for _, annotationConfig := range []struct {
-			annotated  bool
-			descriptor string
-		}{
-			{
-				annotated:  true,
-				descriptor: "Annotated",
-			},
-			{
-				annotated:  false,
-				descriptor: "Lightweight",
-			},
-		} {
-			testName := fmt.Sprintf("%s, %s", testTable.objectTypeName, annotationConfig.descriptor)
-			tag := makeTag(t, repository, testName, testTable.objectHash, annotationConfig.annotated)
+	for _, test := range testTable {
+		t.Run(test.name, func(t *testing.T) {
+			tag := makeTag(t, repository, test.name, test.hash, test.annotated)
 			resolvedTag, err := resolveTag(tag, repository)
-			testTable.errorAssertion(t, err, fmt.Sprintf("%s tag resolution error", testName))
+			test.assertion(t, err, "tag resolution error")
 			if err == nil {
-				assert.Equal(t, testTable.objectHash, *resolvedTag, fmt.Sprintf("%s tag resolution", testName))
+				assert.Equal(t, test.hash, *resolvedTag, "tag resolution")
 			}
-		}
+		})
 	}
 }
 
@@ -202,12 +183,12 @@ func makeCommit(t *testing.T, repository *git.Repository, repositoryPath *paths.
 // commitFile commits a file in the given repository and returns its path and the commit's plumbing.Hash object.
 func commitFile(t *testing.T, repository *git.Repository, repositoryPath *paths.Path) (*paths.Path, plumbing.Hash) {
 	filePath, err := paths.WriteToTempFile([]byte{}, repositoryPath, "gitutils-makeCommit-tempfile")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	worktree, err := repository.Worktree()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	_, err = worktree.Add(".")
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	signature := &object.Signature{
 		Name:  "Jane Developer",
@@ -221,7 +202,7 @@ func commitFile(t *testing.T, repository *git.Repository, repositoryPath *paths.
 			Author: signature,
 		},
 	)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	return filePath, commit
 }
@@ -229,18 +210,18 @@ func commitFile(t *testing.T, repository *git.Repository, repositoryPath *paths.
 // getTreeHash returns the plumbing.Hash object for an arbitrary Git tree object.
 func getTreeHash(t *testing.T, repository *git.Repository) plumbing.Hash {
 	trees, err := repository.TreeObjects()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	tree, err := trees.Next()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	return tree.ID()
 }
 
 // getTreeHash returns the plumbing.Hash object for an arbitrary Git blob object.
 func getBlobHash(t *testing.T, repository *git.Repository) plumbing.Hash {
 	blobs, err := repository.BlobObjects()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	blob, err := blobs.Next()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	return blob.ID()
 }
 
