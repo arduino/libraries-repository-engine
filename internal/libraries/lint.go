@@ -58,8 +58,8 @@ func RunArduinoLint(arduinoLintPath string, folder string, metadata *Repo) ([]by
 	if err != nil {
 		panic(err)
 	}
+	defer os.RemoveAll(JSONReportFolder)
 	JSONReportPath := filepath.Join(JSONReportFolder, "report.json")
-	defer os.RemoveAll(JSONReportPath)
 
 	// See: https://arduino.github.io/arduino-lint/latest/commands/arduino-lint/
 	cmd := exec.Command(
