@@ -26,7 +26,6 @@ package libraries
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -55,7 +54,7 @@ func RunArduinoLint(arduinoLintPath string, folder string, metadata *Repo) ([]by
 		arduinoLintPath = "arduino-lint"
 	}
 
-	JSONReportFolder, err := ioutil.TempDir("", "arduino-lint-report-")
+	JSONReportFolder, err := os.MkdirTemp("", "arduino-lint-report-")
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +81,7 @@ func RunArduinoLint(arduinoLintPath string, folder string, metadata *Repo) ([]by
 	}
 
 	// Read report.
-	rawJSONReport, err := ioutil.ReadFile(JSONReportPath)
+	rawJSONReport, err := os.ReadFile(JSONReportPath)
 	if err != nil {
 		panic(err)
 	}
