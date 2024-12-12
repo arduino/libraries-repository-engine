@@ -91,7 +91,7 @@ func TestSortedCommitTags(t *testing.T) {
 
 	worktree, err := repository.Worktree()
 	require.NoError(t, err)
-	require.NoError(t, worktree.Checkout(&git.CheckoutOptions{Branch: "development-branch", Create: true}))
+	require.NoError(t, worktree.Checkout(&git.CheckoutOptions{Branch: "dev/branch", Create: true}))
 
 	var branchTags []*plumbing.Reference
 	branchTags = append(branchTags, makeTag(t, repository, "1.0.2-rc1", makeCommit(t, repository, repositoryPath), true))
