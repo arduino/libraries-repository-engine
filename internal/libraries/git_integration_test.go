@@ -66,6 +66,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 		require.NoError(t, err)
 
 		err = gitutils.CheckoutTag(r.Repository, tag)
+		require.NoError(t, err)
 
 		library, err := libraries.GenerateLibraryFromRepo(r)
 		require.NoError(t, err)
