@@ -25,7 +25,6 @@ package zip
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -37,15 +36,12 @@ import (
 // Inside the archive "rootFolder" will be renamed to "zipRootFolderName".
 func Directory(rootFolder string, zipRootFolderName string, zipFile string) error {
 	checks := func(path string, info os.FileInfo, err error) error {
-		info, err = os.Lstat(path)
-		if err != nil {
+		if lstat, err := os.Lstat(path); err != nil { // TODO: is calling Lstat here necessary? we already have the FileInfo from the function args
 			return err
-		}
-		if (info.Mode() & os.ModeSymlink) != 0 {
+		} else if (lstat.Mode() & os.ModeSymlink) != 0 {
 			dest, _ := os.Readlink(path)
-			return fmt.Errorf("Symlink not allowed: %s -> %s", path, dest)
-		}
-		if file.IsSCCS(info.Name()) {
+			return fmt.Errorf("symlink not allowed: %s -> %s", path, dest)
+		} else if file.IsSCCS(lstat.Name()) {
 			return filepath.SkipDir
 		}
 		return nil
@@ -60,7 +56,7 @@ func Directory(rootFolder string, zipRootFolderName string, zipFile string) erro
 		return err
 	}
 
-	tmpdir, err := ioutil.TempDir("", "ziphelper")
+	tmpdir, err := os.MkdirTemp("", "ziphelper")
 	if err != nil {
 		return fmt.Errorf("creating temp dir for zip archive: %s", err)
 	}

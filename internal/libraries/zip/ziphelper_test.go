@@ -25,7 +25,6 @@ package zip
 
 import (
 	"archive/zip"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -33,7 +32,7 @@ import (
 )
 
 func TestZip(t *testing.T) {
-	zipFile, err := ioutil.TempFile("", "ziphelper*.zip")
+	zipFile, err := os.CreateTemp("", "ziphelper*.zip")
 	require.NoError(t, err)
 	require.NotNil(t, zipFile)
 	zipFileName := zipFile.Name()
