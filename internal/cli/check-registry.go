@@ -24,7 +24,7 @@
 package cli
 
 import (
-	checkregistry "github.com/arduino/libraries-repository-engine/internal/cli/check-registry"
+	checkregistry "github.com/arduino/libraries-repository-engine/internal/command/check-registry"
 	"github.com/spf13/cobra"
 )
 
