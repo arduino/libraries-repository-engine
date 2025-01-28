@@ -128,7 +128,7 @@ func (err GitURLsError) Error() string {
 		fmt.Fprintln(error, v.URL)
 	}
 
-	return error.String()
+	return strings.TrimSpace(error.String())
 }
 
 func filterReposBy(repos []*Repo, matcher repoMatcher) ([]*Repo, error) {

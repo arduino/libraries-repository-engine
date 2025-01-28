@@ -40,7 +40,7 @@ func TestRegistryValidation(t *testing.T) {
 		{"EmptyArg", "", "registry data file argument testdata is a folder, not a file"},
 		{"NonExistentFile", "nonexistent.txt", "while loading registry data file: stat testdata/nonexistent.txt: no such file or directory"},
 		{"InvalidDataFormat", "invalid-data-format.txt", "while loading registry data file: invalid line format (3 fields are required): https://github.com/arduino-libraries/SD.git|Partner;SD"},
-		{"InvalidUrlFormat", "invalid-url-format.txt", "while filtering registry data file: Following URL are unknown or unsupported git repos:\nhttps://github.com/arduino-libraries/SD\n"},
+		{"InvalidUrlFormat", "invalid-url-format.txt", "while filtering registry data file: Following URL are unknown or unsupported git repos:\nhttps://github.com/arduino-libraries/SD"},
 		{"MissingType", "no-type.txt", "invalid type '' used by library 'SD'"},
 		{"InvalidType", "invalid-type.txt", "invalid type 'foo' used by library 'SD'"},
 		{"DuplicateRepoURL", "duplicate-url.txt", "registry data file contains duplicate URLs"},
