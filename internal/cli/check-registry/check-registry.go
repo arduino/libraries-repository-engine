@@ -24,6 +24,7 @@
 package checkregistry
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -33,32 +34,34 @@ import (
 
 // CheckRegistry runs the check-registry action
 func CheckRegistry(reposFile string) {
+	if err := runcheck(reposFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+		os.Exit(1)
+	}
+}
+
+func runcheck(reposFile string) error {
 	info, err := os.Stat(reposFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: While loading registry data file: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("while loading registry data file: %w", err)
 	}
 
 	if info.IsDir() {
-		fmt.Fprintf(os.Stderr, "error: Registry data file argument %s is a folder, not a file\n", reposFile)
-		os.Exit(1)
+		return fmt.Errorf("registry data file argument %s is a folder, not a file", reposFile)
 	}
 
 	rawRepos, err := libraries.LoadRepoListFromFile(reposFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: While loading registry data file: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("while loading registry data file: %w", err)
 	}
 
 	filteredRepos, err := libraries.ListRepos(reposFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: While filtering registry data file: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("while filtering registry data file: %w", err)
 	}
 
 	if !reflect.DeepEqual(rawRepos, filteredRepos) {
-		fmt.Fprintln(os.Stderr, "error: Registry data file contains duplicate URLs")
-		os.Exit(1)
+		return errors.New("registry data file contains duplicate URLs")
 	}
 
 	validTypes := map[string]bool{
@@ -73,21 +76,19 @@ func CheckRegistry(reposFile string) {
 	for _, entry := range rawRepos {
 		// Check entry types
 		if len(entry.Types) == 0 {
-			fmt.Fprintf(os.Stderr, "error: Type not specified for library '%s'\n", entry.LibraryName)
-			os.Exit(1)
+			return fmt.Errorf("type not specified for library '%s'", entry.LibraryName)
 		}
 		for _, entryType := range entry.Types {
 			if _, valid := validTypes[entryType]; !valid {
-				fmt.Fprintf(os.Stderr, "error: Invalid type '%s' used by library '%s'\n", entryType, entry.LibraryName)
-				os.Exit(1)
+				return fmt.Errorf("invalid type '%s' used by library '%s'", entryType, entry.LibraryName)
 			}
 		}
 
 		// Check library name of the entry
 		if _, found := nameMap[entry.LibraryName]; found {
-			fmt.Fprintf(os.Stderr, "error: Registry data file contains duplicates of name '%s'\n", entry.LibraryName)
-			os.Exit(1)
+			return fmt.Errorf("registry data file contains duplicates of name '%s'", entry.LibraryName)
 		}
 		nameMap[entry.LibraryName] = true
 	}
+	return nil
 }
