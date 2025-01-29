@@ -27,8 +27,8 @@ package sync
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -61,7 +61,7 @@ func Run(command *cobra.Command, cliArguments []string) {
 	}
 
 	if len(cliArguments) > 1 {
-		feedback.LogError(fmt.Errorf("Multiple arguments are not supported"))
+		feedback.LogError(errors.New("multiple arguments are not supported"))
 		os.Exit(1)
 	}
 
@@ -102,7 +102,7 @@ func syncLibraries(reposFile string) {
 				syncLibrary(logger, repo, libraryDb)
 
 				// Output log to file
-				if err := outputLogFile(logger, repo, buffer); err != nil {
+				if err := outputLogFile(repo, buffer); err != nil {
 					logger.Printf("Error writing log file: %s", err.Error())
 				}
 
@@ -200,13 +200,13 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	// Checkout desired tag
 	logger.Printf("Checking out tag: %s", tag.Name().Short())
 	if err := gitutils.CheckoutTag(repo.Repository, tag); err != nil {
-		return fmt.Errorf("Error checking out repo: %s", err)
+		return fmt.Errorf("error checking out repo: %s", err)
 	}
 
 	// Create library metadata from library.properties
 	library, err := libraries.GenerateLibraryFromRepo(repo)
 	if err != nil {
-		return fmt.Errorf("Error generating library from repo: %s", err)
+		return fmt.Errorf("error generating library from repo: %s", err)
 	}
 	library.Types = repoMeta.Types
 
@@ -257,10 +257,10 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 
 	archiveData, err := archive.New(repo, library, config)
 	if err != nil {
-		return fmt.Errorf("Error while configuring library release archive: %s", err)
+		return fmt.Errorf("error while configuring library release archive: %s", err)
 	}
 	if err := archiveData.Create(); err != nil {
-		return fmt.Errorf("Error while zipping library: %s", err)
+		return fmt.Errorf("error while zipping library: %s", err)
 	}
 
 	release := db.FromLibraryToRelease(library)
@@ -271,13 +271,13 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 	release.Log = releaseLog
 
 	if err := libraries.UpdateLibrary(release, repo.URL, libraryDb); err != nil {
-		return fmt.Errorf("Error while updating library DB: %s", err)
+		return fmt.Errorf("error while updating library DB: %s", err)
 	}
 
 	return nil
 }
 
-func outputLogFile(logger *log.Logger, repoMetadata *libraries.Repo, buffer *bytes.Buffer) error {
+func outputLogFile(repoMetadata *libraries.Repo, buffer *bytes.Buffer) error {
 	if config.LogsFolder == "" {
 		return nil
 	}
@@ -294,7 +294,7 @@ func outputLogFile(logger *log.Logger, repoMetadata *libraries.Repo, buffer *byt
 	}
 	logFile := filepath.Join(logFolder, "index.html")
 	output := "<pre>\n" + buffer.String() + "\n</pre>"
-	if err := ioutil.WriteFile(logFile, []byte(output), 0644); err != nil {
+	if err := os.WriteFile(logFile, []byte(output), 0644); err != nil {
 		return fmt.Errorf("write log to file: %s", err.Error())
 	}
 	return nil

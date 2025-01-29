@@ -50,6 +50,9 @@ func LoadRepoListFromFile(filename string) ([]*Repo, error) {
 		line = strings.TrimSpace(line)
 		if len(line) > 0 && line[0] != '#' {
 			split := strings.Split(line, "|")
+			if len(split) < 3 {
+				return nil, fmt.Errorf("invalid line format (3 fields are required): %s", line)
+			}
 			url := split[0]
 			types := strings.Split(split[1], ",")
 			name := split[2]
@@ -125,7 +128,7 @@ func (err GitURLsError) Error() string {
 		fmt.Fprintln(error, v.URL)
 	}
 
-	return error.String()
+	return strings.TrimSpace(error.String())
 }
 
 func filterReposBy(repos []*Repo, matcher repoMatcher) ([]*Repo, error) {

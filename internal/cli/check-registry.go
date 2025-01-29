@@ -1,6 +1,6 @@
 // This file is part of libraries-repository-engine.
 //
-// Copyright 2021 ARDUINO SA (http://www.arduino.cc/)
+// Copyright 2025 ARDUINO SA (http://www.arduino.cc/)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -21,21 +21,26 @@
 // Arduino software without disclosing the source code of your own applications.
 // To purchase a commercial license, send an email to license@arduino.cc.
 
-package libraries
+package cli
 
 import (
-	"github.com/arduino/libraries-repository-engine/internal/libraries"
+	checkregistry "github.com/arduino/libraries-repository-engine/internal/command/check-registry"
+	"github.com/spf13/cobra"
 )
 
-// LoadRepoListFromFile returns an unfiltered list of library registry entries loaded from the given data file.
-func LoadRepoListFromFile(filename string) ([]*Repo, error) {
-	return libraries.LoadRepoListFromFile(filename)
-}
+func init() {
+	// checkRegistryCmd defines the `check-registry` CLI subcommand.
+	var checkRegistryCmd = &cobra.Command{
+		Short:                 "Check the registry.txt file format",
+		Long:                  "Check the registry.txt file format",
+		DisableFlagsInUseLine: true,
+		Use: `check-registry FLAG... /path/to/registry.txt
 
-// Repo is the type for the library repository data.
-type Repo = libraries.Repo
-
-// ListRepos returns a filtered list of library registry entries loaded from the given data file.
-func ListRepos(reposFilename string) ([]*Repo, error) {
-	return libraries.ListRepos(reposFilename)
+Validate the registry.txt format and correctness.`,
+		Args: cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			checkregistry.CheckRegistry(args[0])
+		},
+	}
+	rootCmd.AddCommand(checkRegistryCmd)
 }

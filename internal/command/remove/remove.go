@@ -37,7 +37,6 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/libraries/archive"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
-
 	"github.com/spf13/cobra"
 )
 

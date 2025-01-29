@@ -24,7 +24,6 @@
 package libraries_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -43,7 +42,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, repos)
 
-	librariesRepo, err := ioutil.TempDir("", "libraries")
+	librariesRepo, err := os.MkdirTemp("", "libraries")
 	require.NoError(t, err)
 	defer os.RemoveAll(librariesRepo)
 
@@ -66,6 +65,7 @@ func TestUpdateLibraryJson(t *testing.T) {
 		require.NoError(t, err)
 
 		err = gitutils.CheckoutTag(r.Repository, tag)
+		require.NoError(t, err)
 
 		library, err := libraries.GenerateLibraryFromRepo(r)
 		require.NoError(t, err)

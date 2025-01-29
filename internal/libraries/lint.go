@@ -72,8 +72,9 @@ func RunArduinoLint(arduinoLintPath string, folder string, metadata *Repo) ([]by
 		folder,
 	)
 	// See: https://arduino.github.io/arduino-lint/latest/#environment-variables
-	cmd.Env = modifyEnv(os.Environ(), "ARDUINO_LINT_LIBRARY_MANAGER_INDEXING", "true")
-	cmd.Env = modifyEnv(cmd.Env, "ARDUINO_LINT_OFFICIAL", fmt.Sprintf("%t", official(metadata)))
+	cmd.Env = append(os.Environ(),
+		"ARDUINO_LINT_LIBRARY_MANAGER_INDEXING=true",
+		fmt.Sprintf("ARDUINO_LINT_OFFICIAL=%t", official(metadata)))
 
 	textReport, lintErr := cmd.CombinedOutput()
 	if lintErr != nil {

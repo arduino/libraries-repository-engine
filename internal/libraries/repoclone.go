@@ -24,7 +24,6 @@
 package libraries
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -92,7 +91,7 @@ func CloneOrFetch(repoMeta *Repo, folderName string) (*Repository, error) {
 
 // GenerateLibraryFromRepo parses a repository and returns the library metadata.
 func GenerateLibraryFromRepo(repo *Repository) (*metadata.LibraryMetadata, error) {
-	bytes, err := ioutil.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
+	bytes, err := os.ReadFile(filepath.Join(repo.FolderPath, "library.properties"))
 	if err != nil {
 		return nil, fmt.Errorf("can't read library.properties: %s", err)
 	}
@@ -154,10 +153,10 @@ func BackupAndDeleteGitClone(config *configuration.Config, repoMeta *Repo) error
 	}
 	if gitClonePathExists {
 		if err := backup.Backup(gitClonePath); err != nil {
-			return fmt.Errorf("While backing up library's Git clone: %w", err)
+			return fmt.Errorf("backing up library's Git clone: %w", err)
 		}
 		if err := gitClonePath.RemoveAll(); err != nil {
-			return fmt.Errorf("While removing library Git clone: %s", err)
+			return fmt.Errorf("removing library Git clone: %s", err)
 		}
 	} else {
 		feedback.Warningf("Library Git clone folder %s not present", gitClonePath)
