@@ -1,6 +1,6 @@
 module github.com/arduino/libraries-repository-engine
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/arduino/go-paths-helper v1.12.1
