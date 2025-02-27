@@ -79,8 +79,8 @@ github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec h1:DGmKwyZwEB8dI7t
 github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec/go.mod h1:owBmyHYMLkxyrugmfwE/DLJyW8Ro9mkphwuVErQ0iUw=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
-go.bug.st/relaxed-semver v0.12.0 h1:se8v3lTdAAFp68+/RS/0Y/nFdnpdzkP5ICY04SPau4E=
-go.bug.st/relaxed-semver v0.12.0/go.mod h1:Cpcbiig6Omwlq6bS7i3MQWiqS7W7HDd8CAnZFC40Cl0=
+go.bug.st/relaxed-semver v0.13.0 h1:Bd4rd1lNr9os6wEy4nG+W/jT4W/rXD8fLxxo0csRoZg=
+go.bug.st/relaxed-semver v0.13.0/go.mod h1:bwHiCtYuD2m716tBk2OnOBjelsbXw9el5EIuyxT/ksU=
 golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/crypto v0.31.0 h1:ihbySMvVjLAeSH1IbfcRTkD/iNscyz8rGzjF/E5hV6U=
 golang.org/x/crypto v0.31.0/go.mod h1:kDsLvtWBEx7MV9tJOj9bnXsPbxwJQ6csT/x4KIN4Ssk=
