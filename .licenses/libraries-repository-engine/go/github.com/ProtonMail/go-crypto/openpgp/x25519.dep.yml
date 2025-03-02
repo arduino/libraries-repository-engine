@@ -2,7 +2,7 @@
 name: github.com/ProtonMail/go-crypto/openpgp/x25519
 version: v1.1.5
 type: go
-summary: 
+summary:
 homepage: https://pkg.go.dev/github.com/ProtonMail/go-crypto/openpgp/x25519
 license: bsd-3-clause
 licenses:
