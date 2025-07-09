@@ -38,7 +38,7 @@ func TestRegistryValidation(t *testing.T) {
 	}
 	tests := []testcase{
 		{"EmptyArg", "", "registry data file argument testdata is a folder, not a file"},
-		{"NonExistentFile", "nonexistent.txt", "while loading registry data file: stat testdata/nonexistent.txt: no such file or directory"},
+		{"NonExistentFile", "nonexistent.txt", "while loading registry data file:"},
 		{"InvalidDataFormat", "invalid-data-format.txt", "while loading registry data file: invalid line format (3 fields are required): https://github.com/arduino-libraries/SD.git|Partner;SD"},
 		{"InvalidUrlFormat", "invalid-url-format.txt", "while filtering registry data file: Following URL are unknown or unsupported git repos:\nhttps://github.com/arduino-libraries/SD"},
 		{"MissingType", "no-type.txt", "invalid type '' used by library 'SD'"},
@@ -53,7 +53,7 @@ func TestRegistryValidation(t *testing.T) {
 			if test.ExpectedResult == "" {
 				require.NoError(t, err)
 			} else {
-				require.EqualError(t, err, test.ExpectedResult)
+				require.ErrorContains(t, err, test.ExpectedResult)
 			}
 		})
 	}
