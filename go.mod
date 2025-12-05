@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/arduino/go-paths-helper v1.14.0
 	github.com/go-git/go-git/v5 v5.16.4
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
 	github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec
