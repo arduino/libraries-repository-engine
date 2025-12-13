@@ -314,7 +314,7 @@ jobs:
 
     steps:
       - name: Download reports
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           path: ${{ env.REPORTS_PATH }}
