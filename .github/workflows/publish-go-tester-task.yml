@@ -90,7 +90,7 @@ jobs:
             "./LICENSE.txt"
 
       - name: Save binary as workflow artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           path: ${{ env.BUILD_ARCHIVE_PATH }}
