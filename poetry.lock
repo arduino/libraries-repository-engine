@@ -148,14 +148,14 @@ files = [
 
 [[package]]
 name = "invoke"
-version = "2.2.1"
+version = "3.0.0"
 description = "Pythonic task execution"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "invoke-2.2.1-py3-none-any.whl", hash = "sha256:2413bc441b376e5cd3f55bb5d364f973ad8bdd7bf87e53c79de3c11bf3feecc8"},
-    {file = "invoke-2.2.1.tar.gz", hash = "sha256:515bf49b4a48932b79b024590348da22f39c4942dff991ad1fb8b8baea1be707"},
+    {file = "invoke-3.0.0-py3-none-any.whl", hash = "sha256:a177e378623c2cecbd85cbbf6a00a512a5cabd7b500e1a90c6dd722819ec86a0"},
+    {file = "invoke-3.0.0.tar.gz", hash = "sha256:a6a47bc21af36a9e72ee2304d537dbbc4608528a2d31ca5a10d2c4dc7dc7f0b0"},
 ]
 
 [[package]]
@@ -429,4 +429,4 @@ dev = ["doc8", "flake8", "flake8-import-order", "rstcheck[sphinx]", "sphinx"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "2405b0c7071dc79e61185be9a5f8ef98671d21e5277726a1889c3559d891b4e4"
+content-hash = "dcc6a55025fffc4965e5ef8a2e8d85d0d1656ce91c06dac140d092184d742701"
