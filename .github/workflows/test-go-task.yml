@@ -100,7 +100,7 @@ jobs:
           echo "$ARDUINO_LINT_INSTALLATION_PATH" >> "$GITHUB_PATH"
 
       - name: Install Task
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v3
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           version: 3.x
