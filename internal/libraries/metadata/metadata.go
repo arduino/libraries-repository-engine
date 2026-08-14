@@ -70,9 +70,17 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 		}
 		return ""
 	}
-	library := &LibraryMetadata{
+
+	// Parse version
+	version, err := semver.Parse(get("version"))
+	if err != nil {
+		return nil, err
+	}
+	version.Normalize()
+
+	return &LibraryMetadata{
 		Name:          get("name"),
-		Version:       get("version"),
+		Version:       version.String(),
 		Author:        get("author"),
 		Maintainer:    get("maintainer"),
 		Sentence:      get("sentence"),
@@ -80,32 +88,10 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 		License:       get("license"),
 		URL:           get("url"),
 		Architectures: get("architectures"),
-		Category:      get("category"),
+		Category:      normalizeCategory(get("category")),
 		Includes:      get("includes"),
 		Depends:       get("depends"),
-	}
-
-	library.normalize()
-
-	return library, nil
-}
-
-// normalize normalizes library metadata.
-func (library *LibraryMetadata) normalize() {
-	library.Version = normalizeVersion(library.Version)
-	library.Category = normalizeCategory(library.Category)
-}
-
-// normalizeVersion converts "relaxed semver" to semver-compliant versions.
-func normalizeVersion(version string) string {
-	versionObject, err := semver.Parse(version)
-	if err != nil {
-		// Enforcement is handled by Arduino Lint.
-		return version
-	}
-
-	versionObject.Normalize()
-	return versionObject.String()
+	}, nil
 }
 
 // normalizeCategory restricts category values to the allowed list.
