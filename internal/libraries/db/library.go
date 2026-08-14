@@ -67,7 +67,7 @@ func extractStringList(value string) []string {
 	return res
 }
 
-var re = regexp.MustCompile("^([^()]+?) *(?: \\((.*)\\))?$")
+var re = regexp.MustCompile(`^([^()]+?) *(?: \((.*)\))?$`)
 
 // ExtractDependenciesList extracts dependencies from the "depends" field of library.properties
 func ExtractDependenciesList(depends string) ([]*Dependency, error) {
@@ -76,7 +76,7 @@ func ExtractDependenciesList(depends string) ([]*Dependency, error) {
 	if depends == "" {
 		return deps, nil
 	}
-	for _, dep := range strings.Split(depends, ",") {
+	for dep := range strings.SplitSeq(depends, ",") {
 		dep = strings.TrimSpace(dep)
 		if dep == "" {
 			return nil, fmt.Errorf("invalid dep: %s", dep)
