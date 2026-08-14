@@ -23,7 +23,11 @@
 
 package db
 
-import "sort"
+import (
+	"sort"
+
+	semver "go.bug.st/relaxed-semver"
+)
 
 // Output structure used to generate library_index.json file
 type indexOutput struct {
@@ -33,7 +37,7 @@ type indexOutput struct {
 // Output structure used to generate library_index.json file
 type indexLibrary struct {
 	LibraryName      string             `json:"name"`
-	Version          Version            `json:"version"`
+	Version          *semver.Version    `json:"version"`
 	Author           string             `json:"author"`
 	Maintainer       string             `json:"maintainer"`
 	License          string             `json:"license,omitempty"`
@@ -122,8 +126,7 @@ func sortReleasesByVersionDescending(releases []*Release) []*Release {
 	sorted := make([]*Release, len(releases))
 	copy(sorted, releases)
 	sort.SliceStable(sorted, func(i, j int) bool {
-		less, _ := sorted[j].Version.Less(sorted[i].Version)
-		return less
+		return sorted[j].Version.LessThan(sorted[i].Version)
 	})
 	return sorted
 }

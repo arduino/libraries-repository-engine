@@ -30,6 +30,8 @@ import (
 	"log"
 	"os"
 	"sync"
+
+	semver "go.bug.st/relaxed-semver"
 )
 
 // DB is the libraries database
@@ -53,7 +55,7 @@ type Library struct {
 // Release is a library release
 type Release struct {
 	LibraryName     string // The library name
-	Version         Version
+	Version         *semver.Version
 	Author          string
 	Maintainer      string
 	License         string
@@ -290,13 +292,7 @@ func (db *DB) save(r io.Writer) error {
 func (db *DB) findLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	var found *Release
 	for _, rel := range db.findReleasesOfLibrary(lib) {
-		if found == nil {
-			found = rel
-			continue
-		}
-		if less, err := found.Version.Less(rel.Version); err != nil {
-			return nil, err
-		} else if less {
+		if found == nil || found.Version.LessThan(rel.Version) {
 			found = rel
 		}
 	}

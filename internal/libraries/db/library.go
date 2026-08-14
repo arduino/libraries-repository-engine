@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
+	semver "go.bug.st/relaxed-semver"
 )
 
 // FromLibraryToRelease extract a Release from LibraryMetadata. LibraryMetadata must be
@@ -37,7 +38,7 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 	deps, _ := ExtractDependenciesList(library.Depends)
 	dbRelease := Release{
 		LibraryName:   library.Name,
-		Version:       VersionFromString(library.Version),
+		Version:       semver.MustParse(library.Version),
 		Author:        library.Author,
 		Maintainer:    library.Maintainer,
 		License:       library.License,

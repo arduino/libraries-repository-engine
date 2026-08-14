@@ -43,6 +43,7 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/spf13/cobra"
+	semver "go.bug.st/relaxed-semver"
 )
 
 var config *configuration.Config
@@ -218,7 +219,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 
 	releaseQuery := db.Release{
 		LibraryName: library.Name,
-		Version:     db.VersionFromString(library.Version),
+		Version:     semver.MustParse(library.Version),
 	}
 	// If the release is already checked in, skip
 	if libraryDb.HasLibrary(library.Name) {
