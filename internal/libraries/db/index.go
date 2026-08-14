@@ -68,7 +68,7 @@ type indexDependency struct {
 // releases round-robin across major versions (the latest release of each major version
 // first, then the second latest of each, and so on) until the limit is reached.
 // A value <= 0 means no limit.
-func (db *DB) OutputLibraryIndex(maxVersionsPerLibrary int) (interface{}, error) {
+func (db *DB) OutputLibraryIndex(maxVersionsPerLibrary int) (any, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
 	for _, lib := range db.Libraries {

@@ -86,13 +86,13 @@ func RunArduinoLint(arduinoLintPath string, folder string, metadata *Repo) ([]by
 	if err != nil {
 		panic(err)
 	}
-	var JSONReport map[string]interface{}
+	var JSONReport map[string]any
 	if err := json.Unmarshal(rawJSONReport, &JSONReport); err != nil {
 		panic(err)
 	}
 
 	// Check warning count.
-	reportSummary := JSONReport["summary"].(map[string]interface{})
+	reportSummary := JSONReport["summary"].(map[string]any)
 	warningCount := reportSummary["warningCount"].(float64)
 
 	// Report should be displayed when there are warnings.

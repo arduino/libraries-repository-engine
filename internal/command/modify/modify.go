@@ -27,6 +27,7 @@ package modify
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/arduino/go-paths-helper"
@@ -217,13 +218,7 @@ func modifyTypes(rawTypes string) error {
 		}
 
 		for _, oldType := range oldTypes {
-			found := false
-			for _, newType := range newTypes {
-				if oldType == newType {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(newTypes, oldType)
 			if !found {
 				return false
 			}

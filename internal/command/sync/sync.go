@@ -126,7 +126,7 @@ func syncLibraries(reposFile string) {
 	log.Println("...DONE")
 }
 
-func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
+func serializeLibraryIndex(libraryIndex any, libraryIndexFile string) {
 	file, err := os.Create(libraryIndexFile)
 	if feedback.LogError(err) {
 		os.Exit(1)

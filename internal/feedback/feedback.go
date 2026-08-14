@@ -40,23 +40,23 @@ func LogError(err error) bool {
 }
 
 // Warningf behaves like fmt.Printf but adds a prefix and newline.
-func Warningf(format string, v ...interface{}) {
+func Warningf(format string, v ...any) {
 	Warning(fmt.Sprintf(format, v...))
 }
 
 // Warning behaves like fmt.Println but adds a prefix.
-func Warning(v ...interface{}) {
+func Warning(v ...any) {
 	fmt.Fprint(os.Stderr, "warning: ")
 	fmt.Fprintln(os.Stderr, v...)
 }
 
 // Errorf behaves like fmt.Printf but adds a prefix and newline.
-func Errorf(format string, v ...interface{}) {
+func Errorf(format string, v ...any) {
 	Error(fmt.Sprintf(format, v...))
 }
 
 // Error behaves like fmt.Println but adds a prefix.
-func Error(v ...interface{}) {
+func Error(v ...any) {
 	fmt.Fprint(os.Stderr, "error: ")
 	fmt.Fprintln(os.Stderr, v...)
 }
