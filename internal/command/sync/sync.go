@@ -115,7 +115,7 @@ func syncLibraries(reposFile string) {
 	}
 	wg.Wait()
 
-	libraryIndex, err := libraryDb.OutputLibraryIndex()
+	libraryIndex, err := libraryDb.OutputLibraryIndex(config.MaxVersionsPerLibrary)
 	if feedback.LogError(err) {
 		os.Exit(1)
 	}

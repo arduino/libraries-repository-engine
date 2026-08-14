@@ -23,6 +23,8 @@
 
 package db
 
+import "sort"
+
 // Output structure used to generate library_index.json file
 type indexOutput struct {
 	Libraries []indexLibrary `json:"libraries"`
@@ -56,12 +58,18 @@ type indexDependency struct {
 }
 
 // OutputLibraryIndex generates an object that once JSON-marshaled produces a json
-// file suitable for the library installer (i.e. produce a valid library_index.json file)
-func (db *DB) OutputLibraryIndex() (interface{}, error) {
+// file suitable for the library installer (i.e. produce a valid library_index.json file).
+// maxVersionsPerLibrary limits the number of releases included per library, keeping the
+// most recent ones. A value <= 0 means no limit.
+func (db *DB) OutputLibraryIndex(maxVersionsPerLibrary int) (interface{}, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
 	for _, lib := range db.Libraries {
 		libraryReleases := db.FindReleasesOfLibrary(lib)
+
+		if maxVersionsPerLibrary > 0 && len(libraryReleases) > maxVersionsPerLibrary {
+			libraryReleases = sortReleasesByVersionDescending(libraryReleases)[:maxVersionsPerLibrary]
+		}
 
 		for _, libraryRelease := range libraryReleases {
 			// Skip malformed release
@@ -106,4 +114,16 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 		Libraries: libraries,
 	}
 	return &index, nil
+}
+
+// sortReleasesByVersionDescending returns a new slice with the given releases sorted
+// from the highest to the lowest version.
+func sortReleasesByVersionDescending(releases []*Release) []*Release {
+	sorted := make([]*Release, len(releases))
+	copy(sorted, releases)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		less, _ := sorted[j].Version.Less(sorted[i].Version)
+		return less
+	})
+	return sorted
 }
