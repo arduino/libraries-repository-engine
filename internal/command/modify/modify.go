@@ -175,7 +175,7 @@ func modifyRepositoryURL(newRepositoryURL string) error {
 	newRepositoryObject := libraries.Repository{URL: newRepositoryURL}
 	libraryMetadata := metadata.LibraryMetadata{Name: libraryData.Name}
 	for _, releaseData := range releasesData {
-		libraryMetadata.Version = releaseData.Version.String()
+		libraryMetadata.Version = releaseData.Version.NormalizedString()
 		oldArchiveObject, err := archive.New(&oldRepositoryObject, &libraryMetadata, config)
 		if err != nil {
 			return err

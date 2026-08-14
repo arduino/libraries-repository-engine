@@ -38,7 +38,7 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 	deps, _ := ExtractDependenciesList(library.Depends)
 	dbRelease := Release{
 		LibraryName:   library.Name,
-		Version:       semver.MustParse(library.Version),
+		Version:       semver.MustParse(string(library.Version)),
 		Author:        library.Author,
 		Maintainer:    library.Maintainer,
 		License:       library.License,

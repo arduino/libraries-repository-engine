@@ -40,7 +40,7 @@ import (
 // LibraryMetadata contains metadata for a library.properties file
 type LibraryMetadata struct {
 	Name          string
-	Version       string
+	Version       semver.NormalizedString
 	Author        string
 	Maintainer    string
 	License       string
@@ -76,11 +76,10 @@ func Parse(propertiesData []byte) (*LibraryMetadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	version.Normalize()
 
 	return &LibraryMetadata{
 		Name:          get("name"),
-		Version:       version.String(),
+		Version:       version.NormalizedString(),
 		Author:        get("author"),
 		Maintainer:    get("maintainer"),
 		Sentence:      get("sentence"),

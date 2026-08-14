@@ -219,7 +219,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 
 	releaseQuery := db.Release{
 		LibraryName: library.Name,
-		Version:     semver.MustParse(library.Version),
+		Version:     semver.MustParse(string(library.Version)),
 	}
 	// If the release is already checked in, skip
 	if libraryDb.HasLibrary(library.Name) {

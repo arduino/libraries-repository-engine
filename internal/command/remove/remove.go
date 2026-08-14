@@ -38,6 +38,7 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/libraries/db"
 	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
 	"github.com/spf13/cobra"
+	semver "go.bug.st/relaxed-semver"
 )
 
 var config *configuration.Config
@@ -108,12 +109,16 @@ func removals(libraryReferences []string) (bool, error) {
 	for _, libraryReference := range libraryReferences {
 		referenceComponents := strings.SplitN(libraryReference, "@", 2)
 		libraryName := referenceComponents[0]
-		var libraryVersion string
+		var libraryVersion semver.NormalizedString
 		if len(referenceComponents) > 1 {
 			if referenceComponents[1] == "" {
 				return false, fmt.Errorf("Missing version for library name %s. For full removal, omit the '@'", libraryName)
 			}
-			libraryVersion = referenceComponents[1]
+			version, err := semver.Parse(referenceComponents[1])
+			if err != nil {
+				return false, fmt.Errorf("Invalid version %s for library name %s: %w", referenceComponents[1], libraryName, err)
+			}
+			libraryVersion = version.NormalizedString()
 		}
 
 		if !librariesDb.HasLibrary(libraryName) {
@@ -148,7 +153,7 @@ func removeLibrary(libraryName string) error {
 	// Remove the library's release archive files.
 	releasesData := librariesDb.FindReleasesOfLibrary(libraryData)
 	for _, releaseData := range releasesData {
-		if err := removeReleaseArchive(releaseData.Version.String()); err != nil {
+		if err := removeReleaseArchive(releaseData.Version.NormalizedString()); err != nil {
 			return err
 		}
 	}
@@ -166,7 +171,7 @@ func removeLibrary(libraryName string) error {
 	return nil
 }
 
-func removeRelease(libraryName string, version string) error {
+func removeRelease(libraryName string, version semver.NormalizedString) error {
 	fmt.Printf("Removing %s@%s\n", libraryName, version)
 
 	if !librariesDb.HasReleaseByNameVersion(libraryName, version) {
@@ -186,7 +191,7 @@ func removeRelease(libraryName string, version string) error {
 	return nil
 }
 
-func removeReleaseArchive(version string) error {
+func removeReleaseArchive(version semver.NormalizedString) error {
 	repositoryObject := libraries.Repository{URL: libraryData.Repository}
 	libraryMetadata := metadata.LibraryMetadata{
 		Name:    libraryData.Name,
