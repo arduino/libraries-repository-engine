@@ -26,6 +26,7 @@ package cli
 
 import (
 	"os"
+	"slices"
 
 	"github.com/arduino/libraries-repository-engine/internal/feedback"
 	"github.com/spf13/cobra"
@@ -56,11 +57,9 @@ func Execute() error {
 			}
 
 			for _, command := range rootCmd.Commands() {
-				for _, alias := range append(command.Aliases, command.Name(), "help") { // Hacky to check "help" redundantly, but whatever.
-					if os.Args[1] == alias {
-						// The argument is a registered subcommand, so assume the new interface.
-						return
-					}
+				if slices.Contains(append(command.Aliases, command.Name(), "help"), os.Args[1]) {
+					// The argument is a registered subcommand, so assume the new interface.
+					return
 				}
 			}
 
