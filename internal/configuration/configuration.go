@@ -42,6 +42,9 @@ type Config struct {
 	GitClonesFolder string
 	DoNotRunClamav  bool
 	ArduinoLintPath string
+	// MaxVersionsPerLibrary limits the number of releases per library written to LibrariesIndex.
+	// The most recent versions are kept. A value <= 0 means no limit.
+	MaxVersionsPerLibrary int
 }
 
 // ReadConf reads the configuration file and returns the data.

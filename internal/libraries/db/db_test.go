@@ -28,6 +28,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	semver "go.bug.st/relaxed-semver"
 )
 
 func testerDB() *DB {
@@ -49,7 +50,7 @@ func testerDB() *DB {
 		Releases: []*Release{
 			{
 				LibraryName:     "FooLib",
-				Version:         Version{"1.0.0"},
+				Version:         semver.MustParse("1.0.0"),
 				Author:          "Barthor",
 				Maintainer:      "Bartainer",
 				License:         "MIT",
@@ -74,7 +75,7 @@ func testerDB() *DB {
 			},
 			{
 				LibraryName:     "BazLib",
-				Version:         Version{"2.0.0"},
+				Version:         semver.MustParse("2.0.0"),
 				Author:          "Barthor",
 				Maintainer:      "Bartainer",
 				License:         "MIT",
@@ -94,7 +95,7 @@ func testerDB() *DB {
 			},
 			{
 				LibraryName:     "BazLib",
-				Version:         Version{"2.1.0"},
+				Version:         semver.MustParse("2.1.0"),
 				Author:          "Barthor",
 				Maintainer:      "Bartainer",
 				License:         "MIT",
@@ -114,7 +115,7 @@ func testerDB() *DB {
 			},
 			{
 				LibraryName:     "FooLib",
-				Version:         Version{"1.1.0"},
+				Version:         semver.MustParse("1.1.0"),
 				Author:          "Barthor",
 				Maintainer:      "Bartainer",
 				License:         "MIT",

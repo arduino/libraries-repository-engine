@@ -23,6 +23,13 @@
 
 package db
 
+import (
+	"sort"
+	"strings"
+
+	semver "go.bug.st/relaxed-semver"
+)
+
 // Output structure used to generate library_index.json file
 type indexOutput struct {
 	Libraries []indexLibrary `json:"libraries"`
@@ -31,7 +38,7 @@ type indexOutput struct {
 // Output structure used to generate library_index.json file
 type indexLibrary struct {
 	LibraryName      string             `json:"name"`
-	Version          Version            `json:"version"`
+	Version          *semver.Version    `json:"version"`
 	Author           string             `json:"author"`
 	Maintainer       string             `json:"maintainer"`
 	License          string             `json:"license,omitempty"`
@@ -56,12 +63,20 @@ type indexDependency struct {
 }
 
 // OutputLibraryIndex generates an object that once JSON-marshaled produces a json
-// file suitable for the library installer (i.e. produce a valid library_index.json file)
-func (db *DB) OutputLibraryIndex() (interface{}, error) {
+// file suitable for the library installer (i.e. produce a valid library_index.json file).
+// maxVersionsPerLibrary limits the number of releases included per library, picking
+// releases round-robin across major versions (the latest release of each major version
+// first, then the second latest of each, and so on) until the limit is reached.
+// A value <= 0 means no limit.
+func (db *DB) OutputLibraryIndex(maxVersionsPerLibrary int) (any, error) {
 	libraries := make([]indexLibrary, 0, len(db.Libraries))
 
 	for _, lib := range db.Libraries {
 		libraryReleases := db.FindReleasesOfLibrary(lib)
+
+		if maxVersionsPerLibrary > 0 && len(libraryReleases) > maxVersionsPerLibrary {
+			libraryReleases = selectReleasesWithMajorVersionCoverage(libraryReleases, maxVersionsPerLibrary)
+		}
 
 		for _, libraryRelease := range libraryReleases {
 			// Skip malformed release
@@ -106,4 +121,62 @@ func (db *DB) OutputLibraryIndex() (interface{}, error) {
 		Libraries: libraries,
 	}
 	return &index, nil
+}
+
+// sortReleasesByVersionDescending returns a new slice with the given releases sorted
+// from the highest to the lowest version.
+func sortReleasesByVersionDescending(releases []*Release) []*Release {
+	sorted := make([]*Release, len(releases))
+	copy(sorted, releases)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		return sorted[j].Version.LessThan(sorted[i].Version)
+	})
+	return sorted
+}
+
+// selectReleasesWithMajorVersionCoverage returns up to maxCount releases, picking them
+// round-robin across major versions: the latest release of each major version is picked
+// first, then the second latest of each major version that still has one, and so on,
+// until maxCount is reached or there are no more releases to pick.
+func selectReleasesWithMajorVersionCoverage(releases []*Release, maxCount int) []*Release {
+	sorted := sortReleasesByVersionDescending(releases)
+
+	// Group releases by major version, preserving the descending order of both the
+	// major versions (buckets) and the releases within each bucket.
+	var buckets [][]*Release
+	bucketIndexByMajor := map[string]int{}
+	for _, release := range sorted {
+		major := majorVersion(release.Version)
+		if i, ok := bucketIndexByMajor[major]; ok {
+			buckets[i] = append(buckets[i], release)
+		} else {
+			bucketIndexByMajor[major] = len(buckets)
+			buckets = append(buckets, []*Release{release})
+		}
+	}
+
+	selected := make([]*Release, 0, maxCount)
+	for round := 0; len(selected) < maxCount; round++ {
+		pickedAny := false
+		for _, bucket := range buckets {
+			if len(selected) >= maxCount {
+				break
+			}
+			if round < len(bucket) {
+				selected = append(selected, bucket[round])
+				pickedAny = true
+			}
+		}
+		if !pickedAny {
+			break
+		}
+	}
+
+	return sortReleasesByVersionDescending(selected)
+}
+
+// majorVersion returns the major version component of the given version, used to
+// group releases belonging to the same major version.
+func majorVersion(version *semver.Version) string {
+	return strings.SplitN(string(version.NormalizedString()), ".", 2)[0]
 }

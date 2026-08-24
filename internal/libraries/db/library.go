@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/arduino/libraries-repository-engine/internal/libraries/metadata"
+	semver "go.bug.st/relaxed-semver"
 )
 
 // FromLibraryToRelease extract a Release from LibraryMetadata. LibraryMetadata must be
@@ -37,7 +38,7 @@ func FromLibraryToRelease(library *metadata.LibraryMetadata) *Release {
 	deps, _ := ExtractDependenciesList(library.Depends)
 	dbRelease := Release{
 		LibraryName:   library.Name,
-		Version:       VersionFromString(library.Version),
+		Version:       semver.MustParse(string(library.Version)),
 		Author:        library.Author,
 		Maintainer:    library.Maintainer,
 		License:       library.License,
@@ -66,7 +67,7 @@ func extractStringList(value string) []string {
 	return res
 }
 
-var re = regexp.MustCompile("^([^()]+?) *(?: \\((.*)\\))?$")
+var re = regexp.MustCompile(`^([^()]+?) *(?: \((.*)\))?$`)
 
 // ExtractDependenciesList extracts dependencies from the "depends" field of library.properties
 func ExtractDependenciesList(depends string) ([]*Dependency, error) {
@@ -75,7 +76,7 @@ func ExtractDependenciesList(depends string) ([]*Dependency, error) {
 	if depends == "" {
 		return deps, nil
 	}
-	for _, dep := range strings.Split(depends, ",") {
+	for dep := range strings.SplitSeq(depends, ",") {
 		dep = strings.TrimSpace(dep)
 		if dep == "" {
 			return nil, fmt.Errorf("invalid dep: %s", dep)

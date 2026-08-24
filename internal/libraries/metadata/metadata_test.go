@@ -105,7 +105,7 @@ depends=ArduinoHttpClient
 				Includes:      "WebServer.h",
 				Depends:       "ArduinoHttpClient",
 			},
-			errorAssertion: assert.NoError,
+			errorAssertion: assert.Error,
 		},
 		{
 			testName: "Non-semver version",
@@ -173,11 +173,13 @@ depends=ArduinoHttpClient
 		},
 	}
 
-	for _, testTable := range testTables {
-		metadata, err := Parse(testTable.propertiesData)
-		testTable.errorAssertion(t, err, fmt.Sprintf("%s error", testTable.testName))
-		if err == nil {
-			assert.Equal(t, testTable.libraryMetadataAssertion, metadata, fmt.Sprintf("%s metadata", testTable.testName))
-		}
+	for _, test := range testTables {
+		t.Run(test.testName, func(t *testing.T) {
+			metadata, err := Parse(test.propertiesData)
+			test.errorAssertion(t, err, fmt.Sprintf("%s error", test.testName))
+			if err == nil {
+				assert.Equal(t, test.libraryMetadataAssertion, metadata, fmt.Sprintf("%s metadata", test.testName))
+			}
+		})
 	}
 }

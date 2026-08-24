@@ -27,6 +27,7 @@ package modify
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/arduino/go-paths-helper"
@@ -175,7 +176,7 @@ func modifyRepositoryURL(newRepositoryURL string) error {
 	newRepositoryObject := libraries.Repository{URL: newRepositoryURL}
 	libraryMetadata := metadata.LibraryMetadata{Name: libraryData.Name}
 	for _, releaseData := range releasesData {
-		libraryMetadata.Version = releaseData.Version.String()
+		libraryMetadata.Version = releaseData.Version.NormalizedString()
 		oldArchiveObject, err := archive.New(&oldRepositoryObject, &libraryMetadata, config)
 		if err != nil {
 			return err
@@ -217,13 +218,7 @@ func modifyTypes(rawTypes string) error {
 		}
 
 		for _, oldType := range oldTypes {
-			found := false
-			for _, newType := range newTypes {
-				if oldType == newType {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(newTypes, oldType)
 			if !found {
 				return false
 			}

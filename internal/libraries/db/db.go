@@ -30,6 +30,8 @@ import (
 	"log"
 	"os"
 	"sync"
+
+	semver "go.bug.st/relaxed-semver"
 )
 
 // DB is the libraries database
@@ -53,7 +55,7 @@ type Library struct {
 // Release is a library release
 type Release struct {
 	LibraryName     string // The library name
-	Version         Version
+	Version         *semver.Version
 	Author          string
 	Maintainer      string
 	License         string
@@ -173,16 +175,16 @@ func (db *DB) AddRelease(release *Release, repoURL string) error {
 }
 
 // RemoveReleaseByNameVersion removes the given library release from the database.
-func (db *DB) RemoveReleaseByNameVersion(libraryName string, libraryVersion string) error {
+func (db *DB) RemoveReleaseByNameVersion(libraryName string, libraryVersion semver.NormalizedString) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 	return db.removeReleaseByNameVersion(libraryName, libraryVersion)
 }
 
-func (db *DB) removeReleaseByNameVersion(libraryName string, libraryVersion string) error {
+func (db *DB) removeReleaseByNameVersion(libraryName string, libraryVersion semver.NormalizedString) error {
 	found := false
 	for i, release := range db.Releases {
-		if release.LibraryName == libraryName && release.Version.String() == libraryVersion {
+		if release.LibraryName == libraryName && release.Version.NormalizedString() == libraryVersion {
 			found = true
 			db.Releases = append(db.Releases[:i], db.Releases[i+1:]...)
 		}
@@ -195,13 +197,13 @@ func (db *DB) removeReleaseByNameVersion(libraryName string, libraryVersion stri
 }
 
 // HasReleaseByNameVersion returns whether the database contains a release for the given library and version number.
-func (db *DB) HasReleaseByNameVersion(libraryName string, libraryVersion string) bool {
+func (db *DB) HasReleaseByNameVersion(libraryName string, libraryVersion semver.NormalizedString) bool {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 	return db.hasReleaseByNameVersion(libraryName, libraryVersion)
 }
 
-func (db *DB) hasReleaseByNameVersion(libraryName string, libraryVersion string) bool {
+func (db *DB) hasReleaseByNameVersion(libraryName string, libraryVersion semver.NormalizedString) bool {
 	found, _ := db.findReleaseByNameVersion(libraryName, libraryVersion)
 	return found != nil
 }
@@ -214,19 +216,19 @@ func (db *DB) HasRelease(release *Release) bool {
 }
 
 func (db *DB) hasRelease(release *Release) bool {
-	return db.hasReleaseByNameVersion(release.LibraryName, release.Version.String())
+	return db.hasReleaseByNameVersion(release.LibraryName, release.Version.NormalizedString())
 }
 
 // FindRelease returns the Release object from the database that matches the given object.
 func (db *DB) FindRelease(release *Release) (*Release, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-	return db.findReleaseByNameVersion(release.LibraryName, release.Version.String())
+	return db.findReleaseByNameVersion(release.LibraryName, release.Version.NormalizedString())
 }
 
-func (db *DB) findReleaseByNameVersion(libraryName string, libraryVersion string) (*Release, error) {
+func (db *DB) findReleaseByNameVersion(libraryName string, libraryVersion semver.NormalizedString) (*Release, error) {
 	for _, r := range db.Releases {
-		if r.LibraryName == libraryName && r.Version.String() == libraryVersion {
+		if r.LibraryName == libraryName && r.Version.NormalizedString() == libraryVersion {
 			return r, nil
 		}
 	}
@@ -290,13 +292,7 @@ func (db *DB) save(r io.Writer) error {
 func (db *DB) findLatestReleaseOfLibrary(lib *Library) (*Release, error) {
 	var found *Release
 	for _, rel := range db.findReleasesOfLibrary(lib) {
-		if found == nil {
-			found = rel
-			continue
-		}
-		if less, err := found.Version.Less(rel.Version); err != nil {
-			return nil, err
-		} else if less {
+		if found == nil || found.Version.LessThan(rel.Version) {
 			found = rel
 		}
 	}

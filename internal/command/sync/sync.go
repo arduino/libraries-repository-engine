@@ -43,6 +43,7 @@ import (
 	"github.com/arduino/libraries-repository-engine/internal/libraries/gitutils"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/spf13/cobra"
+	semver "go.bug.st/relaxed-semver"
 )
 
 var config *configuration.Config
@@ -115,7 +116,7 @@ func syncLibraries(reposFile string) {
 	}
 	wg.Wait()
 
-	libraryIndex, err := libraryDb.OutputLibraryIndex()
+	libraryIndex, err := libraryDb.OutputLibraryIndex(config.MaxVersionsPerLibrary)
 	if feedback.LogError(err) {
 		os.Exit(1)
 	}
@@ -125,7 +126,7 @@ func syncLibraries(reposFile string) {
 	log.Println("...DONE")
 }
 
-func serializeLibraryIndex(libraryIndex interface{}, libraryIndexFile string) {
+func serializeLibraryIndex(libraryIndex any, libraryIndexFile string) {
 	file, err := os.Create(libraryIndexFile)
 	if feedback.LogError(err) {
 		os.Exit(1)
@@ -218,7 +219,7 @@ func syncLibraryTaggedRelease(logger *log.Logger, repo *libraries.Repository, ta
 
 	releaseQuery := db.Release{
 		LibraryName: library.Name,
-		Version:     db.VersionFromString(library.Version),
+		Version:     semver.MustParse(string(library.Version)),
 	}
 	// If the release is already checked in, skip
 	if libraryDb.HasLibrary(library.Name) {
