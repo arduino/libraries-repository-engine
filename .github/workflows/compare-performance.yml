@@ -47,9 +47,9 @@ jobs:
       - name: Determine comparison ref
         id: base-ref
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             COMPARISON_REF="${{ github.event.inputs.comparison-ref }}"
-          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             COMPARISON_REF="${{ github.base_ref }}"
           elif [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
             COMPARISON_REF="$( \
